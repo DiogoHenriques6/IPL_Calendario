@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class MethodController extends Controller
 {
@@ -46,6 +47,8 @@ class MethodController extends Controller
             $newMethod->epochType()->syncWithoutDetaching($method['epoch_type_id']);
             $newMethod->courseUnits()->syncWithoutDetaching($courseUnit);
             $newMethod->save();
+//            LOG::channel("sync_test")->info("New Method EPOCH: " .$newMethod->epochType()->get());
+//            LOG::channel("sync_test")->info("New Method Course Unit: " .$newMethod->courseUnits()->get());
         }
 
         foreach ($request->removed as $removedMethod) {

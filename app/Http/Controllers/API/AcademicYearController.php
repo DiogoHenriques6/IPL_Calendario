@@ -98,6 +98,8 @@ class AcademicYearController extends Controller
             return response()->json("error on semester value!", Response::HTTP_BAD_REQUEST);
         }
 
+
+
         $hasWaiting = AcademicYear::where('s1_sync_active', true)->orWhere('s2_sync_active', true)->count();
         if($hasWaiting > 0){
             return response()->json("ano_letivo.Ja existem em sincronizacao, esperar ate acabar antes de comecar a proxima.",Response::HTTP_CONFLICT);

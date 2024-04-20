@@ -67,7 +67,7 @@ const HeaderMenu = () => {
     const selectedAcademicYear = useSelector((state) => state.app.academicYear);
 
     return (
-        <Menu borderless>
+        <Menu borderless >
             <Container>
                 <Menu.Item as={Link} to="/"
                            className={ (location.pathname.includes('/calendario') || location.pathname === '/') ? 'active' : ''}>

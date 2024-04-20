@@ -6,11 +6,11 @@ import {toast} from "react-toastify";
 import {errorConfig, successConfig} from "../../../utils/toastConfig";
 import Slider from "../../../components/Slider";
 import EmptyTable from "../../../components/EmptyTable";
-import {useTranslation} from "react-i18next";
+import {useTranslation,} from "react-i18next";
 import AcademicYears from "../../../components/Filters/AcademicYears";
 
 const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const contextRef = createRef();
 
     const [isLoading, setIsLoading] = useState(true);
@@ -352,7 +352,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                     )}
                     {epochs?.map((item, index) => (
                         <div className={ index > 0 ? "margin-top-m" : ""} key={index}>
-                            <Header as="span">{item.name}</Header>
+                            <Header as="span">{i18n.language == 'en' ? item.name_en: item.name_pt}</Header>
                             <Table compact celled className={"definition-last"}>
                                 <Table.Header>
                                     <Table.Row>

@@ -24,8 +24,8 @@ return new class extends Migration
             $table->boolean('enabled')->default(true);
             $table->boolean('protected')->default(false);
 
-            $table->string('guid')->unique();
-            $table->string('domain')->unique();
+            // $table->string('guid')->unique();
+            // $table->string('domain')->unique();
 
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->nullable()->useCurrentOnUpdate();

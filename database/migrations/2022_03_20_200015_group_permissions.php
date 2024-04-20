@@ -20,10 +20,11 @@ return new class extends Migration
             $table->primary(['group_id', 'permission_id', 'phase_id'], 'primary_grouped');
             $table->unsignedBigInteger('group_id');
             $table->unsignedBigInteger('permission_id');
-            $table->foreignId('phase_id')->nullable()->constrained('calendar_phases');
+            
 
             $table->boolean('enabled')->default(true);
 
+            $table->foreignId('phase_id')->constrained('calendar_phases');
             $table->foreign('group_id')->references('id')->on('groups');
             $table->foreign('permission_id')->references('id')->on('permissions');
 

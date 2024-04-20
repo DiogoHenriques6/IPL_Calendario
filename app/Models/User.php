@@ -6,9 +6,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use LdapRecord\Laravel\Auth\AuthenticatesWithLdap;
-use LdapRecord\Laravel\Auth\HasLdapUser;
-use LdapRecord\Laravel\Auth\LdapAuthenticatable;
+// use LdapRecord\Laravel\Auth\AuthenticatesWithLdap;
+// use LdapRecord\Laravel\Auth\HasLdapUser;
+//use LdapRecord\Laravel\Auth\LdapAuthenticatable;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 use tiagomichaelsousa\LaravelFilters\Traits\Filterable;
 use Znck\Eloquent\Traits\BelongsToThrough;
@@ -21,11 +21,14 @@ class PermissionTypes
     const PERMISSIONS = "permissions";
 }
 
-class User extends Authenticatable implements LdapAuthenticatable
+class User extends Authenticatable 
+//implements LdapAuthenticatable
 {
     use HasRelationships;
     use SoftDeletes, Filterable;
-    use HasApiTokens, Notifiable, AuthenticatesWithLdap, HasLdapUser;
+    use HasApiTokens, Notifiable;
+    // AuthenticatesWithLdap;
+    //, HasLdapUser;
     use BelongsToThrough;
 
     const PERMISSION_TYPES = [

@@ -19,8 +19,8 @@ class MethodResource extends JsonResource
             'description_pt'        => $this->description_pt,
             'description_en'        => $this->description_en,
             'is_blocked'            => $this->evaluation_type_id == EvaluationType::typeStatementRelease() || $this->evaluation_type_id == EvaluationType::typePublicOralPresentation(),
-            'grouped_id'            => ''//TODO group by id of "parent" (like projet has those above in "blocked"
-            //'epoch' => EpochResource::collection($this->epochs),
+            'grouped_id'            => '',//TODO group by id of "parent" (like projet has those above in "blocked"
+//            'epoch' => EpochResource::collection($this->epochType),
         ];
     }
 }

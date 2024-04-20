@@ -45,17 +45,22 @@ const CourseTabsStudents = ({ courseId, isLoading }) => {
     const searchStudents = (e, {searchQuery}) => {
         setSearchStudent(true);
         axios.get(`/search/students?q=${searchQuery}`).then((res) => {
+
             if (res.status === 200) {
                 setListOfStudents(res.data);
                 setSearchStudent(false);
             }
-        });
+        }).catch((err) => {
+            console.log(err);
+            setSearchStudent(false);
+
+        })
     };
 
     const addStudent = () => {
         setOpenModal(false);
         axios.patch(`/courses/${courseId}/student`, {
-            user_email: studentToAdd.value
+            user_email: studentToAdd
         }).then((res) => {
             if (res.status === 200) {
                 loadCourseStudents();
@@ -120,10 +125,15 @@ const CourseTabsStudents = ({ courseId, isLoading }) => {
                     <Modal.Content>
                         <Form>
                             <Form.Dropdown placeholder={ t("Procurar pelo email do estudante") } label={ t("Estudante a adicionar") } search selection
-                                loading={searchStudent} options={listOfStudents} onSearchChange={_.debounce(searchStudents, 400)}
-                                onChange={(e, {value}) => setStudentToAdd(
-                                    listOfStudents.find((x) => x.value === value),
-                                )}
+                                loading={searchStudent}
+                                // options={listOfStudents}
+                                options={listOfStudents.map((student) => ({
+                                    key: student.id,
+                                    text: student.name,
+                                    value: student.email,
+                                }))}
+                                onSearchChange={_.debounce(searchStudents, 400)}
+                                onChange={(e, { value }) => setStudentToAdd(value)}
                             />
                         </Form>
                     </Modal.Content>

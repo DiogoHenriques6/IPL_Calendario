@@ -31,6 +31,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Collection;
 
 class CourseUnitController extends Controller
 {
@@ -256,6 +258,7 @@ class CourseUnitController extends Controller
 
     public function addTeacher(Request $request, CourseUnit $courseUnit)
     {
+        //TODO CHAHGE LDAP TO WEBSERVICE
         $teacherUser = User::where('email', $request->teacher)->first();
 
         if (is_null($teacherUser)) {
@@ -328,28 +331,37 @@ class CourseUnitController extends Controller
     /**
      * List methods associated to the unit
      */
+    //todo -DONE!? - check if this is the correct way to get the methods for the course unit
     public function methodsForCourseUnit(CourseUnit $courseUnit, Request $request)
     {
         $epochTypesList = EpochType::all();
-        $list = EpochMethodResource::collection($epochTypesList);
+        // Create a new collection from the array of epoch types
+        $newCollection = collect($epochTypesList);
+
         $yearId = $request->cookie('academic_year');
         $courseUnitId = $courseUnit->id;
-        $newCollection = collect($list);
 
-        $finalList = $newCollection->map(function ($item, $key) use ($yearId, $courseUnitId){
+        $newCollection->transform(function ($item, $key) use ($request, $yearId, $courseUnitId) {
             $methods = Method::ofAcademicYear($yearId)
-                            ->join('epoch_type_method', 'epoch_type_method.method_id', '=', 'methods.id')
-                                ->where('epoch_type_method.epoch_type_id', $item['id'])
-                            ->join('course_unit_method', 'course_unit_method.method_id', '=', 'methods.id')
-                                ->where('course_unit_method.course_unit_id', $courseUnitId)
-                            ->get();
-            //byCourseUnit($courseUnit->id)->byEpochType($epochType->id)->ofAcademicYear($yearId)->get();
+                ->join('epoch_type_method', 'epoch_type_method.method_id', '=', 'methods.id')
+                ->where('epoch_type_method.epoch_type_id', $item['id'])
+                ->join('course_unit_method', 'course_unit_method.method_id', '=', 'methods.id')
+                ->where('course_unit_method.course_unit_id', $courseUnitId)
+                ->get();
 
-            $item['methods'] = MethodResource::collection($methods);
-            return $item;
+            // Construct the updated item
+            $name = ($request->header("lang") == "en" ? $item['name_en'] : $item['name_pt']);
+
+            $updatedItem = [
+                'id' => $item['id'],
+                'name_pt' => $item['name_pt'],
+                'name_en' => $item['name_en'],
+                'methods' => MethodResource::collection($methods),
+            ];
+
+            return $updatedItem;
         });
-
-        return $finalList->all();
+        return $newCollection->all();
     }
 
     public function epochsForCourseUnit(CourseUnit $courseUnit)

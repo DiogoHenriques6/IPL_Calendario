@@ -90,7 +90,7 @@ class AuthServiceProvider extends ServiceProvider
             'remove_interruption'               => ''
         ]);
 
-        Passport::routes();
+        // Passport::routes();
     }
 }
 

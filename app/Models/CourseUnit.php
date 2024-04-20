@@ -69,6 +69,7 @@ class CourseUnit extends Model
 
     public function teachers()
     {
+        //todo change to users to only teachers
         return $this->belongsToMany(User::class);
     }
 

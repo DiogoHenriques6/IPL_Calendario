@@ -19,7 +19,7 @@ use App\Http\Controllers\API\CourseUnitController;
 use App\Http\Controllers\API\ExamCommentController;
 use App\Http\Controllers\API\ExamController;
 use App\Http\Controllers\API\InterruptionController;
-use App\Http\Controllers\API\LdapController;
+// use App\Http\Controllers\API\LdapController;
 use App\Http\Controllers\API\MethodController;
 use App\Http\Controllers\API\PermissionController;
 use App\Http\Controllers\API\UserController;
@@ -180,7 +180,7 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/academic-year/{id}',                'destroy'   );
         Route::post('/academic-year/{id}/active',           'active'    );
         Route::post('/academic-year/{id}/selected',         'selected'  );
-        Route::get('/academic-year/{id}/sync/{semester}',   'sync')->where(['id' => '[0-9]+', 'semester' => '[1-2]']);;
+        Route::get('/academic-year/{id}/sync/{semester}',   'sync')->where(['id' => '[0-9]+', 'semester' => '[1-2]']);
     });
 
     Route::controller(SchoolController::class)->group(function () {
@@ -292,8 +292,10 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/course-unit-groups/{courseUnitGroup}','destroy');
     });
 
-    Route::get('/search/users',         [LdapController::class, 'searchUsers']      );
-    Route::get('/search/students',      [LdapController::class, 'searchStudents']   );
+//     Route::get('/search/users',         [LdapController::class, 'searchUsers']      );
+//     Route::get('/search/students',      [LdapController::class, 'searchStudents']   );
+    Route::get('/search/users',         [UserController::class, 'searchUsers']      );
+    Route::get('/search/students',      [UserController::class, 'searchStudents']   );
 });
 
 // TODO
