@@ -85,6 +85,7 @@ class LoginController extends Controller
                     $student_units = json_decode($student_data);
                     $enrroled_courses = [];
                     $enrroled_UCS = [];
+                    //TODO check if first or create is better, because we need to redoo this every year
                     $user= User::create([
                         "email" => $request->email . '@my.ipleiria.pt',
                         "name" => $request->email,
@@ -153,30 +154,6 @@ class LoginController extends Controller
         ], Response::HTTP_OK)->withCookie('academic_year', $activeYear);
     }
 
-    public function getInscriçõesAluno(){
-        $academicYear= AcademicYear::where('selected', true)->first();
-        $response = Http::get('https://www.dei.estg.ipleiria.pt/servicos/projetos/get_inscricoes_aluno.php?anoletivo='. $academicYear .'&num_aluno='.$request->email.'&formato=json');
-        $response = json_decode($response->body());
-        $user = User::create([
-            "email" => $request->email . '@my.ipleiria.pt',
-            "name" => $response->nome,
-            "password" => "",
-        ]);
-        $user->groups()->attach(Group::where('name', InitialGroupsLdap::STUDENT)->first());
-    }
-
-    public function getDocentes(){
-
-        $academicYear= AcademicYear::where('selected', true)->first();
-        $response = Http::get('https://www.dei.estg.ipleiria.pt/servicos/projetos/get_inscricoes_aluno.php?anoletivo='. $academicYear .'&login='.$request->email.'&formato=json');
-        $response = json_decode($response->body());
-        $user = User::create([
-            "email" => $request->email . '@my.ipleiria.pt',
-            "name" => $response->nome,
-            "password" => "",
-        ]);
-        $user->groups()->attach(Group::where('name', InitialGroupsLdap::TEACHER)->first());
-    }
 
     public function logout()
     {

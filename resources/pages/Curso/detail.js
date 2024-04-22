@@ -26,6 +26,8 @@ const Detail = () => {
     const [coordinatorUser, setCoordinatorUser] = useState(undefined);
     const [searchCoordinator, setSearchCoordinator] = useState(false);
     const [hasCoordinator, setHasCoordinator] = useState(false);
+    const [dropdownOptions, setDropdownOptions] = useState([]);
+
 
 
     const hasPermissionToEdit = useComponentIfAuthorized([SCOPES.EDIT_COURSES]);
@@ -33,15 +35,33 @@ const Detail = () => {
         [SCOPES.DEFINE_COURSE_COORDINATOR],
     );
 
+
+    useEffect(() => {
+        const options = teachers.map((teacher) => ({
+            key: teacher.email,
+            text: teacher.name,
+            value: teacher.email,
+        }));
+        console.log(teachers);
+        setDropdownOptions(options);
+    }, [teachers]);
+
     const loadCourseDetail = () => {
         setLoading(true);
         axios.get(`/courses/${paramsId}`).then((res) => {
             setLoading(false);
             const {coordinator} = res.data.data;
+            //todo get coordinator into separate variable and work it out in the form
             if(coordinator) {
                 setHasCoordinator(true);
+                setCoordinatorUser(
+                    {
+                        email: coordinator.email,
+                        name: coordinator.name
+                    },
+                );
                 setTeachers((current) => {
-                    current.push({key: coordinator?.id, value: coordinator?.id, text: coordinator?.name});
+                    current.push(coordinator);
                     return current;
                 });
             }
@@ -50,10 +70,11 @@ const Detail = () => {
         });
     };
 
-    const handleSearchCoordinator = (e, {searchQuery}) => {
+    const handleSearchCoordinator = async (e, {searchQuery}) => {
         setSearchCoordinator(true);
         axios.get(`/search/users?q=${searchQuery}`).then((res) => {
             setSearchCoordinator(false);
+            console.log(res.data);
             if (res.status === 200) {
                 setTeachers(res.data);
             }
@@ -150,34 +171,34 @@ const Detail = () => {
                             <Form.Group widths="4">
                                 <Field name="code">
                                     {({input: codeInput}) => (
-                                        <Form.Input className='input-readonly' disabled={true || loading || !hasPermissionToEdit} label={ t("Código") } {...codeInput}/>
+                                        <Form.Input className='input-readonly' disabled={loading || !hasPermissionToEdit} label={ t("Código") } {...codeInput}/>
                                     )}
                                 </Field>
                                 <Field name="initials">
                                     {({input: initialsInput}) => (
-                                        <Form.Input className='input-readonly' disabled={true || loading || !hasPermissionToEdit} label={ t("Sigla") } {...initialsInput}/>
+                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit} label={ t("Sigla") } {...initialsInput}/>
                                     )}
                                 </Field>
                                 <Field name="degree_id">
                                     {({input: degreeIdInput}) => (
-                                        <Degree className='input-readonly' disabled={true || loading || !hasPermissionToEdit} widthSize={6} eventHandler={(value) => degreeIdInput.onChange(value)} value={degreeIdInput.value} isSearch={false}/>
+                                        <Degree className='input-readonly' disabled={ loading || !hasPermissionToEdit} widthSize={6} eventHandler={(value) => degreeIdInput.onChange(value)} value={degreeIdInput.value} isSearch={false}/>
                                     )}
                                 </Field>
                                 <Field name="duration">
                                     {({input: durationInput}) => (
-                                        <Form.Input className='input-readonly' disabled={true || loading || !hasPermissionToEdit} label={ t("Número de anos") } {...durationInput}/>
+                                        <Form.Input className='input-readonly' disabled={loading || !hasPermissionToEdit} label={ t("Número de anos") } {...durationInput}/>
                                     )}
                                 </Field>
                             </Form.Group>
                             <Form.Group widths="3">
                                 <Field name="name_pt">
                                     {({input: namePtInput}) => (
-                                        <Form.Input className='input-readonly' disabled={true || loading || !hasPermissionToEdit} label={ t("Nome PT") } {...namePtInput}/>
+                                        <Form.Input className='input-readonly' disabled={loading || !hasPermissionToEdit} label={ t("Nome PT") } {...namePtInput}/>
                                     )}
                                 </Field>
                                 <Field name="name_en">
                                     {({input: nameEnInput}) => (
-                                        <Form.Input className='input-readonly' disabled={true || loading || !hasPermissionToEdit} label={ t("Nome EN") } {...nameEnInput}/>
+                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit} label={ t("Nome EN") } {...nameEnInput}/>
                                     )}
                                 </Field>
                             </Form.Group>
@@ -190,7 +211,12 @@ const Detail = () => {
                                     <Field name="coordinator">
                                         {({input: coordinatorInput}) => (
                                             <Form.Dropdown error={ !hasCoordinator } disabled={loading || !hasPermissionToDefineCoordinator} className={( loading || !hasPermissionToDefineCoordinator ? 'input-readonly' : '')}
-                                                           label={ t("Coordenador do Curso") } selectOnBlur={false} options={teachers} selection search loading={searchCoordinator} placeholder={ t("Pesquise o coordenador de curso...") }
+                                                           label={ t("Coordenador do Curso") } selectOnBlur={false}
+                                                           // options={teachers}
+                                                //need to get default value to be the current coordinator until its changed
+                                                //            defaultValue={coordinatorUser?.name}
+                                                           options={dropdownOptions}
+                                                           selection search loading={searchCoordinator} placeholder={ t("Pesquise o coordenador de curso...") }
                                                            {...coordinatorInput} onSearchChange={_.debounce(handleSearchCoordinator, 400)}
                                                            onChange={(e, {value, options}) => {
                                                                setCoordinatorUser(
@@ -201,6 +227,8 @@ const Detail = () => {
                                                                );
                                                                coordinatorInput.onChange(value);
                                                            }}
+                                                           value={coordinatorUser?.email}
+                                                           text={coordinatorUser?.name}
                                             />
                                         )}
                                     </Field>

@@ -632,4 +632,46 @@ class ExternalImports
         Log::channel('courses_sync')->info('End "importSingleUCFromWebService" sync for Year code (' . $academicYearCode . '), UC Code (' . $coduc . ')');
         return true;
     }
+
+//    public static function importDocenteFromWebService(string $email)
+//    {
+//        set_time_limit(0);
+//        ini_set('max_execution_time', 0);
+//
+//        $isServer = env('APP_SERVER', false);
+//        Log::channel('docentes_sync')->info('Start "importDocenteFromWebService" sync for email (' . $email . ')');
+//        try{
+////            $request = Http::get('')
+//            // connect to LDAP server
+//            /*$connection = new Connection([
+//                'hosts'    => [env('LDAP_HOST')],
+//                'username' => env('LDAP_USERNAME'),
+//                'password' => env('LDAP_PASSWORD'),
+//                'version' => 3,
+//            ]);
+//            $LdapConnection = $connection->query()->setDn('OU=Funcionarios,dc=ipleiria,dc=pt');*/
+//
+//            // validate if user already exists on our USERS table
+//            $foundUser = User::where("email", $email)->first();
+//            if (is_null($foundUser)) {
+//                // if the user is not created, it will create a new record for the user.
+//                if($isServer){
+////                    $ldapUser = (clone $LdapConnection)->whereContains('mail', $email)->first('cn');
+////                    $name = $ldapUser['cn'][0];
+//                } else {
+//                    $name = explode("@", $email)[0];
+//                }
+//                $foundUser = User::create([
+//                    "email" => $email,
+//                    "name" => $name,
+//                    "password" => "",
+//                ]);
+//            }
+//            // https://laravel.com/docs/9.x/eloquent-relationships#syncing-associations
+//            $foundUser->groups()->syncWithoutDetaching(Group::isTeacher()->get());
+//        } catch(\Exception $e){
+//            Log::channel('docentes_sync')->error('There was an error syncing. -------- ' . $e->getMessage());
+//        }
+//        Log::channel('docentes_sync')->info('End "importDocenteFromWebService" sync for email (' . $email . ')');
+//    }
 }

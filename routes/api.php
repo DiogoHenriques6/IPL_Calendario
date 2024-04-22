@@ -294,7 +294,7 @@ Route::middleware('auth:api')->group(function () {
 
 //     Route::get('/search/users',         [LdapController::class, 'searchUsers']      );
 //     Route::get('/search/students',      [LdapController::class, 'searchStudents']   );
-    Route::get('/search/users',         [UserController::class, 'searchUsers']      );
+    Route::get('/search/users',         [UserController::class, 'searchStaff']      );
     Route::get('/search/students',      [UserController::class, 'searchStudents']   );
 });
 
