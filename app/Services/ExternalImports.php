@@ -101,14 +101,40 @@ class ExternalImports
             // get list of schools that have "base_link" data
             $schools = School::whereNotNull('base_link')->where('base_link', '<>', '')->get();
 
+            //IMPORT all docentes
+            //TODO get_docentes_dep todos os docentes do campus
+            $apiEndpoint = 'https://www.dei.estg.ipleiria.pt/servicos/projetos/get_docentes_dep.php?formato=json';
+            Log::channel('sync_test')->info($apiEndpoint);
 
+            $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
+            if($response->failed()){
+                Log::channel('docentes_sync.log')->info('FAILED - "importDocentesFromWebService" sync for Year code (' . $academicYearCode . ') and semester (' . $semester . ')');
+            }
+            else{
+                $teachers_data = $response->body();
+                $teachers = json_decode($teachers_data);
 
+                foreach ($teachers as $teacher) {
+                    if (!empty($teacher)) {
+//                        LOG::channel("sync_test")->info("User " .json_encode($teacher));
+
+                        // if the user is not created, it will create a new record for the user.
+                        $foundUser = User::firstOrCreate([
+                            "email" => $teacher->email,
+                            "name" => $teacher->nome,
+                            "password" => "",
+                        ]);
+                        $foundUser->groups()->syncWithoutDetaching(Group::isTeacher()->get());
+                    }
+                }
+            }
+            Log::channel('sync_test')->info("Quantity of teachers: " . sizeof($teachers));
             // Loop for each saved school
             foreach ($schools as $school) {
 
                 // From URL to get webpage contents
                 $apiEndpoint = $school->base_link . 'get_aulas_curso_tipo.php?' . $school->query_param_semester . '=S' . $semester . '&' . $school->query_param_academic_year . '=' . $academicYearCode . '&formato=json';
-                //Log::channel('sync_test')->info($apiEndpoint);
+                Log::channel('sync_test')->info($apiEndpoint);
 
                 $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
                 if($response->failed()){
@@ -117,7 +143,7 @@ class ExternalImports
                 }
                 $file_data = $response->body();
                 $courseUnits = json_decode($file_data);
-
+//                Log::channel('sync_test')->info($file_data);
 
                 // check if the file has any content (prevent going forward
                 if( empty($courseUnits)) {
@@ -147,6 +173,7 @@ class ExternalImports
 
                 $teachersDictionary = [];
 
+
                 //TODO codigo de UC e Curso correspondente ao webservice dos docentes
                 foreach ($teachersByCourseUnit as $item) {
                     $identifier = $item->codigo_curso . '_' . $item->codigoUC;
@@ -162,7 +189,7 @@ class ExternalImports
                         if ($courseUnit->CD_INSTITUIC != $school->code){
                             continue;
                         }
-
+                        Log::channel('sync_test')->info('Course Unit - ' . json_encode($courseUnit));
                         $identifier = $courseUnit->{$school->index_course_code} . '_' . $courseUnit->{$school->index_course_unit_code};
                         if (isset($teachersDictionary[$identifier])) {
                             $teachersByUC = $teachersDictionary[$identifier];
@@ -170,28 +197,6 @@ class ExternalImports
                             Log::channel('sync_test')->info('FAILED ');
                         }
 
-                        //Check if its the same course of the last UC or a new one
-//                        if($previousCourse == null || $previousCourse != $courseUnit->{$school->index_course_code}){
-//                            //
-//                            //TODO CHANGE CAMPUS VALUE to dinamic for each school accordingly
-//                            $apiEndpoint = $school->base_link . 'get_inscricoes_alunos.php??cod_curso=' . $courseUnit->{$school->index_course_code} . '&' . $school->query_param_academic_year . '=' . $academicYearCode . '&formato=json';
-//                            Log::channel('sync_test')->info($apiEndpoint);
-//
-//                            $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
-//                            if($response->failed()){
-//                                Log::channel('courses_sync')->info('FAILED - "importDocentesFromWebService" sync for Year code (' . $academicYearCode . ') and semester (' . $semester . ')');
-//                                continue;
-//                            }
-//                            $teachers_data = $response->body();
-//                            $teachersByCourseUnit = json_decode($teachers_data);
-//
-//                            if( empty($courseUnits)) {
-//                                Log::channel('courses_sync')->info('EMPTY Teachers - "importTeachersFromWebService" sync for Year code (' . $academicYearCode . ') and semester (' . $semester . ')');
-//                                continue;
-//                            }
-//                            Log::channel('courses_sync')->info("Total UCs: ". sizeof($teachersByCourseUnit));
-//                            $previousCourse = $courseUnit->cod_curso;
-//                        }
 
                         $course = Course::firstOrCreate(
                             [
@@ -235,7 +240,7 @@ class ExternalImports
                         } else {
                             $coursesCount["created"]++;
                         }
-//                        Log::channel('sync_test')->info('Cursos (' . $course );
+//                        Log::channel('sync_test')->info('Cursos (' . $course . ')' );
 
                         // https://laravel.com/docs/9.x/eloquent-relationships#syncing-associations
                         //$course->academicYears()->syncWithoutDetaching($academicYearId); // -> Old logic, it had a pivot table [academic_year_course]
@@ -328,41 +333,43 @@ class ExternalImports
 
 
                         // Retrieve CourseUnit by code or create it if it doesn't exist...
-
+//                        LOG::channel("sync_test")->info("here1");
                         if(!empty($teachersByUC->{$school->index_course_unit_teachers})) {
 
                             $teachers = explode(",", $teachersByUC->{$school->index_course_unit_teachers});
-
+                            Log::channel('sync_test')->info('Teacher -' . $teachersByUC->{$school->index_course_unit_teachers});
                             $teachersForCourseUnit = [];
                             foreach ($teachers as $teacher) {
-                                LOG::channel("sync_test")->info($teacher);
-                                if (!empty($teacher)) {
-//                                    preg_match('#\((.*?)\)#', $teacher, $match);
-//                                    $username = trim($match[1]);
-                                    LOG::channel("sync_test")->info("Username " .$teacher);
-//                                    if (!empty($username)) {
-                                        //create email from username
-                                        $userEmail = "{$teacher}@ipleiria.pt";
-                                        // validate if user already exists on our USERS table
-                                        $foundUser = User::where("email", $userEmail)->first();
-                                        if (is_null($foundUser)) {
-                                            // if the user is not created, it will create a new record for the user.
 
-//                                                preg_match_all('#(.*?)\(#', $teacher, $matches, PREG_SET_ORDER, 0);
-//                                                $name = (isset($matches[0]) ? ($matches[0][1] ?? "") : "");
+                                if (!empty($teacher)) {
+
+                                        // validate if user already exists on our USERS table
+                                        $foundUser =User::where('name', 'like', "%$teacher%")->orWhere('email', 'like', "%$teacher%")->first();
+                                        if (is_null($foundUser)) {
+                                            $apiEndpoint = 'https://www.dei.estg.ipleiria.pt/servicos/projetos/get_docentes_dep.php?login=' . $teacher . 'formato=json';
+                                            $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
+                                            if ($response->failed()) {
+                                                Log::channel('docentes_sync.log')->info('FAILED - "importDocentesFromWebService" sync for Year code (' . $academicYearCode );
+                                                continue;
+                                            }
+                                            $teacher_data = $response->body();
+                                            LOG::channel("sync_test")->info("Username " .$teacher_data);
+                                            $newTeacher = json_decode($teacher_data);
+                                            if(empty($newTeacher)){
+                                                continue;
+                                            }
+                                            LOG::channel("sync_test")->info("UserArray " . $newTeacher->email);
 
                                             $foundUser = User::create([
-                                                "email" => $userEmail,
-                                                "name" => $teacher,
+                                                "email" => $newTeacher->email,
+                                                "name" => $newTeacher->nome,
                                                 "password" => "",
                                             ]);
                                         }
-                                        // https://laravel.com/docs/9.x/eloquent-relationships#syncing-associations
                                         $foundUser->groups()->syncWithoutDetaching(Group::isTeacher()->get());
                                         $teachersForCourseUnit[] = $foundUser->id;
                                 }
                             }
-                            // https://laravel.com/docs/9.x/eloquent-relationships#syncing-associations
                             $newestCourseUnit->teachers()->sync($teachersForCourseUnit, true);
                         }
                     }
@@ -451,7 +458,7 @@ class ExternalImports
 
             // From URL to get webpage contents
             $apiEndpoint = $school->base_link . '?' . $school->query_param_academic_year . '=' . $academicYearCode . '&coduc=' . $coduc;// . $school->query_param_semester . '=S' . $semester;
-
+            LOG::channel("sync_test")->info($apiEndpoint);
             $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
             if($response->failed()){
                 Log::channel('courses_sync')->info('FAILED - "importSingleUCFromWebService" sync for Year code (' . $academicYearCode . '), UC Code (' . $coduc . ')');
@@ -639,7 +646,7 @@ class ExternalImports
 //        ini_set('max_execution_time', 0);
 //
 //        $isServer = env('APP_SERVER', false);
-//        Log::channel('docentes_sync')->info('Start "importDocenteFromWebService" sync for email (' . $email . ')');
+//        Log::channel('docentes_sync.log')->info('Start "importDocenteFromWebService" sync for email (' . $email . ')');
 //        try{
 ////            $request = Http::get('')
 //            // connect to LDAP server
@@ -670,8 +677,34 @@ class ExternalImports
 //            // https://laravel.com/docs/9.x/eloquent-relationships#syncing-associations
 //            $foundUser->groups()->syncWithoutDetaching(Group::isTeacher()->get());
 //        } catch(\Exception $e){
-//            Log::channel('docentes_sync')->error('There was an error syncing. -------- ' . $e->getMessage());
+//            Log::channel('docentes_sync.log')->error('There was an error syncing. -------- ' . $e->getMessage());
 //        }
-//        Log::channel('docentes_sync')->info('End "importDocenteFromWebService" sync for email (' . $email . ')');
+//        Log::channel('docentes_sync.log')->info('End "importDocenteFromWebService" sync for email (' . $email . ')');
 //    }
+    public static function importStudentFromWebService(mixed $email)
+    {
+        set_time_limit(0);
+        ini_set('max_execution_time', 0);
+
+        $isServer = env('APP_SERVER', false);
+        Log::channel('students_sync')->info('Start "importStudentFromWebService" sync for email (' . $email . ')');
+        try {
+
+            // validate if user already exists on our USERS table
+            $user = User::where("email", $email)->first();
+            if (is_null($user)) {
+                // if the user is not created, it will create a new record for the user.
+                $user = User::create([
+                    "email" => $email,
+                    "name" => $email,
+                    "password" => "",
+                ]);
+
+            }
+        }
+        catch(\Exception $e){
+            Log::channel('students_sync')->error('There was an error syncing. -------- ' . $e->getMessage());
+        }
+        Log::channel('students_sync')->info('End "importStudentFromWebService" sync for email (' . $email . ')');
+    }
 }

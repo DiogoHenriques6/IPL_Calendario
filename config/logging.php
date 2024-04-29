@@ -74,9 +74,9 @@ return [
             'path' => storage_path('logs/courses_sync.log'),
             'level' => env('LOG_LEVEL', 'debug'),
         ],
-        'docentes_sync' => [
+        'docentes_sync.log' => [
             'driver' => 'single',
-            'path' => storage_path('logs/docentes_sync.log'),
+            'path' => storage_path('logs/docentes_sync.log.log'),
             'level' => env('LOG_LEVEL', 'debug'),
         ],
         'users_login' => [
