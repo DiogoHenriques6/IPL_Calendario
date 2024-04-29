@@ -183,7 +183,7 @@ const CourseUnitsList = () => {
                                 <CurricularYears widthSize={2} eventHandler={filterByCurricularYear}/>
 
                                 <Form.Field width={4}>
-                                    <label>{ t("UCs visíveis")}</label>
+                                    <label>{t("UCs visíveis")}</label>
                                     <Button.Group fluid>
                                         <Button positive={!courseUnitAllFilter} onClick={(e) => filterByAllCourseUnits(false)}>{ t("Apenas as minhas") }</Button>
                                         <Button positive={courseUnitAllFilter} onClick={(e) => filterByAllCourseUnits(true)}>{ t("Todas") }</Button>

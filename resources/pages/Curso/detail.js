@@ -12,6 +12,7 @@ import {successConfig, errorConfig} from '../../utils/toastConfig';
 import CourseTabs from "./Tabs";
 import Degree from "../../components/Filters/Degree";
 import {useTranslation} from "react-i18next";
+import Teachers from "../../components/Filters/Teachers";
 
 const Detail = () => {
     const { t } = useTranslation();
@@ -30,6 +31,7 @@ const Detail = () => {
 
 
 
+
     const hasPermissionToEdit = useComponentIfAuthorized([SCOPES.EDIT_COURSES]);
     const hasPermissionToDefineCoordinator = useComponentIfAuthorized(
         [SCOPES.DEFINE_COURSE_COORDINATOR],
@@ -42,9 +44,24 @@ const Detail = () => {
             text: teacher.name,
             value: teacher.email,
         }));
-        console.log(teachers);
+        console.log("Teachers",options);
         setDropdownOptions(options);
     }, [teachers]);
+
+    useEffect(() => {
+        console.log("Second Try",dropdownOptions);
+    }, [dropdownOptions]);
+
+    const handleSearchCoordinator = async (e, {searchQuery}) => {
+        setSearchCoordinator(true);
+        axios.get(`/search/users?q=${searchQuery}`).then((res) => {
+            setSearchCoordinator(false);
+            // console.log(res.data);
+            if (res.status === 200) {
+                setTeachers(res.data);
+            }
+        });
+    };
 
     const loadCourseDetail = () => {
         setLoading(true);
@@ -67,17 +84,6 @@ const Detail = () => {
             }
             setCourseDetail(res.data.data);
             document.title = "Detalhe de Curso - " + "Calendários de Avaliação - IPLeiria";
-        });
-    };
-
-    const handleSearchCoordinator = async (e, {searchQuery}) => {
-        setSearchCoordinator(true);
-        axios.get(`/search/users?q=${searchQuery}`).then((res) => {
-            setSearchCoordinator(false);
-            console.log(res.data);
-            if (res.status === 200) {
-                setTeachers(res.data);
-            }
         });
     };
 
@@ -105,12 +111,13 @@ const Detail = () => {
         }
     }, [paramsId]);
 
-    const onSaveCourse = ({code, name, initials, level, duration}) => {
+    const onSaveCourse = ({code, name_pt,name_en, initials, degree_id, duration}) => {
         axios.patch(`/courses/${paramsId}`, {
             code,
-            name,
+            name_pt,
+            name_en,
             initials,
-            degree: level,
+            degree: degree_id,
             num_years: duration
         }).then((res) => {
             if (res.status === 200) {
@@ -171,34 +178,34 @@ const Detail = () => {
                             <Form.Group widths="4">
                                 <Field name="code">
                                     {({input: codeInput}) => (
-                                        <Form.Input className='input-readonly' disabled={loading || !hasPermissionToEdit} label={ t("Código") } {...codeInput}/>
+                                        <Form.Input className='input-readonly' disabled={true|| loading || !hasPermissionToEdit} label={ t("Código") } {...codeInput}/>
                                     )}
                                 </Field>
                                 <Field name="initials">
                                     {({input: initialsInput}) => (
-                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit} label={ t("Sigla") } {...initialsInput}/>
+                                        <Form.Input className='input-readonly' disabled={true|| loading || !hasPermissionToEdit} label={ t("Sigla") } {...initialsInput}/>
                                     )}
                                 </Field>
                                 <Field name="degree_id">
                                     {({input: degreeIdInput}) => (
-                                        <Degree className='input-readonly' disabled={ loading || !hasPermissionToEdit} widthSize={6} eventHandler={(value) => degreeIdInput.onChange(value)} value={degreeIdInput.value} isSearch={false}/>
+                                        <Degree className='input-readonly' disabled={ true||loading || !hasPermissionToEdit} widthSize={6} eventHandler={(value) => degreeIdInput.onChange(value)} value={degreeIdInput.value} isSearch={false}/>
                                     )}
                                 </Field>
                                 <Field name="duration">
                                     {({input: durationInput}) => (
-                                        <Form.Input className='input-readonly' disabled={loading || !hasPermissionToEdit} label={ t("Número de anos") } {...durationInput}/>
+                                        <Form.Input className='input-readonly' disabled={true||loading || !hasPermissionToEdit} label={ t("Número de anos") } {...durationInput}/>
                                     )}
                                 </Field>
                             </Form.Group>
                             <Form.Group widths="3">
                                 <Field name="name_pt">
                                     {({input: namePtInput}) => (
-                                        <Form.Input className='input-readonly' disabled={loading || !hasPermissionToEdit} label={ t("Nome PT") } {...namePtInput}/>
+                                        <Form.Input className='input-readonly' disabled={true||loading || !hasPermissionToEdit} label={ t("Nome PT") } {...namePtInput}/>
                                     )}
                                 </Field>
                                 <Field name="name_en">
                                     {({input: nameEnInput}) => (
-                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit} label={ t("Nome EN") } {...nameEnInput}/>
+                                        <Form.Input className='input-readonly' disabled={ true||loading || !hasPermissionToEdit} label={ t("Nome EN") } {...nameEnInput}/>
                                     )}
                                 </Field>
                             </Form.Group>
@@ -212,9 +219,6 @@ const Detail = () => {
                                         {({input: coordinatorInput}) => (
                                             <Form.Dropdown error={ !hasCoordinator } disabled={loading || !hasPermissionToDefineCoordinator} className={( loading || !hasPermissionToDefineCoordinator ? 'input-readonly' : '')}
                                                            label={ t("Coordenador do Curso") } selectOnBlur={false}
-                                                           // options={teachers}
-                                                //need to get default value to be the current coordinator until its changed
-                                                //            defaultValue={coordinatorUser?.name}
                                                            options={dropdownOptions}
                                                            selection search loading={searchCoordinator} placeholder={ t("Pesquise o coordenador de curso...") }
                                                            {...coordinatorInput} onSearchChange={_.debounce(handleSearchCoordinator, 400)}
@@ -230,6 +234,7 @@ const Detail = () => {
                                                            value={coordinatorUser?.email}
                                                            text={coordinatorUser?.name}
                                             />
+                                            // <Teachers isSearch={false} eventHandler={(value) => handleSearchTeachers(value)} isDisabled={loading}/>
                                         )}
                                     </Field>
                                     <Form.Button disabled={loading || !hasPermissionToDefineCoordinator} label={ t("Guardar") } onClick={setCoordinator} color="green" icon labelPosition="left">

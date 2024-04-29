@@ -20,7 +20,9 @@ const Step1 = ({setActiveSemester, activeSemester}) => {
 
     useEffect(() => {
         const currYear = localStorage.getItem('academicYear'); // 2021-2022
+        console.log("Year",currYear);
         if(currYear && currYear != 0) {
+            console.log("HERE");
             setMinDate(new Date(currYear.split("-")[0], 8, 1)); // 2021-09-01
             setMaxDate(new Date(currYear.split("-")[1], 11, 31)); // 2021-09-01
         }
@@ -39,9 +41,11 @@ const Step1 = ({setActiveSemester, activeSemester}) => {
                     if (code === "normal_season" && seasonsDates[semester].periodic_season) {
                         if (field === "end_date" && seasonsDates[semester][code]) {
                             startDate = seasonsDates[semester][code].start_date;
+                            console.log(startDate);
                         } else {
                             //startDate = seasonsDates[semester].periodic_season.end_date;
                             startDate = minDate;
+                            console.log(startDate);
                         }
                         if (startDate) {
                             startDate = moment(startDate, "DD-MM-YYYY");
@@ -143,7 +147,7 @@ const Step1 = ({setActiveSemester, activeSemester}) => {
                                                 <Header as={"h4"}>{epoch.name}</Header>
                                             </Card.Content>
                                             <Card.Content>
-                                                    {/* <DatesRangeInput name="datesRange" placeholder={ t("Inserir datas") } iconPosition="left" closable
+                                                     {/*<DatesRangeInput name="datesRange" placeholder={ t("Inserir datas") } iconPosition="left" closable
                                                                      value={(startDateInput.value && endDateInput.value ? startDateInput.value + ` ${t("até")} ` + endDateInput.value : "")}
                                                                      onChange={(event, {value}) => {
                                                                          let splitDates = value.split(" - ");
@@ -153,7 +157,7 @@ const Step1 = ({setActiveSemester, activeSemester}) => {
                                                                          }
                                                                      }}
                                                                      minDate={ getMinDate(semesterList[activeSemester].code, epoch?.code) }
-                                                                     maxDate={ getMaxDate(semesterList[activeSemester].code, epoch?.code) } /> */}
+                                                                     maxDate={ getMaxDate(semesterList[activeSemester].code, epoch?.code) } />*/}
                                                 <Form.Field disabled={getInputDateDisabled(semesterList[activeSemester].code, epoch?.code)}>
                                                     <DateInput name="datesStart" iconPosition="left" label={ t("Data de Ínicio") } placeholder={ t("Data de Ínicio") }
                                                                value={startDateInput.value} {...startDateInput} closable

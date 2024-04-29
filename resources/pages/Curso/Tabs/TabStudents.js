@@ -36,16 +36,17 @@ const CourseTabsStudents = ({ courseId, isLoading }) => {
         axios.delete(`/courses/${courseId}/student/${studentId}`).then((res) => {
             if (res.status === 200) {
                 toast(t('Estudante removido com sucesso do curso!'), successConfig);
+                setStudents(students.filter(student => student.id !== studentId));
             } else {
                 toast(t('Ocorreu um problema ao remover o estudante do curso!'), errorConfig);
             }
         });
     };
 
+
     const searchStudents = (e, {searchQuery}) => {
         setSearchStudent(true);
         axios.get(`/search/students?q=${searchQuery}`).then((res) => {
-
             if (res.status === 200) {
                 setListOfStudents(res.data);
                 setSearchStudent(false);
@@ -53,7 +54,6 @@ const CourseTabsStudents = ({ courseId, isLoading }) => {
         }).catch((err) => {
             console.log(err);
             setSearchStudent(false);
-
         })
     };
 

@@ -15,9 +15,14 @@ const FilterOptionTeacher = ({ widthSize, eventHandler, value, isSearch = true, 
         setTeachersOptions([]);
         axios.get('/search/users' + (search ? "?q=" + search : "")).then((response) => {
             if (response.status >= 200 && response.status < 300) {
+                const options = response.data.map((teacher) => ({
+                    key: teacher.email,
+                    text: teacher.name,
+                    value: teacher.email,
+                }));
                 console.log(teachersOptions);
-                response.data.unshift({value: '', text: t((isSearch ? "Todos os Professores" : "Professores"))});
-                setTeachersOptions(response.data);
+                // response.data.unshift({value: '', text: t((isSearch ? "Todos os Professores" : "Professores"))});
+                setTeachersOptions(options);
                 setLoading(false);
             }
         });

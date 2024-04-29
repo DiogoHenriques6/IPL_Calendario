@@ -34,7 +34,7 @@ const FilterOptionSemester = ({withSpecial, widthSize, eventHandler, value, disa
 
     return (
         <Form.Dropdown className={className} disabled={disabled} selectOnBlur={false} width={widthSize} selection search={isSearch} value={semester}
-                       options={semestersOptions} label={t("Semestre")} placeholder={ t((isSearch ? "Todas os Semestres" : "Semestre")) }
+                       options={semestersOptions} label={t("Semestre")} placeholder={ t((isSearch ? "Todos os Semestres" : "Semestre")) }
                        loading={loading} onChange={filterBySemester}/>
     );
 };

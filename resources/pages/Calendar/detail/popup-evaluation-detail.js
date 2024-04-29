@@ -233,7 +233,7 @@ const PopupEvaluationDetail = ( {isPublished, isOpen, currentPhaseId, onClose, e
                             </List>
                         </div>
                         <div className='exam-detail-content'>
-                            <ShowComponentIfAuthorized permission={[SCOPES.VIEW_COMMENTS]}>
+                            <ShowComponentIfAuthorized permission={[SCOPES.VIEW_COMMENTS, SCOPES.ADD_COMMENTS]}>
                                 <Comment.Group>
                                     <div className='exam-detail-content-header'>
                                         <div className='exam-detail-content-header-title'>
@@ -283,7 +283,7 @@ const PopupEvaluationDetail = ( {isPublished, isOpen, currentPhaseId, onClose, e
                                                     ) : ''}
                                                 </Comment.Text>
                                                 <Comment.Actions>
-                                                    { checkPermissionByPhase(SCOPES.ADD_COMMENTS) && (
+                                                    { checkPermissionByPhase(SCOPES.IGNORE_COMMENTS) && (
                                                         <>
                                                             {!comment.ignored && (
                                                                 <Comment.Action onClick={() => hideCommentHandler(comment.id)}>
