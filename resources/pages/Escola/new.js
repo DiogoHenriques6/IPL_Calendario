@@ -191,10 +191,11 @@ const New = () => {
             }
         });
     };
-
+    //TODO change names from index to params, or create new TABLE in DB for webservices managing
     const panes = [
         {
             menuItem: t('Configuração das colunas'),
+            //TODO change to tab_content to JSON description
             pane: { key: "tab_content", content: (
                 <div>
                     <Message>
@@ -226,24 +227,24 @@ const New = () => {
                             <Form.Group widths="3">
                                 <Field name="index_course_code" validate={required}>
                                     {({input: index_course_codeInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Código") } {...index_course_codeInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Código") } {...index_course_codeInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                                 <Field name="index_course_initials" validate={required}>
                                     {({input: index_course_initialsInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Iniciais") } {...index_course_initialsInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Iniciais") } {...index_course_initialsInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                             </Form.Group>
                             <Form.Group widths="3">
                                 <Field name="index_course_name_pt" validate={required}>
                                     {({input: index_course_namePtInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Nome PT") } {...index_course_namePtInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Nome PT") } {...index_course_namePtInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                                 <Field name="index_course_name_en" validate={required}>
                                     {({input: index_course_nameEnInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Nome EN") } {...index_course_nameEnInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Nome EN") } {...index_course_nameEnInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                             </Form.Group>
@@ -257,56 +258,56 @@ const New = () => {
                             <Form.Group widths="equal">
                                 <Field name="index_course_unit_code" validate={required}>
                                     {({input: index_course_unit_codeInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Código") } {...index_course_unit_codeInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Código") } {...index_course_unit_codeInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                                 <Field name="index_course_unit_curricular_year" validate={required}>
                                     {({input: index_course_unit_curricular_yearInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Ano curricular") } {...index_course_unit_curricular_yearInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Ano curricular") } {...index_course_unit_curricular_yearInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                                 <Field name="index_course_unit_branch" validate={required}>
                                     {({input: index_course_unit_branchInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Ramo") } {...index_course_unit_branchInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Ramo") } {...index_course_unit_branchInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                             </Form.Group>
                             <Form.Group widths="equal">
                                 <Field name="index_course_unit_initials" validate={required}>
                                     {({input: index_course_unit_initialsInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Iniciais") } {...index_course_unit_initialsInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Iniciais") } {...index_course_unit_initialsInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                                 <Field name="index_course_unit_name_pt" validate={required}>
                                     {({input: index_course_unit_namePtInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Nome PT") } {...index_course_unit_namePtInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Nome PT") } {...index_course_unit_namePtInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                                 <Field name="index_course_unit_name_en" validate={required}>
                                     {({input: index_course_unit_nameEnInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Nome EN") } {...index_course_unit_nameEnInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Nome EN") } {...index_course_unit_nameEnInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                             </Form.Group>
                             <Form.Group widths="equal">
                                 <Field name="index_course_unit_teachers" validate={required}>
                                     {({input: index_course_unit_teachersInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Professores do curso") } {...index_course_unit_teachersInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Professores do curso") } {...index_course_unit_teachersInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                                 <Field name="index_course_unit_registered" validate={required}>
                                     {({input: index_course_unit_registeredInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Alunos Registados") } {...index_course_unit_registeredInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Alunos Registados") } {...index_course_unit_registeredInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                                 <Field name="index_course_unit_passed" validate={required}>
                                     {({input: index_course_unit_passedInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Alunos Aprovados") } {...index_course_unit_passedInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Alunos Aprovados") } {...index_course_unit_passedInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                                 <Field name="index_course_unit_flunk" validate={required}>
                                     {({input: index_course_unit_flunkInput, meta}) => (
-                                        <Form.Input type='number' label={ t("Index coluna Alunos Reprovados") } {...index_course_unit_flunkInput} error={ meta.touched && meta.error } />
+                                        <Form.Input type='text' label={ t("Index coluna Alunos Reprovados") } {...index_course_unit_flunkInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                             </Form.Group>

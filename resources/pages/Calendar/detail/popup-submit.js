@@ -22,18 +22,19 @@ const PopupSubmit = ( {isOpen, onClose, calendarId, currentPhaseId, updatePhase}
     const [groupViewersLoading, setGroupViewersLoading] = useState(false);
     const [isEditing, setIsEditing] = useState(true);
     const [isEditingPhase, setIsEditingPhase] = useState(1);
-    const [isEvaluationPhase, setIsEvaluationPhase] = useState(4);
+    const [isEvaluationPhase, setIsEvaluationPhase] = useState(null);
 
     useEffect(() => {
-        setIsLoading(true);
-        setGroupViewersLoading(true);              
+            setIsLoading(true);
+            setGroupViewersLoading(true);
+            setCalendarPhase(isEditingPhase);
     }, []);
 
     useEffect(() => {
         if( isLoading ){
             if (!currentPhaseId) {
                 return false;
-            }            
+            }
             axios.get('/calendar-phases-full?phase-id=' + currentPhaseId).then((response) => {
                 if (response.status === 200) {
                     setCalendarPhases(
@@ -49,10 +50,9 @@ const PopupSubmit = ( {isOpen, onClose, calendarId, currentPhaseId, updatePhase}
                     setIsLoading(false);
                 }
             });
-        }  
+        }
         else {
             let currentPhase = calendarPhases.filter((phase) => phase.value === currentPhaseId)[0];
-
             if( currentPhase.text.indexOf('Em edição') === 0 || currentPhase.text.indexOf('In edit') === 0) {
                 setIsEditing(true);
                 setIsEditingPhase(currentPhase.value);
@@ -76,6 +76,24 @@ const PopupSubmit = ( {isOpen, onClose, calendarId, currentPhaseId, updatePhase}
         }
     }, [calendarPhase]);
 
+    useEffect(() => {
+        //On editing to evaluation mode change, we want to keep the first element of each type to prevent bugs
+        if(isEditing){
+            const editingPhases = calendarPhases.filter((x) => x.text.indexOf('Em edição') === 0 || x.text.indexOf('In edit') === 0);
+            if(editingPhases.length > 0) {
+                setIsEditingPhase(editingPhases[0].value);
+                setCalendarPhase(editingPhases[0].value);
+            }
+        }
+        else {
+            const evaluationPhases = calendarPhases.filter((x) => x.text.indexOf('Em avaliação') === 0 || x.text.indexOf('Under evaluation') === 0);
+            if (evaluationPhases.length > 0) {
+                setIsEvaluationPhase(evaluationPhases[0].value);
+                setCalendarPhase(evaluationPhases[0].value);
+            }
+        }
+    },[isEditing]);
+
     const publishCalendar = () => {
         //setIsPublished(true);
         //setIsTemporary(true);
@@ -98,6 +116,7 @@ const PopupSubmit = ( {isOpen, onClose, calendarId, currentPhaseId, updatePhase}
     const onSave = () => {
         const viewGroups = calendarGroups.filter((item) => item.selected).map((item) => item.id);
         // setUpdatingCalendarPhase(true);
+        console.log("Phase",calendarPhase);
         axios.patch(`/calendar/${calendarId}`, {
             'calendar_phase_id': calendarPhase,
             'temporary': isTemporary,
@@ -237,7 +256,7 @@ const PopupSubmit = ( {isOpen, onClose, calendarId, currentPhaseId, updatePhase}
                         </div>
                     </>
                 )}
-                
+
             </Modal.Content>
             <Modal.Actions>
                 <ShowComponentIfAuthorized permission={[SCOPES.PUBLISH_CALENDAR]} >

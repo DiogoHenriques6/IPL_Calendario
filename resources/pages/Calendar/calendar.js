@@ -316,7 +316,7 @@ const Calendar = () => {
 
     const weekData = useMemo(() => {
         if(epochsList.length > 0 && !isCalendarInfoLoading) {
-            console.log('weekData');
+            // console.log('weekData');
             return _.orderBy(
                 epochsList.filter((item) => showingEpochs.includes(item.id)).reduce((acc, curr) => {
                     const start_date = moment(curr.start_date);
