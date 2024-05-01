@@ -43,6 +43,7 @@ const CourseTabsBranches = ({ courseId }) => {
                 setLoadingRequest(false);
             } else {
                 toast(t('Ocorreu um erro ao gravar o ramo!'), errorConfig);
+                setLoadingRequest(false);
             }
         });
     };
@@ -125,7 +126,9 @@ const CourseTabsBranches = ({ courseId }) => {
                             </Table.Row>
                         ))}
                     </Table.Body>
-                    {/*
+
+                        {/*
+                        TODO - Implementar a adição de ramos???
                         <ShowComponentIfAuthorized permission={[SCOPES.EDIT_COURSES]}>
                             <Table.Footer fullWidth>
                                 <Table.Row>
@@ -136,8 +139,8 @@ const CourseTabsBranches = ({ courseId }) => {
                                     </Table.HeaderCell>
                                 </Table.Row>
                             </Table.Footer>
-                        </ShowComponentIfAuthorized>
-                    */}
+                        </ShowComponentIfAuthorized>*/}
+
                 </Table>
             )}
 

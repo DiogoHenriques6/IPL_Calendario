@@ -34,6 +34,9 @@ const New = () => {
     const [searchUc, setSearchUc] = useState("");
     const [school, setSchool] = useState("");
 
+    const hasPermissionToEdit = useComponentIfAuthorized(
+        [SCOPES.EDIT_COURSE_UNITS],
+    );
 
     const fetchDetail = () => {
         setLoading(true);
@@ -179,6 +182,7 @@ const New = () => {
                         <Card.Content>
                             { !isEditMode ? (
                                 <div className={"margin-bottom-base"}>
+                                    {/*TODO FIX THIS BUTTON, DOES IT MAKE SENSE*/}
                                     <Form.Group widths="3" className={"align-items-end"}>
                                         <Schools eventHandler={(value) => setSchool(value)}/>
                                         <Form.Input loading={isSearchLoading} label={t("Código")} placeholder={t("Procurar por dódigo da UC")} onChange={(e, {value}) => setSearchUc(value)}/>
@@ -196,12 +200,12 @@ const New = () => {
                                 <Form.Group widths="3">
                                     <Field name="code">
                                         {({input: codeInput}) => (
-                                            <Form.Input className='input-readonly' disabled={true || isEditMode} label={t("Código")} placeholder={t("Código")} {...codeInput} />
+                                            <Form.Input className='input-readonly' disabled={ isEditMode } label={t("Código")} placeholder={t("Código")} {...codeInput} />
                                         )}
                                     </Field>
                                     <Field name="initials">
                                         {({input: initialsInput}) => (
-                                            <Form.Input className='input-readonly' disabled={true || isEditMode} label={t("Iniciais")} placeholder={t("Iniciais")} {...initialsInput} />
+                                            <Form.Input className='input-readonly' disabled={!hasPermissionToEdit} label={t("Iniciais")} placeholder={t("Iniciais")} {...initialsInput} />
                                         )}
                                     </Field>
                                     <ShowComponentIfAuthorized permission={[SCOPES.VIEW_COURSES]}>
@@ -217,24 +221,24 @@ const New = () => {
                             <Form.Group widths="equal">
                                 <Field name="name_pt">
                                     {({input: namePtInput}) => (
-                                        <Form.Input className='input-readonly' disabled={true || isEditMode} label={t("Nome PT")} placeholder={t("Nome PT")} {...namePtInput} />
+                                        <Form.Input className='input-readonly' disabled={!hasPermissionToEdit} label={t("Nome PT")} placeholder={t("Nome PT")} {...namePtInput} />
                                     )}
                                 </Field>
                                 <Field name="name_en">
                                     {({input: nameEnInput}) => (
-                                        <Form.Input className='input-readonly' disabled={true || isEditMode} label={t("Nome EN")} placeholder={t("Nome EN")} {...nameEnInput} />
+                                        <Form.Input className='input-readonly' disabled={!hasPermissionToEdit} label={t("Nome EN")} placeholder={t("Nome EN")} {...nameEnInput} />
                                     )}
                                 </Field>
                             </Form.Group>
                             <Form.Group widths="3">
                                 <Field name="curricularYear">
                                     {({input: curricularYearInput}) => (
-                                        <Form.Input className='input-readonly' disabled={true || isEditMode } label={t("Ano curricular")} placeholder={t("Ano curricular")} {...curricularYearInput} />
+                                        <Form.Input className='input-readonly' disabled={!hasPermissionToEdit } label={t("Ano curricular")} placeholder={t("Ano curricular")} {...curricularYearInput} />
                                     )}
                                 </Field>
                                 <Field name="semester">
                                     {({input: semesterInput}) => (
-                                        <Semesters className='input-readonly' disabled={true || isEditMode } eventHandler={(value) => {semesterInput.onChange(value);}} value={semesterInput.value} isSearch={false}/>
+                                        <Semesters className='input-readonly' disabled={!hasPermissionToEdit } eventHandler={(value) => {semesterInput.onChange(value);}} value={semesterInput.value} isSearch={false}/>
                                     )}
                                 </Field>
                                 <Field name="branch">

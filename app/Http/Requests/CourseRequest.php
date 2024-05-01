@@ -15,14 +15,15 @@ class CourseRequest extends FormRequest
     {
         return [
             "code"                => "required|string",
-            "name"                => "required|string",
+            "name_pt"             => "required|string",
+            "name_en"             => "nullable|sometimes|string",
             "initials"            => "nullable|sometimes|string",
             "degree"              => "nullable|sometimes|numeric",
             "num_years"           => "nullable|sometimes|numeric",
-            "branches"            => "sometimes|array",
-            "branches.*.id"       => "sometimes|exists:branches,id",
-            "branches.*.name"     => "required|string",
-            "branches.*.initials" => "required|string"
+//            "branches"            => "sometimes|array",
+//            "branches.*.id"       => "sometimes|exists:branches,id",
+//            "branches.*.name"     => "required|string",
+//            "branches.*.initials" => "required|string"
         ];
     }
 }

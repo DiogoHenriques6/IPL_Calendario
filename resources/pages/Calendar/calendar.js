@@ -241,6 +241,9 @@ const Calendar = () => {
     useEffect(() => {
         if (typeof calendarPhase === 'number') {
             setCalendarPermissions(getCalendarPhasePermissions(calendarPhase));
+            if( getCalendarPhasePermissions(calendarPhase).filter((x) => x.name === SCOPES.VIEW_CALENDAR).length === 0){
+                history('/calendario');
+            }
         }
     }, [calendarPhase]);
 

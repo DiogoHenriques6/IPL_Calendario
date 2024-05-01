@@ -48,6 +48,7 @@ const StopWatch = lazy(() => import('./pages/404/Stopwatch'));
 //auth and roles
 import {useComponentIfAuthorized} from "./components/ShowComponentIfAuthorized";
 import {
+    CALENDAR_SCOPES,
     ACADEMIC_YEAR_SCOPES,
     CALENDAR_PHASES_SCOPES,
     COURSE_SCOPES, COURSE_UNIT_SCOPES, UC_GROUPS_SCOPES,
@@ -56,6 +57,7 @@ import {
 } from "./utils/scopesConstants";
 
 const isAuthorized = useComponentIfAuthorized([
+    ...CALENDAR_SCOPES,
     ...ACADEMIC_YEAR_SCOPES,
     ...SCHOOLS_SCOPES,
     ...COURSE_SCOPES,
@@ -106,7 +108,7 @@ const RouterList = (isLoggedIn) => {
                 {
                     path:"/calendario",
                     children: [
-                        { path: 'novo', exact: true, element: <CalendarNew />},
+                        { path: 'novo', exact: true, element:(isAuthorized.CREATE_CALENDAR) ? <CalendarNew /> : <Navigate to="/calendario" />},
                         { path: ':id', exact: true, element: <CalendarDetail />},
                         { path: '', exact: true, element: <CalendarList />},
                         { path: '*', element: <NotFoundPage />}
@@ -116,9 +118,9 @@ const RouterList = (isLoggedIn) => {
                     path: "/unidade-curricular",
                     element: (isAuthorized.VIEW_COURSE_UNITS) ? <MultiPageBase /> : <Navigate to="/no-permissions" />,
                     children: [
-                        { path: 'novo', exact: true, element: <UnidadeCurricularDetail />},
+                        { path: 'novo', exact: true, element: (isAuthorized.CREATE_COURSE_UNITS) ? <UnidadeCurricularDetail /> : <Navigate to="/unidade-curricular" />},
                         { path: ':id', exact: true, element: <UnidadeCurricularDetail />},
-                        { path: 'edit/:id', exact: true, element: <UnidadeCurricularDetail />},
+                        { path: 'edit/:id', exact: true, element: (isAuthorized.EDIT_COURSE_UNITS) ? <UnidadeCurricularDetail /> : <Navigate to="/unidade-curricular" />},
                         { path: 'detail/:id', exact: true, element: <UnidadeCurricularDetail />},
                         { path: '', exact: true, element: <UnidadeCurricularList /> },
                         { path: '*', element: <NotFoundPage />}

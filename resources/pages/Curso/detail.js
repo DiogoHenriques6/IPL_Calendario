@@ -178,34 +178,34 @@ const Detail = () => {
                             <Form.Group widths="4">
                                 <Field name="code">
                                     {({input: codeInput}) => (
-                                        <Form.Input className='input-readonly' disabled={true|| loading || !hasPermissionToEdit} label={ t("Código") } {...codeInput}/>
+                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit} label={ t("Código") } {...codeInput}/>
                                     )}
                                 </Field>
                                 <Field name="initials">
                                     {({input: initialsInput}) => (
-                                        <Form.Input className='input-readonly' disabled={true|| loading || !hasPermissionToEdit} label={ t("Sigla") } {...initialsInput}/>
+                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit} label={ t("Sigla") } {...initialsInput}/>
                                     )}
                                 </Field>
                                 <Field name="degree_id">
                                     {({input: degreeIdInput}) => (
-                                        <Degree className='input-readonly' disabled={ true||loading || !hasPermissionToEdit} widthSize={6} eventHandler={(value) => degreeIdInput.onChange(value)} value={degreeIdInput.value} isSearch={false}/>
+                                        <Degree className='input-readonly' disabled={ loading || !hasPermissionToEdit} widthSize={6} eventHandler={(value) => degreeIdInput.onChange(value)} value={degreeIdInput.value} isSearch={false}/>
                                     )}
                                 </Field>
                                 <Field name="duration">
                                     {({input: durationInput}) => (
-                                        <Form.Input className='input-readonly' disabled={true||loading || !hasPermissionToEdit} label={ t("Número de anos") } {...durationInput}/>
+                                        <Form.Input className='input-readonly' disabled={loading || !hasPermissionToEdit} label={ t("Número de anos") } {...durationInput}/>
                                     )}
                                 </Field>
                             </Form.Group>
                             <Form.Group widths="3">
                                 <Field name="name_pt">
                                     {({input: namePtInput}) => (
-                                        <Form.Input className='input-readonly' disabled={true||loading || !hasPermissionToEdit} label={ t("Nome PT") } {...namePtInput}/>
+                                        <Form.Input className='input-readonly' disabled={loading || !hasPermissionToEdit} label={ t("Nome PT") } {...namePtInput}/>
                                     )}
                                 </Field>
                                 <Field name="name_en">
                                     {({input: nameEnInput}) => (
-                                        <Form.Input className='input-readonly' disabled={ true||loading || !hasPermissionToEdit} label={ t("Nome EN") } {...nameEnInput}/>
+                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit} label={ t("Nome EN") } {...nameEnInput}/>
                                     )}
                                 </Field>
                             </Form.Group>

@@ -25,7 +25,7 @@ class CourseUnitRequest extends FormRequest
             "code" => "required|string",
             "name_pt" => "required|string",
             "name_en" => "required|string",
-            "initials" => "required|string",
+            "initials" => "nullable|sometimes|string",
             "curricular_year" => "required|numeric",
             "semester" => "required|numeric",
             "responsible_user_id" => "sometimes|exists:users,id",
