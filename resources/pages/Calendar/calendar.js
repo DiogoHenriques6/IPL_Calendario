@@ -91,9 +91,9 @@ const Calendar = () => {
                         return item;
                     });
                     localStorage.setItem('calendarPermissions', JSON.stringify(localPermissions));
-                    setCalendarPermissions(getCalendarPhasePermissions(calendarPhase));
                 }
-            });
+                setCalendarPermissions(getCalendarPhasePermissions(calendarPhase));
+            })
         }
     }, []);
 
@@ -207,17 +207,9 @@ const Calendar = () => {
         }));
         setOpenInterruptionModal(true);
     }
-    const closeInterruptionModal = (newInterruption) => {
+    const closeInterruptionModal = () => {
         setOpenInterruptionModal(false);
     };
-
-    const onEditInterruptionClick = (interruption) => {
-        setInterruptionModalInfo({
-            id: interruption.id
-        });
-        setOpenInterruptionModal(true);
-    };
-
     const addInterruptionToList = (interruption, isNew) => {
         if(isNew){
             setInterruptions((current) => [...current, interruption]);
@@ -252,6 +244,7 @@ const Calendar = () => {
         }
     }, [calendarPhase]);
 
+
     const loadCalendar = (calId) => {
         setIsLoading(true);
         setIsCalendarInfoLoading(true);
@@ -260,6 +253,7 @@ const Calendar = () => {
         axios.get(`/calendar/${calId}`)
             .then((response) => {
                 if (response?.status >= 200 && response?.status < 300) {
+                    console.log(response.data);
                     const {
                         data: {
                             data: {
@@ -274,7 +268,7 @@ const Calendar = () => {
                         },
                     } = response;
                     setIsTemporary(!!general_info?.temporary);
-                    setCalendarPhase(general_info?.phase?.id);
+                    setCalendarPhase(phase?.id);
                     setIsPublished(!!published);
                     setInterruptions(interruptions);
                     setEpochsList(epochs);
@@ -304,8 +298,9 @@ const Calendar = () => {
 
                     setGeneralInfo(general_info);
                     setIsLoading(false);
+                    //TODO check if week ten is rly weekten or if its wrong
                     setWeekTen(moment(week_ten).week());
-                    setWeekToday(moment().format('w'));
+                    setWeekToday(parseInt(moment().format('w')));
 
                     setIsCalendarInfoLoading(false);
                 } else {
@@ -614,6 +609,7 @@ const Calendar = () => {
             // create a button to add exams for this date
             // For the Future (drag and drop
             // onDrop={drop} onDragOver={allowDrop}
+
             return (
                 <Table.Cell key={weekDayIndex} className={ 'calendar-day-' + epoch.code } textAlign="center">
                     {examsComponents}
@@ -706,7 +702,7 @@ const Calendar = () => {
                                             interruptionDays = 0;
                                             alreadyAddedColSpan = false;
                                             return (
-                                                <div key={tableIndex} className={"table-week" + (weekToday - 1 == week ? " current-week" : "")}>
+                                                <div key={tableIndex} className={"table-week" + (weekToday === week ? " current-week" : "")}>
                                                     {weekTen === week && (
                                                         <Divider horizontal style={{marginTop: "var(--space-l)"}}>
                                                             <Header as='h4' style={{textTransform: "uppercase"}}>
