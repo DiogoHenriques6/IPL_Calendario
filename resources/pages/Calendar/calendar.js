@@ -253,7 +253,6 @@ const Calendar = () => {
         axios.get(`/calendar/${calId}`)
             .then((response) => {
                 if (response?.status >= 200 && response?.status < 300) {
-                    console.log(response.data);
                     const {
                         data: {
                             data: {
@@ -311,7 +310,6 @@ const Calendar = () => {
 
     const weekData = useMemo(() => {
         if(epochsList.length > 0 && !isCalendarInfoLoading) {
-            // console.log('weekData');
             return _.orderBy(
                 epochsList.filter((item) => showingEpochs.includes(item.id)).reduce((acc, curr) => {
                     const start_date = moment(curr.start_date);

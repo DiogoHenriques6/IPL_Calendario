@@ -41,11 +41,9 @@ const Step1 = ({setActiveSemester, activeSemester}) => {
                     if (code === "normal_season" && seasonsDates[semester].periodic_season) {
                         if (field === "end_date" && seasonsDates[semester][code]) {
                             startDate = seasonsDates[semester][code].start_date;
-                            console.log(startDate);
                         } else {
                             //startDate = seasonsDates[semester].periodic_season.end_date;
                             startDate = minDate;
-                            console.log(startDate);
                         }
                         if (startDate) {
                             startDate = moment(startDate, "DD-MM-YYYY");

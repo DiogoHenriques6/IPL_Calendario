@@ -18,7 +18,7 @@ import PopupRevisionDetail from "./popup-revision";
 
 const SweetAlertComponent = withReactContent(Swal);
 
-const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, warnings, isPublished, isTemporary, epochsViewHandler, hasCurrentWeek = false}) => {
+const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updatePhase, warnings, isPublished, isTemporary, epochsViewHandler, hasCurrentWeek = false}) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     // get URL params
@@ -161,6 +161,7 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, warni
     const updatePhaseHandler = (newPhase) => {
         setCalendarPhase(newPhase);
         phase.id =  newPhase;
+        updatePhase(phase.id);
     }
 
     useEffect(() => {
