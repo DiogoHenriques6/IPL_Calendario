@@ -30,6 +30,19 @@ class ExamCommentController extends Controller
         return response()->json(ExamCommentResource::collection($comments), Response::HTTP_CREATED);
     }
 
+    public function storeWithRestrictedComments(ExamCommentRequest $request)
+    {
+        $newComment = new ExamComment($request->all());
+        $newComment->comment_language = $request->header("lang");
+        $newComment->ignored = false;
+        $newComment->user()->associate(Auth::user());
+        $newComment->save();
+        $comments = ExamComment::where('exam_id', $request->get('exam_id'))
+            ->where('user_id', auth()->user()->id)
+            ->get();
+        return response()->json(ExamCommentResource::collection($comments), Response::HTTP_CREATED);
+    }
+
     public function hideComment(ExamComment $comment) {
         $comment->ignored = true;
         $comment->save();

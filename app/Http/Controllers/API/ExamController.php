@@ -29,6 +29,18 @@ class ExamController extends Controller
         return new ExamResource($exam::with(['courseUnit', 'comments'])->find($exam->id));
     }
 
+    public function showMyComments(Exam $exam)
+    {
+        $currentExam = $exam::with(['courseUnit', 'comments'])->find($exam->id);
+        $userId = auth()->user()->id;
+
+        $filteredComments = $currentExam->comments->filter(function ($comment) use ($userId) {
+            return $comment->user_id == $userId;
+        });
+        $currentExam->comments = $filteredComments;
+        return new ExamResource($currentExam);
+    }
+
     public function icsDownload(Request $request, Exam $exam)
     {
         $eventExam = $exam;//$exam::with(['courseUnit'])->find($exam->id);

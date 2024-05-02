@@ -155,6 +155,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::controller(ExamController::class)->group(function () {
         Route::get('/exams/{exam}',                     'show'        );
+        Route::get('/exams/{exam}/mycomments',          'showMyComments');
         Route::get('/exams/{exam}/calendar-event',      'icsDownload' );
         Route::post('/exams',                           'store'       );
         Route::patch('/exams/{exam}',                   'update'      );
@@ -164,6 +165,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::controller(ExamCommentController::class)->group(function () {
         Route::post('/comment',                 'store' );
+        Route::post('/comment/restricted',      'storeWithRestrictedComments');
         Route::post('/comment/{comment}/hide',  'hideComment');
         Route::post('/comment/{comment}/show',  'showHiddenComment');
         Route::patch('/comment/{examComment}',  'update');

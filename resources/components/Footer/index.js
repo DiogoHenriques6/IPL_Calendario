@@ -14,6 +14,7 @@ const Footer = ({languageChanger}) => {
         setSelectedLanguage(lang);
         i18n.changeLanguage(lang);
         languageChanger(lang);
+        window.location.reload();
     }
 
     return (

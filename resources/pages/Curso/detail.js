@@ -28,11 +28,13 @@ const Detail = () => {
     const [searchCoordinator, setSearchCoordinator] = useState(false);
     const [hasCoordinator, setHasCoordinator] = useState(false);
     const [dropdownOptions, setDropdownOptions] = useState([]);
+    const [isCoordinator, setIsCoordinator] = useState(false);
+    const [hasPermissionToEdit, setPermissionToEdit] = useState(false);
 
 
 
 
-    const hasPermissionToEdit = useComponentIfAuthorized([SCOPES.EDIT_COURSES]);
+
     const hasPermissionToDefineCoordinator = useComponentIfAuthorized(
         [SCOPES.DEFINE_COURSE_COORDINATOR],
     );
@@ -44,13 +46,9 @@ const Detail = () => {
             text: teacher.name,
             value: teacher.email,
         }));
-        console.log("Teachers",options);
         setDropdownOptions(options);
     }, [teachers]);
 
-    useEffect(() => {
-        console.log("Second Try",dropdownOptions);
-    }, [dropdownOptions]);
 
     const handleSearchCoordinator = async (e, {searchQuery}) => {
         setSearchCoordinator(true);
@@ -84,8 +82,19 @@ const Detail = () => {
             }
             setCourseDetail(res.data.data);
             document.title = "Detalhe de Curso - " + "Calendários de Avaliação - IPLeiria";
+            setIsCoordinator(coordinator.id == localStorage.getItem('userId'));
         });
     };
+
+    useEffect(() => {
+        console.log(isCoordinator);
+        if( useComponentIfAuthorized([SCOPES.EDIT_ALL_COURSES])){
+            setPermissionToEdit(useComponentIfAuthorized([SCOPES.EDIT_ALL_COURSES]));
+        }
+        else{
+            setPermissionToEdit(useComponentIfAuthorized([SCOPES.EDIT_COURSES]) && isCoordinator);
+        }
+    }, [isCoordinator]);
 
     const setCoordinator = () => {
         axios.patch(`/courses/${paramsId}/coordinator`, {
@@ -178,34 +187,34 @@ const Detail = () => {
                             <Form.Group widths="4">
                                 <Field name="code">
                                     {({input: codeInput}) => (
-                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit} label={ t("Código") } {...codeInput}/>
+                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit || !isCoordinator} label={ t("Código") } {...codeInput}/>
                                     )}
                                 </Field>
                                 <Field name="initials">
                                     {({input: initialsInput}) => (
-                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit} label={ t("Sigla") } {...initialsInput}/>
+                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit || !isCoordinator} label={ t("Sigla") } {...initialsInput}/>
                                     )}
                                 </Field>
                                 <Field name="degree_id">
                                     {({input: degreeIdInput}) => (
-                                        <Degree className='input-readonly' disabled={ loading || !hasPermissionToEdit} widthSize={6} eventHandler={(value) => degreeIdInput.onChange(value)} value={degreeIdInput.value} isSearch={false}/>
+                                        <Degree className='input-readonly' disabled={ loading || !hasPermissionToEdit || !isCoordinator} widthSize={6} eventHandler={(value) => degreeIdInput.onChange(value)} value={degreeIdInput.value} isSearch={false}/>
                                     )}
                                 </Field>
                                 <Field name="duration">
                                     {({input: durationInput}) => (
-                                        <Form.Input className='input-readonly' disabled={loading || !hasPermissionToEdit} label={ t("Número de anos") } {...durationInput}/>
+                                        <Form.Input className='input-readonly' disabled={loading || !hasPermissionToEdit  || !isCoordinator } label={ t("Número de anos") } {...durationInput}/>
                                     )}
                                 </Field>
                             </Form.Group>
                             <Form.Group widths="3">
                                 <Field name="name_pt">
                                     {({input: namePtInput}) => (
-                                        <Form.Input className='input-readonly' disabled={loading || !hasPermissionToEdit} label={ t("Nome PT") } {...namePtInput}/>
+                                        <Form.Input className='input-readonly' disabled={loading || !hasPermissionToEdit || !isCoordinator} label={ t("Nome PT") } {...namePtInput}/>
                                     )}
                                 </Field>
                                 <Field name="name_en">
                                     {({input: nameEnInput}) => (
-                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit} label={ t("Nome EN") } {...nameEnInput}/>
+                                        <Form.Input className='input-readonly' disabled={ loading || !hasPermissionToEdit || !isCoordinator} label={ t("Nome EN") } {...nameEnInput}/>
                                     )}
                                 </Field>
                             </Form.Group>
@@ -217,7 +226,7 @@ const Detail = () => {
                                 <Form.Group widths="2">
                                     <Field name="coordinator">
                                         {({input: coordinatorInput}) => (
-                                            <Form.Dropdown error={ !hasCoordinator } disabled={loading || !hasPermissionToDefineCoordinator} className={( loading || !hasPermissionToDefineCoordinator ? 'input-readonly' : '')}
+                                            <Form.Dropdown error={ !hasCoordinator } disabled={loading || !hasPermissionToDefineCoordinator } className={( loading || !hasPermissionToDefineCoordinator || !isCoordinator ? 'input-readonly' : '')}
                                                            label={ t("Coordenador do Curso") } selectOnBlur={false}
                                                            options={dropdownOptions}
                                                            selection search loading={searchCoordinator} placeholder={ t("Pesquise o coordenador de curso...") }
@@ -237,7 +246,7 @@ const Detail = () => {
                                             // <Teachers isSearch={false} eventHandler={(value) => handleSearchTeachers(value)} isDisabled={loading}/>
                                         )}
                                     </Field>
-                                    <Form.Button disabled={loading || !hasPermissionToDefineCoordinator} label={ t("Guardar") } onClick={setCoordinator} color="green" icon labelPosition="left">
+                                    <Form.Button disabled={loading || !hasPermissionToDefineCoordinator || !isCoordinator} label={ t("Guardar") } onClick={setCoordinator} color="green" icon labelPosition="left">
                                         <Icon name="save"/> { t("Guardar coordenador") }
                                     </Form.Button>
                                 </Form.Group>

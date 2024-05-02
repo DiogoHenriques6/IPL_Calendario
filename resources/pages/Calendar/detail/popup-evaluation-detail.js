@@ -5,7 +5,7 @@ import {useTranslation} from "react-i18next";
 import {Button, Form, Header, Icon, List, Modal, Comment, Divider, Segment, Dimmer, Loader, Dropdown} from 'semantic-ui-react';
 import {toast} from 'react-toastify';
 
-import ShowComponentIfAuthorized from '../../../components/ShowComponentIfAuthorized';
+import ShowComponentIfAuthorized, {useComponentIfAuthorized} from '../../../components/ShowComponentIfAuthorized';
 import SCOPES from '../../../utils/scopesConstants';
 import {errorConfig, successConfig} from '../../../utils/toastConfig';
 
@@ -28,16 +28,23 @@ const PopupEvaluationDetail = ( {isPublished, isOpen, currentPhaseId, onClose, e
 
     const loadExamDetails = (examId) => {
         setIsLoading(true);
-        axios.get(`/exams/${examId}`).then((response) => {
-                if (response?.status >= 200) {
-                    setExamDetailObject(response.data.data);
-                    setCommentsList(response.data.data.comments);
-                    setIsLoading(false);
-                }
-            }).catch((error) => {
-                toast(t('Ocorreu um erro no load da avaliação'), errorConfig);
-                toast(error, errorConfig);
-            });
+        let requestLink = '';
+        if(useComponentIfAuthorized(SCOPES.VIEW_COMMENTS)) {
+            requestLink = `${examId}`;
+        }
+        else {
+            requestLink = `${examId}/mycomments`;
+        }
+        axios.get(`/exams/${requestLink}`).then((response) => {
+            if (response?.status >= 200) {
+                setExamDetailObject(response.data.data);
+                setCommentsList(response.data.data.comments);
+                setIsLoading(false);
+            }
+        }).catch((error) => {
+            toast(t('Ocorreu um erro no load da avaliação'), errorConfig);
+            toast(error, errorConfig);
+        });
     };
 
     const getCalendarEvent = (type) => {
@@ -66,8 +73,15 @@ const PopupEvaluationDetail = ( {isPublished, isOpen, currentPhaseId, onClose, e
             toast(t('O comentário não pode estar vazio!'), errorConfig);
             return false;
         }
+        let requestLink = '';
+        if(useComponentIfAuthorized(SCOPES.VIEW_COMMENTS)) {
+            requestLink = `/comment/`;
+        }
+        else {
+            requestLink = `/comment/restricted`;
+        }
 
-        axios.post('/comment/', {
+        axios.post(`${requestLink}`, {
             exam_id: examId,
             comment: commentText,
         }).then((res) => {
