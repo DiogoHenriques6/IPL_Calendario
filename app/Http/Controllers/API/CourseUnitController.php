@@ -51,22 +51,26 @@ class CourseUnitController extends Controller
             $courseUnits = $courseUnits->orderBy('name_' . $lang)->get();
         } else {
             $userId = Auth::user()->id;
-            $userGroups = Auth::user()->groups();
+//            $userGroups = Auth::user()->groups();
+//            return json_encode($userGroups->count());
             if(!$allUCs) {
-                if (!$userGroups->superAdmin()->exists() && !$userGroups->admin()->exists() && !$userGroups->responsiblePedagogic()->exists()) {
-                    if (Auth::user()->groups()->responsible()->exists() && $userGroups->count() == 1) {
+                //had to change $userGroups to Auth::user()->groups()
+                if (!Auth::user()->groups()->superAdmin()->exists() && !Auth::user()->groups()->admin()->exists() && !Auth::user()->groups()->responsiblePedagogic()->exists()) {
+                    //TODO  multiple groups, where only some have permissions to edit
+                    if (Auth::user()->groups()->responsible()->exists() && Auth::user()->groups()->count() == 1) {
                         $courseUnits->where('responsible_user_id', $userId);
                     }
-
                     if (Auth::user()->groups()->coordinator()->exists()) {
                         $courseUnits->whereIn('course_id', Course::where('coordinator_user_id', $userId)->pluck('id'));
                         if (Auth::user()->groups()->isTeacher()->get()->count() > 0) {
                             $courseUnits->orWhereIn('id', Auth::user()->courseUnits->pluck('id'));
                         }
+                        return json_encode(Auth::user()->groups()->get());
                     }
 
                     if (Auth::user()->groups()->isTeacher()->exists()) {
                         $courseUnits->whereIn('id', Auth::user()->courseUnits->pluck('id'));
+                        return json_encode(Auth::user()->groups()->get());
                     }
 
                     if (Auth::user()->groups()->gop()->exists() || Auth::user()->groups()->board()->exists() || Auth::user()->groups()->pedagogic()->exists()) {
@@ -180,7 +184,7 @@ class CourseUnitController extends Controller
     public function refreshUc(CourseUnit $courseUnit)
     {
         $academicYear = AcademicYear::find($courseUnit->semester_id);
-        $isImported = ExternalImports::importSingleUCFromWebService($academicYear->code, $courseUnit->course->school_id, $courseUnit->code);
+        $isImported = ExternalImports::importSingleUCFromWebService($academicYear->code, $courseUnit->course->school_id, $courseUnit->course->code, $courseUnit->code);
         if(!$isImported){
             return response()->json("Error!", Response::HTTP_CONFLICT);
         }
