@@ -3,7 +3,6 @@
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
-use Monolog\Processor\PsrLogMessageProcessor;
 
 return [
 
@@ -31,10 +30,7 @@ return [
     |
     */
 
-    'deprecations' => [
-        'channel' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),
-        'trace' => false,
-    ],
+    'deprecations' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),
 
     /*
     |--------------------------------------------------------------------------
@@ -62,7 +58,6 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'replace_placeholders' => true,
         ],
         'sync_test' => [
             'driver' => 'single',
@@ -72,11 +67,6 @@ return [
         'courses_sync' => [
             'driver' => 'single',
             'path' => storage_path('logs/courses_sync.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
-        ],
-        'docentes_sync.log' => [
-            'driver' => 'single',
-            'path' => storage_path('logs/docentes_sync.log.log'),
             'level' => env('LOG_LEVEL', 'debug'),
         ],
         'users_login' => [
@@ -90,7 +80,6 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => 14,
-            'replace_placeholders' => true,
         ],
 
         'slack' => [
@@ -99,7 +88,6 @@ return [
             'username' => 'Laravel Log',
             'emoji' => ':boom:',
             'level' => env('LOG_LEVEL', 'critical'),
-            'replace_placeholders' => true,
         ],
 
         'papertrail' => [
@@ -111,7 +99,6 @@ return [
                 'port' => env('PAPERTRAIL_PORT'),
                 'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
             ],
-            'processors' => [PsrLogMessageProcessor::class],
         ],
 
         'stderr' => [
@@ -122,20 +109,16 @@ return [
             'with' => [
                 'stream' => 'php://stderr',
             ],
-            'processors' => [PsrLogMessageProcessor::class],
         ],
 
         'syslog' => [
             'driver' => 'syslog',
             'level' => env('LOG_LEVEL', 'debug'),
-            'facility' => LOG_USER,
-            'replace_placeholders' => true,
         ],
 
         'errorlog' => [
             'driver' => 'errorlog',
             'level' => env('LOG_LEVEL', 'debug'),
-            'replace_placeholders' => true,
         ],
 
         'null' => [

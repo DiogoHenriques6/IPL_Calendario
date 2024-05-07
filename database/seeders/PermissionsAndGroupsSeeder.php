@@ -89,19 +89,19 @@ class PermissionsAndGroupsSeeder extends Seeder
                 "index_course_code"                 => "cod_curso",//"0",
                 "index_course_name_pt"              => "DS_CURSO",//"1",
                 "index_course_name_en"              => "cursoIngles",
-                "index_course_initials"             => "11",
+                "index_course_initials"             => "acronimoCurso",//"11",
 
                 "index_course_unit_code"            => "COD_UC",//"2",
                 "index_course_unit_name_pt"         => "DS_DISCIP",//"3",
                 "index_course_unit_name_en"         => "ucIngles",
                 "index_course_unit_initials"        => "ABRV_UNIDADE_CURRICULAR",
 
-                "index_course_unit_teachers"        => "7",//"4",
+                "index_course_unit_teachers"        => "docentesUC",//"7",
                 "index_course_unit_curricular_year" => "DS_ANO_CURRICULAR",//"5",
 
-                "index_course_unit_registered"      => "8",
-                "index_course_unit_passed"          => "9",
-                "index_course_unit_flunk"           => "10",
+                "index_course_unit_registered"      => "inscritos",//"8",
+                "index_course_unit_passed"          => "aprovados",//"9",
+                "index_course_unit_flunk"           => "reprovados",//"10",
 
                 "index_course_unit_branch"          => "BK_SIGES_CD_RAMO_UC",
 
