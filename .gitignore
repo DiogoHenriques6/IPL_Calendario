@@ -1,8 +1,6 @@
 /.phpunit.cache
 /node_modules
-/public/build
-/public/hot
-/public/storage
+/public
 /storage/*.key
 /vendor
 .env
@@ -17,3 +15,13 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+.styleci.yml
+artisan
+composer.json
+composer.lock
+package.json
+phpunit.xml
+docker-compose.yml
+package-lock.json
+phpunit.xml
+
