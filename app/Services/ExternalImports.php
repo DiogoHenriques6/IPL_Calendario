@@ -208,7 +208,7 @@ class ExternalImports
                                 "initials"  => $teachersByUC->{$school->index_course_initials},//$gen_initials,
 
                                 "name_pt"   => $courseUnit->{$school->index_course_name_pt},
-                                "name_en"   => $courseUnit->{$school->index_course_name_en}, // this will duplicate the value as default, to prevent empty states
+                                "name_en"   => $courseUnit->{$school->index_course_name_en} !== '' ? $courseUnit->{$school->index_course_name_en} :$courseUnit->{$school->index_course_name_pt}, // this will duplicate the value as default, to prevent empty states// this will duplicate the value as default, to prevent empty states
                                 "degree"    => DegreesUtil::getDegreeId($courseUnit->{$school->index_course_name_pt}),
                             ]
                         );
@@ -225,9 +225,10 @@ class ExternalImports
                                 $hasUpdate = true;
                                 $course->name_pt =  $courseUnit->{$school->index_course_name_pt};
                             }
-                            if($course->name_en !=  $courseUnit->{$school->index_course_name_en}) {
+                            if($course->name_en !=  $courseUnit->{$school->index_course_name_en} || $course->name_en == '') {
                                 $hasUpdate = true;
-                                $course->name_en = $courseUnit->{$school->index_course_name_en};
+                                $course->name_en  = $courseUnit->{$school->index_course_name_en} !== '' ? $courseUnit->{$school->index_course_name_en} : $courseUnit->{$school->index_course_name_pt};
+                                // this will duplicate the value as default, to prevent empty states
                             }
                             if($course->degree != DegreesUtil::getDegreeId($courseUnit->{$school->index_course_name_pt})) {
                                 $hasUpdate = true;
@@ -275,7 +276,7 @@ class ExternalImports
                                 "curricular_year" => $courseUnit->{$school->index_course_unit_curricular_year},
                                 "initials" =>  $courseUnit->{$school->index_course_unit_initials},
                                 "name_pt" =>  $courseUnit->{$school->index_course_unit_name_pt},
-                                "name_en" =>  $courseUnit->{$school->index_course_unit_name_en}, // this will duplicate the value as default, to prevent empty states
+                                "name_en"   => $courseUnit->{$school->index_course_unit_name_en} !== '' ? $courseUnit->{$school->index_course_unit_name_en} :$courseUnit->{$school->index_course_unit_name_pt}, // this will duplicate the value as default, to prevent empty states
 
                                 "registered"=>   $teachersByUC->{$school->index_course_unit_registered} ? (int)$teachersByUC->{$school->index_course_unit_registered}  : 0,
                                 "passed"    =>  $teachersByUC->{$school->index_course_unit_passed}    ? (int)$teachersByUC->{$school->index_course_unit_passed}       : 0,
@@ -300,9 +301,9 @@ class ExternalImports
                                 $hasUpdate = true;
                                 $newestCourseUnit->name_pt = $courseUnit->{$school->index_course_unit_name_pt};
                             }
-                            if($newestCourseUnit->name_en != $courseUnit->{$school->index_course_unit_name_en}) {
+                            if($newestCourseUnit->name_en != $courseUnit->{$school->index_course_unit_name_en} || $newestCourseUnit->name_en == '') {
                                 $hasUpdate = true;
-                                $newestCourseUnit->name_en = $courseUnit->{$school->index_course_unit_name_en};
+                                $newestCourseUnit->name_en = $courseUnit->{$school->index_course_unit_name_en} != '' ? $courseUnit->{$school->index_course_unit_name_en} : $courseUnit->{$school->index_course_unit_name_pt};
                             }
 
                             if($newestCourseUnit->registered != (int)$teachersByUC->{$school->index_course_unit_registered}) {
