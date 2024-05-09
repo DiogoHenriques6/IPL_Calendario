@@ -249,7 +249,7 @@ const AnoLetivo = () => {
                                         <Table.Cell textAlign="center">
                                             <ShowComponentIfAuthorized permission={[SCOPES.EDIT_ACADEMIC_YEARS]} renderIfNotAllowed={<Checkbox toggle disabled defaultChecked={active}/>}>
                                                 { isActiveLoading && (<Icon loading name='spinner'/>)}
-                                                <Checkbox toggle checked={active} disabled={!(s1_sync || s2_sync)} onChange={() => handleYearActive(id, index)} />
+                                                <Checkbox toggle checked={active} disabled={!(s1_sync && s2_sync)} onChange={() => handleYearActive(id, index)} />
                                             </ShowComponentIfAuthorized>
                                         </Table.Cell>
                                         <Table.Cell textAlign="center">

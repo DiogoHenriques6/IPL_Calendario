@@ -104,7 +104,7 @@ class ExternalImports
             //IMPORT all docentes
             //TODO get_docentes_dep todos os docentes do campus
             $apiEndpoint = 'https://www.dei.estg.ipleiria.pt/servicos/projetos/get_docentes_dep.php?formato=json';
-            Log::channel('sync_test')->info($apiEndpoint);
+//            Log::channel('sync_test')->info($apiEndpoint);
 
             $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
             if($response->failed()){
@@ -128,13 +128,13 @@ class ExternalImports
                     }
                 }
             }
-            Log::channel('sync_test')->info("Quantity of teachers: " . sizeof($teachers));
+//            Log::channel('sync_test')->info("Quantity of teachers: " . sizeof($teachers));
             // Loop for each saved school
             foreach ($schools as $school) {
 
                 // From URL to get webpage contents
                 $apiEndpoint = $school->base_link . 'get_aulas_curso_tipo.php?' . $school->query_param_semester . '=S' . $semester . '&' . $school->query_param_academic_year . '=' . $academicYearCode . '&formato=json';
-                Log::channel('sync_test')->info($apiEndpoint);
+//                Log::channel('sync_test')->info($apiEndpoint);
 
                 $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
                 if($response->failed()){
@@ -155,7 +155,7 @@ class ExternalImports
                 //Get docentes by UCs
                 //TODO CHANGE CAMPUS VALUE to dinamic for each school accordingly
                 $apiEndpoint = $school->base_link . 'get_docentes_ucs.php?' . $school->query_param_semester . '=S' . $semester . '&' . $school->query_param_academic_year . '=' . $academicYearCode . '&campus=2&formato=json';
-                Log::channel('sync_test')->info($apiEndpoint);
+//                Log::channel('sync_test')->info($apiEndpoint);
 
                 $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
                 if($response->failed()){
@@ -189,12 +189,10 @@ class ExternalImports
                         if ($courseUnit->CD_INSTITUIC != $school->code){
                             continue;
                         }
-                        Log::channel('sync_test')->info('Course Unit - ' . json_encode($courseUnit));
+//                        Log::channel('sync_test')->info('Course Unit - ' . json_encode($courseUnit));
                         $identifier = $courseUnit->{$school->index_course_code} . '_' . $courseUnit->{$school->index_course_unit_code};
                         if (isset($teachersDictionary[$identifier])) {
                             $teachersByUC = $teachersDictionary[$identifier];
-                        } else {
-                            Log::channel('sync_test')->info('FAILED ');
                         }
 
 
@@ -338,7 +336,7 @@ class ExternalImports
                         if(!empty($teachersByUC->{$school->index_course_unit_teachers})) {
 
                             $teachers = explode(",", $teachersByUC->{$school->index_course_unit_teachers});
-                            Log::channel('sync_test')->info('Teacher -' . $teachersByUC->{$school->index_course_unit_teachers});
+//                            Log::channel('sync_test')->info('Teacher -' . $teachersByUC->{$school->index_course_unit_teachers});
                             $teachersForCourseUnit = [];
                             foreach ($teachers as $teacher) {
 
@@ -350,16 +348,16 @@ class ExternalImports
                                             $apiEndpoint = 'https://www.dei.estg.ipleiria.pt/servicos/projetos/get_docentes_dep.php?login=' . $teacher . 'formato=json';
                                             $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
                                             if ($response->failed()) {
-                                                Log::channel('docentes_sync.log')->info('FAILED - "importDocentesFromWebService" sync for Year code (' . $academicYearCode );
+//                                                Log::channel('docentes_sync.log')->info('FAILED - "importDocentesFromWebService" sync for Year code (' . $academicYearCode );
                                                 continue;
                                             }
                                             $teacher_data = $response->body();
-                                            LOG::channel("sync_test")->info("Username " .$teacher_data);
+//                                            LOG::channel("sync_test")->info("Username " .$teacher_data);
                                             $newTeacher = json_decode($teacher_data);
                                             if(empty($newTeacher)){
                                                 continue;
                                             }
-                                            LOG::channel("sync_test")->info("UserArray " . $newTeacher->email);
+//                                            LOG::channel("sync_test")->info("UserArray " . $newTeacher->email);
 
                                             $foundUser = User::create([
                                                 "email" => $newTeacher->email,
