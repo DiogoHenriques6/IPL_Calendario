@@ -117,16 +117,20 @@ const CoursesList = () => {
                         </ShowComponentIfAuthorized>
                     </div>
                 </Card.Content>
-                <Card.Content>
-                    <Form>
-                        <Form.Group>
-                            <Form.Input icon='search' iconPosition='left' width={5} label={ t("Pesquisar curso...") } placeholder={ t("Pesquisar curso...") } onChange={_.debounce(handleSearchCourses, 500)} />
-                            <FilterOptionSchool widthSize={5} eventHandler={(value) => setSchool(value)} />
-                            <FilterOptionDegree widthSize={5} eventHandler={(value) => setDegree(value)} />
-                            <FilterOptionPerPage widthSize={2} eventHandler={(value) => setPerPage(value)} />
-                        </Form.Group>
-                    </Form>
-                </Card.Content>
+                <ShowComponentIfAuthorized permission={[SCOPES.CREATE_COURSES]} >
+                    <Card.Content>
+                        <Form>
+                            <Form.Group>
+
+                                    <Form.Input icon='search' iconPosition='left' width={5} label={ t("Pesquisar curso...") } placeholder={ t("Pesquisar curso...") } onChange={_.debounce(handleSearchCourses, 500)} />
+                                    <FilterOptionSchool widthSize={5} eventHandler={(value) => setSchool(value)} />
+                                    <FilterOptionDegree widthSize={5} eventHandler={(value) => setDegree(value)} />
+                                    <FilterOptionPerPage widthSize={2} eventHandler={(value) => setPerPage(value)} />
+
+                            </Form.Group>
+                        </Form>
+                    </Card.Content>
+                </ShowComponentIfAuthorized>
                 { !loading && courseList.length > 0 ? (
                     <Card.Content>
                         <Table celled fixed selectable striped>

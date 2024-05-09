@@ -14,6 +14,7 @@ use App\Http\Resources\Generic\UserSearchResource;
 use App\Models\AcademicYear;
 use App\Models\Branch;
 use App\Models\Course;
+use App\Models\CourseUnit;
 use App\Models\Group;
 use App\Models\User;
 use App\Services\DegreesUtil;
@@ -21,6 +22,7 @@ use App\Utils\Utils;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class CourseController extends Controller
 {
@@ -29,27 +31,59 @@ class CourseController extends Controller
      */
     public function index(Request $request, CourseFilters $filters)
     {
+        //TODO validate for all groups, and define what can and cannot be done trough permissions
         $perPage = request('per_page', 10);
         $utils = new Utils();
         $courseList = Course::with('school')->ofAcademicYear($utils->getCurrentAcademicYear($request));
-        if( request('school') ){
-            $courseList->where('school_id', request('school'));
-        }
-        if( request('degree') && !$request->has('without-degrees')){
-            $courseList->where('degree', (request('degree') == "no-degree" ? "" : request('degree')));
-        }
-        if(request('degree', "") != "no-degree"){
-            // remove courses that have no degree associated, unless requested
-            $courseList->where('degree', (request('without-degrees', '') == '' ? '<>' : '='), '');
-        }
-        $courseList->filter($filters);
+        if(!Auth::user()->groups()->superAdmin()->exists() && !Auth::user()->groups()->admin()->exists() && !Auth::user()->groups()->responsiblePedagogic()->exists()) {
+            $userId = Auth::user()->id;
+            $userGroups = Auth::user()->groups()->get();
+            $courseIds = [];
 
+            foreach ($userGroups as $group) {
+//                        LOG::channel('sync_test')->info("Group: " . $group->code);
+                if ($group->gopSchool()->exists()) {
+                    $groupCourseQuery = clone $courseList;
+                    $groupCourseQuery->where('school_id', $group->gopSchool->id)->pluck('id');
+//                            LOG::channel('sync_test')->info("Size Units GOP: " . $groupCourseUnitsQuery->get()->count());
+                }
+
+                if($group->code == "coordinator"){
+                    $groupCourseQuery = clone $courseList;
+                    $groupCourseQuery->where('coordinator_user_id', $userId)->pluck('id');
+//                            LOG::channel('sync_test')->info("Size Units cordenador: " . $groupCourseUnitsQuery->get()->count());
+                }
+
+                $groupCourses= $groupCourseQuery->get();
+//                        LOG::channel('sync_test')->info("Size Course Units: " . $groupCourseUnits->count());
+
+                // Collect course unit IDs
+                foreach ($groupCourses as $course) {
+                    $courseIds[] = $course->id;
+                }
+            }
+            $courseList = CourseUnit::whereIn('id', $courseIds);
+        }
+        else{
+            if( request('school') ){
+                $courseList->where('school_id', request('school'));
+            }
+            if( request('degree') && !$request->has('without-degrees')){
+                $courseList->where('degree', (request('degree') == "no-degree" ? "" : request('degree')));
+            }
+            if(request('degree', "") != "no-degree"){
+                // remove courses that have no degree associated, unless requested
+                $courseList->where('degree', (request('without-degrees', '') == '' ? '<>' : '='), '');
+            }
+        }
+
+        $courseList->filter($filters);
         return CourseListResource::collection( ( $perPage == "all" ? $courseList->get() : $courseList->paginate($perPage) ) );
     }
 
-    /**
-     * Display a listing of the resource.
-     */
+/**
+* Display a listing of the resource.
+*/
     public function search(Request $request, CourseFilters $filters)
     {
         $utils = new Utils();

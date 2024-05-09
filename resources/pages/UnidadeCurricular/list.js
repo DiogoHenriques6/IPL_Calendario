@@ -177,18 +177,21 @@ const CourseUnitsList = () => {
                         </Form.Group>
                         { showAdvancedFilters && (
                             <Form.Group>
-                                <Courses widthSize={4} eventHandler={filterByCourse} />
-                                <GroupUnits widthSize={3} eventHandler={filterByGroupUnit} />
+
+                                    <Courses widthSize={4} eventHandler={filterByCourse} />
+                                    <GroupUnits widthSize={3} eventHandler={filterByGroupUnit} />
+
                                 <Semesters widthSize={3} eventHandler={filterBySemester} withSpecial={false} />
                                 <CurricularYears widthSize={2} eventHandler={filterByCurricularYear}/>
-
-                                <Form.Field width={4}>
-                                    <label>{t("UCs visíveis")}</label>
-                                    <Button.Group fluid>
-                                        <Button positive={!courseUnitAllFilter} onClick={(e) => filterByAllCourseUnits(false)}>{ t("Apenas as minhas") }</Button>
-                                        <Button positive={courseUnitAllFilter} onClick={(e) => filterByAllCourseUnits(true)}>{ t("Todas") }</Button>
-                                    </Button.Group>
-                                </Form.Field>
+                                <ShowComponentIfAuthorized permission={SCOPES.CREATE_COURSES}>
+                                    <Form.Field width={4}>
+                                        <label>{t("UCs visíveis")}</label>
+                                        <Button.Group fluid>
+                                            <Button positive={!courseUnitAllFilter} onClick={(e) => filterByAllCourseUnits(false)}>{ t("Apenas as minhas") }</Button>
+                                            <Button positive={courseUnitAllFilter} onClick={(e) => filterByAllCourseUnits(true)}>{ t("Todas") }</Button>
+                                        </Button.Group>
+                                    </Form.Field>
+                                </ShowComponentIfAuthorized>
                             </Form.Group>
                         )}
                     </Form>

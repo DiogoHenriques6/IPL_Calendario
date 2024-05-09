@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\InitialGroups;
 use App\Filters\CourseUnitFilters;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CourseUnitRequest;
@@ -33,6 +34,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class CourseUnitController extends Controller
 {
@@ -41,6 +43,7 @@ class CourseUnitController extends Controller
      */
     public function index(Request $request, CourseUnitFilters $filters)
     {
+        //TODO generalize for all groups, and define what can and cannot be done trough permissions
         $lang = (in_array($request->header("lang"), ["en", "pt"]) ? $request->header("lang") : "pt");
         $perPage = request('per_page', 20);
         $allUCs = request('show_all', false);
@@ -51,39 +54,42 @@ class CourseUnitController extends Controller
             $courseUnits = $courseUnits->orderBy('name_' . $lang)->get();
         } else {
             $userId = Auth::user()->id;
-//            $userGroups = Auth::user()->groups();
-//            return json_encode($userGroups->count());
+            $userGroups = Auth::user()->groups()->get();
+//            return json_encode($userGroups);
             if(!$allUCs) {
                 //had to change $userGroups to Auth::user()->groups()
                 if (!Auth::user()->groups()->superAdmin()->exists() && !Auth::user()->groups()->admin()->exists() && !Auth::user()->groups()->responsiblePedagogic()->exists()) {
-                    //TODO  multiple groups, where only some have permissions to edit
-                    if (Auth::user()->groups()->responsible()->exists() && Auth::user()->groups()->count() == 1) {
-                        $courseUnits->where('responsible_user_id', $userId);
-                    }
-                    if (Auth::user()->groups()->coordinator()->exists()) {
-                        $courseUnits->whereIn('course_id', Course::where('coordinator_user_id', $userId)->pluck('id'));
-                        if (Auth::user()->groups()->isTeacher()->get()->count() > 0) {
-                            $courseUnits->orWhereIn('id', Auth::user()->courseUnits->pluck('id'));
+                    $courseUnitIds = [];
+                    $baseCourseUnitQuery = CourseUnit::with('methods')->filter($filters, $lang)->ofAcademicYear($request->cookie('academic_year'));
+                    foreach ($userGroups as $group) {
+//                        LOG::channel('sync_test')->info("Group: " . $group->code);
+                        if ($group->gopSchool()->exists()) {
+                            $groupCourseUnitsQuery = clone $baseCourseUnitQuery;
+                            $groupCourseUnitsQuery->whereIn('course_id', Course::where('school_id', $group->gopSchool->id)->pluck('id'));
+//                            LOG::channel('sync_test')->info("Size Units GOP: " . $groupCourseUnitsQuery->get()->count());
                         }
-                        return json_encode(Auth::user()->groups()->get());
-                    }
 
-                    if (Auth::user()->groups()->isTeacher()->exists()) {
-                        $courseUnits->whereIn('id', Auth::user()->courseUnits->pluck('id'));
-                        return json_encode(Auth::user()->groups()->get());
-                    }
+                        if($group->code == "coordinator"){
+                            $groupCourseUnitsQuery = clone $baseCourseUnitQuery;
+                            $groupCourseUnitsQuery->whereIn('course_id', Course::where('coordinator_user_id', $userId)->pluck('id'));
+//                            LOG::channel('sync_test')->info("Size Units cordenador: " . $groupCourseUnitsQuery->get()->count());
+                        }
 
-                    if (Auth::user()->groups()->gop()->exists() || Auth::user()->groups()->board()->exists() || Auth::user()->groups()->pedagogic()->exists()) {
-                        $userGroupsIds = Auth::user()->groups()->pluck("id")->toArray();
-                        $schools = School::whereIn('gop_group_id', $userGroupsIds)
-                            ->orWhereIn('board_group_id', $userGroupsIds)
-                            ->orWhereIn('pedagogic_group_id', $userGroupsIds)
-                            ->pluck("id")->toArray();
+                        if($group->code == "responsible_course_unit"){
+                            $groupCourseUnitsQuery = clone $baseCourseUnitQuery;
+                            $groupCourseUnitsQuery->where('responsible_user_id', $userId);
+//                            LOG::channel('sync_test')->info("Size Course Units Responsavel: " . $groupCourseUnitsQuery->get()->count());
+                        }
 
-                        if (!empty($schools)) {
-                            $courseUnits->whereIn('course_id', Course::whereIn('school_id', $schools)->get()->pluck('id'));
+                        $groupCourseUnits = $groupCourseUnitsQuery->get();
+//                        LOG::channel('sync_test')->info("Size Course Units: " . $groupCourseUnits->count());
+
+                        // Collect course unit IDs
+                        foreach ($groupCourseUnits as $courseUnit) {
+                            $courseUnitIds[] = $courseUnit->id;
                         }
                     }
+                    $courseUnits = CourseUnit::whereIn('id', $courseUnitIds);
                 }
             }
             if( request('semester') ){
@@ -158,7 +164,7 @@ class CourseUnitController extends Controller
     }
     /**
      * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
         $academicYear = AcademicYear::find($request->cookie('academic_year'));
