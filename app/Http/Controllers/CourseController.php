@@ -209,31 +209,34 @@ class CourseController extends Controller
      * Students Logic
      * TODO: move this code to other place
      */
-    public function getStudents(Course $course)
+    public function getMembersCCP(Course $course)
     {
-        return UserSearchResource::collection($course->students()->get());
+        return UserSearchResource::collection($course->courseMembersCCP()->get());
     }
 
-    public function addStudent(Request $request, Course $course) {
-        $student = User::where('email', $request->user_email)->first();
+    public function addMemberCCP(Request $request, Course $course) {
+        $ccpMember = User::where('email', $request->user_email)->first();
 
-        if (is_null($student)) {
-            $student = User::create([
+        if (is_null($ccpMember)) {
+            $ccpMember = User::create([
                 "email" => $request->user_email,
                 "name" => $request->user_name,
                 "password" => "",
             ]);
         }
 
-        if ($student->groups()->isStudent()->get()->count() == 0) {
-            $student->groups()->syncWithoutDetaching(Group::isStudent()->get());
+        if ($ccpMember->groups()->isCCP()->get()->count() == 0) {
+            $ccpMember->groups()->syncWithoutDetaching(Group::isCCP()->get());
         }
-
-        $student->courses()->syncWithoutDetaching($course->id);
+        $ccpMember->courses()->syncWithoutDetaching($course->id);
     }
 
-    public function removeStudent(Course $course, User $student) {
-        $student->courses()->detach($course->id);
+    public function removeMemberCCP(Course $course, User $ccp) {
+        $ccp->courses()->detach($course->id);
+        if($ccp->courses()->count() == 0){
+            $ccp->groups()->detach(Group::isCCP()->get());
+        }
+        return $ccp->groups()->get();
     }
 
     /*

@@ -8,65 +8,65 @@ import {successConfig, errorConfig} from '../../../utils/toastConfig';
 import SCOPES from "../../../utils/scopesConstants";
 import ShowComponentIfAuthorized from "../../../components/ShowComponentIfAuthorized";
 
-const CourseTabsStudents = ({ courseId, isLoading }) => {
+const CourseTabsCCP = ({ courseId, isLoading }) => {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
-    const [students, setStudents] = useState([]);
+    const [ccpMembers, setCCPMembers] = useState([]);
     const [openModal, setOpenModal] = useState(false);
-    const [listOfStudents, setListOfStudents] = useState([]);
-    const [studentToAdd, setStudentToAdd] = useState([]);
-    const [searchStudent, setSearchStudent] = useState(false);
+    const [listOfCCPMembers, setListOfCCPMembers] = useState([]);
+    const [userToAdd, setUserToAdd] = useState([]);
+    const [searchUser, setSearchUser] = useState(false);
 
-    const loadCourseStudents = () => {
+    const loadCourseCCP = () => {
         setLoading(true);
         isLoading = true;
-        axios.get(`/courses/${courseId}/students`).then((res) => {
+        axios.get(`/courses/${courseId}/ccp`).then((res) => {
             setLoading(false);
             isLoading = false;
-            setStudents(res.data.data);
+            setCCPMembers(res.data.data);
         });
     };
 
     useEffect(() => {
-        loadCourseStudents();
+        loadCourseCCP();
     }, [courseId]);
 
 
-    const removeStudent = (studentId) => {
-        axios.delete(`/courses/${courseId}/student/${studentId}`).then((res) => {
+    const removeCCPMember = (ccpMemberId) => {
+        axios.delete(`/courses/${courseId}/ccp/${ccpMemberId}`).then((res) => {
             if (res.status === 200) {
-                toast(t('Estudante removido com sucesso do curso!'), successConfig);
-                setStudents(students.filter(student => student.id !== studentId));
+                toast(t('Utilizador removido com sucesso da CCP!'), successConfig);
+                setCCPMembers(ccpMembers.filter(ccpMember => ccpMember.id !== ccpMemberId));
             } else {
-                toast(t('Ocorreu um problema ao remover o estudante do curso!'), errorConfig);
+                toast(t('Ocorreu um problema ao remover o utilizador da CCP!'), errorConfig);
             }
         });
     };
 
 
-    const searchStudents = (e, {searchQuery}) => {
-        setSearchStudent(true);
+    const searchUsers = (e, {searchQuery}) => {
+        setSearchUser(true);
         axios.get(`/search/students?q=${searchQuery}`).then((res) => {
             if (res.status === 200) {
-                setListOfStudents(res.data);
-                setSearchStudent(false);
+                setListOfCCPMembers(res.data);
+                setSearchUser(false);
             }
         }).catch((err) => {
             console.log(err);
-            setSearchStudent(false);
+            setSearchUser(false);
         })
     };
 
-    const addStudent = () => {
+    const addCCPMember = () => {
         setOpenModal(false);
-        axios.patch(`/courses/${courseId}/student`, {
-            user_email: studentToAdd
+        axios.patch(`/courses/${courseId}/ccp`, {
+            user_email: userToAdd
         }).then((res) => {
             if (res.status === 200) {
-                loadCourseStudents();
-                toast(t('Estudante adicionado com sucesso!'), successConfig);
+                loadCourseCCP();
+                toast(t('Utilizador adicionado com sucesso!'), successConfig);
             } else {
-                toast(t('Ocorreu um erro ao adicionar o estudante!'), errorConfig);
+                toast(t('Ocorreu um erro ao adicionar o utilizador!'), errorConfig);
             }
         });
     };
@@ -76,7 +76,7 @@ const CourseTabsStudents = ({ courseId, isLoading }) => {
             { loading && (
                 <div style={{height: "80px"}}>
                     <Dimmer active inverted>
-                        <Loader indeterminate>{t('A carregar os estudantes')}</Loader>
+                        <Loader indeterminate>{t('A carregar membros da CCP')}</Loader>
                     </Dimmer>
                 </div>
             )}
@@ -85,7 +85,7 @@ const CourseTabsStudents = ({ courseId, isLoading }) => {
                     <ShowComponentIfAuthorized permission={[SCOPES.EDIT_COURSES]}>
                         <Segment clearing basic className={"padding-none"}>
                             <Button floated='right' icon labelPosition='left' positive size='small' onClick={() => setOpenModal(true)}>
-                                <Icon name='add' /> { t("Adicionar estudante") }
+                                <Icon name='add' /> { t("Adicionar membro da CCP") }
                             </Button>
                         </Segment>
                     </ShowComponentIfAuthorized>
@@ -100,15 +100,15 @@ const CourseTabsStudents = ({ courseId, isLoading }) => {
                             </Table.Row>
                         </Table.Header>
                         <Table.Body>
-                            {students.map((student, index) => (
+                            {ccpMembers.map((ccpMember, index) => (
                                 <Table.Row key={index}>
-                                    <Table.Cell>{student.email}</Table.Cell>
-                                    <Table.Cell>{student.name}</Table.Cell>
+                                    <Table.Cell>{ccpMember.email}</Table.Cell>
+                                    <Table.Cell>{ccpMember.name}</Table.Cell>
                                     <ShowComponentIfAuthorized permission={[SCOPES.EDIT_COURSES]}>
                                         <Table.Cell width="3">
-                                            <Button color="red" onClick={() => removeStudent(student.id)}>
+                                            <Button color="red" onClick={() => removeCCPMember(ccpMember.id)}>
                                                 <Icon name="trash"/>
-                                                { t("Remover estudante") }
+                                                { t("Remover membro da CCP") }
                                             </Button>
                                         </Table.Cell>
                                     </ShowComponentIfAuthorized>
@@ -121,25 +121,25 @@ const CourseTabsStudents = ({ courseId, isLoading }) => {
 
             {openModal && (
                 <Modal dimmer="blurring" open={openModal} onClose={() => setOpenModal(false)}>
-                    <Modal.Header>{ t("Adicionar estudante") }</Modal.Header>
+                    <Modal.Header>{ t("Adicionar membro da CCP ") }</Modal.Header>
                     <Modal.Content>
                         <Form>
-                            <Form.Dropdown placeholder={ t("Procurar pelo email do estudante") } label={ t("Estudante a adicionar") } search selection
-                                loading={searchStudent}
+                            <Form.Dropdown placeholder={ t("Procurar pelo email do utilizador") } label={ t("Utilizador a adicionar") } search selection
+                                loading={searchUser}
                                 // options={listOfStudents}
-                                options={listOfStudents.map((student) => ({
-                                    key: student.id,
-                                    text: student.name,
-                                    value: student.email,
+                                options={listOfCCPMembers.map((ccpMember) => ({
+                                    key: ccpMember.id,
+                                    text: ccpMember.name,
+                                    value: ccpMember.email,
                                 }))}
-                                onSearchChange={_.debounce(searchStudents, 400)}
-                                onChange={(e, { value }) => setStudentToAdd(value)}
+                                onSearchChange={_.debounce(searchUsers, 400)}
+                                onChange={(e, { value }) => setUserToAdd(value)}
                             />
                         </Form>
                     </Modal.Content>
                     <Modal.Actions>
-                        <Button negative onClick={() => { setStudentToAdd(undefined);setOpenModal(false); }}>{ t("Cancelar") }</Button>
-                        <Button positive onClick={addStudent}>{ t("Adicionar") }</Button>
+                        <Button negative onClick={() => { setUserToAdd(undefined);setOpenModal(false); }}>{ t("Cancelar") }</Button>
+                        <Button positive onClick={addCCPMember}>{ t("Adicionar") }</Button>
                     </Modal.Actions>
                 </Modal>
             )}
@@ -147,4 +147,4 @@ const CourseTabsStudents = ({ courseId, isLoading }) => {
     );
 };
 
-export default CourseTabsStudents;
+export default CourseTabsCCP;

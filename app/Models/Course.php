@@ -33,7 +33,7 @@ class Course extends Model
         return $this->belongsTo(User::class, 'coordinator_user_id');
     }
 
-    public function students()
+    public function courseMembersCCP()
     {
         return $this->belongsToMany(User::class, 'course_user');
     }

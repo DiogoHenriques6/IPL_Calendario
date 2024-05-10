@@ -248,15 +248,16 @@
         "Adicionar Nova unidade curricular": "Add new curricular unit",
         "Ou": "or",
 
-        "Remover estudante": "Remove student",
-        "Adicionar estudante": "Add student",
-        "Procurar pelo email do estudante": "Search by student email",
-        "Estudante a adicionar": "Student to add",
+        "A carregar membros da CCP": "Loading CCP members",
+        "Remover membro da CCP": "Remove CCP member",
+        "Adicionar membro da CCP": "Add CCP member",
+        "Procurar pelo email do utilizador": "Search by user email",
+        "Utilizador a adicionar": "User to add",
 
-        "Estudante removido com sucesso do curso!": "Student removed with success from the course!",
-        "Ocorreu um problema ao remover o estudante do curso!": "There was a problem removing the Student from the course!",
-        "Estudante adicionado com sucesso!": "Student added with success!",
-        "Ocorreu um erro ao adicionar o estudante!": "There was a problem trying to add the student!",
+        "Utilizador removido com sucesso da CCP!": "User removed with success from the CCP!",
+        "Ocorreu um problema ao remover o utilizador da CCP!": "There was a problem removing the User from the CCP!",
+        "Utilizador adicionado com sucesso!": "User added with success!",
+        "Ocorreu um erro ao adicionar o utilizador!": "There was a problem trying to add the user!",
 
         "Unidade curricular removida com sucesso do curso!": "Curricular unit removed with success from the course!",
         "Ocorreu um problema ao remover a unidade curricular do curso!": "There was a problem removing the curricular unit from the course!",
@@ -415,7 +416,7 @@
         "Caso seja obrigatório, quando criar um novo calendário, terá de preencher a interrupção": "If mandatory, when creating a new calendar, you will have to fill in the interruption",
 
         "Ramos": "Branches",
-        "Estudantes": "Students",
+        "Membros da CCP": "CCP members",
         "Ramo adicionado com sucesso!": "Branch added successfully!",
         "Ocorreu um erro ao gravar o ramo!": "There was an error writing the branch!",
         "Ao eliminar este ramo, todas as UCs deste ramo, terão de ser atualizadas posteriormente!": "By deleting this branch, all CUs in this branch will have to be updated later!",

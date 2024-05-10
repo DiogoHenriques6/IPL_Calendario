@@ -109,9 +109,7 @@ class UserController extends Controller
     public function searchStudents(Request $request)
     {
         $search = $request->input('q');
-        $users = User::whereHas('groups', function ($query) {
-            $query->where('code', 'student');
-        })->where(function ($query) use ($search) {
+        $users = User::where(function ($query) use ($search) {
             $query->where('name', 'like', "%$search%")
                 ->orWhere('email', 'like', "%$search%");
         })->limit(30)->get();

@@ -177,10 +177,8 @@ const CourseUnitsList = () => {
                         </Form.Group>
                         { showAdvancedFilters && (
                             <Form.Group>
-
-                                    <Courses widthSize={4} eventHandler={filterByCourse} />
-                                    <GroupUnits widthSize={3} eventHandler={filterByGroupUnit} />
-
+                                <Courses widthSize={4} eventHandler={filterByCourse} />
+                                <GroupUnits widthSize={3} eventHandler={filterByGroupUnit} />
                                 <Semesters widthSize={3} eventHandler={filterBySemester} withSpecial={false} />
                                 <CurricularYears widthSize={2} eventHandler={filterByCurricularYear}/>
                                 <ShowComponentIfAuthorized permission={SCOPES.CREATE_COURSES}>

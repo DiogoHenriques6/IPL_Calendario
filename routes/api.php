@@ -237,9 +237,9 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/courses/{course}/unit',                'addUnit'          );
         Route::delete('/courses/{course}/unit/{unit}',       'removeUnit'       );
 
-        Route::get('/courses/{course}/students',             'getStudents'      );
-        Route::patch('/courses/{course}/student',            'addStudent'       );
-        Route::delete('/courses/{course}/student/{student}', 'removeStudent'    );
+        Route::get('/courses/{course}/ccp',             'getMembersCCP'      );
+        Route::patch('/courses/{course}/ccp',            'addMemberCCP'       );
+        Route::delete('/courses/{course}/ccp/{ccp}', 'removeMemberCCP'    );
 
         Route::delete('/courses/{course}',                   'destroy'          );
         Route::patch('/courses/{course}',                    'update'           );

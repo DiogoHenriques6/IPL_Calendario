@@ -70,6 +70,11 @@ class Group extends Model
         return $query->where('code', 'like', InitialGroups::COORDINATOR . "%");
     }
 
+    public function scopeisCCP($query)
+    {
+        return $query->where('code', 'like', InitialGroups::COMISSION_CCP . "%");
+    }
+
     public function scopeBoard($query)
     {
         return $query->where('code', 'like', InitialGroups::BOARD . "%");
