@@ -111,8 +111,7 @@ class CalendarController extends Controller
 
     public function getCalendarWarnings(Request $request, Calendar $calendar)
     {
-        $response = CalendarService::getCalendarWarnings($calendar);
-        return $response;
+        return CalendarService::getCalendarWarnings($calendar);
     }
 
 
@@ -125,14 +124,12 @@ class CalendarController extends Controller
 
     public function phasesGroups(Request $request)
     {
-        $response = CalendarService::phasesGroups($request);
-        return $response;
+        return CalendarService::phasesGroups($request);
     }
 
 
     public function approval(Request $request, Calendar $calendar)
     {
-        $response = CalendarService::approval($request, $calendar);
-        return $response;
+        return CalendarService::approval($request, $calendar);
     }
 }

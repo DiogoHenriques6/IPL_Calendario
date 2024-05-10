@@ -8,6 +8,7 @@ use App\Models\CalendarPhase;
 use App\Models\Semester;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use tiagomichaelsousa\LaravelFilters\QueryFilters;
 
 class CalendarFilters extends QueryFilters
@@ -26,15 +27,23 @@ class CalendarFilters extends QueryFilters
         //      -> Todos os calendarios
 
         // TODO Make this filter be more dynamic to have in account the groups for the schools (eg: "gop_estg")
-        $isManagement = $user->groups->contains('code', InitialGroups::ADMIN) || $user->groups->contains('code', InitialGroups::SUPER_ADMIN) || $user->groups->contains('code', InitialGroups::GOP);
-        $isManagement = $isManagement || $user->groups->contains('code', InitialGroups::BOARD) || $user->groups->contains('code', InitialGroups::PEDAGOGIC) || $user->groups->contains('code', InitialGroups::RESPONSIBLE_PEDAGOGIC);
+
+        $isManagement = $user->groups->contains('code', InitialGroups::ADMIN)
+            || $user->groups->contains('code', InitialGroups::SUPER_ADMIN)
+            || $user->groups->contains('code', InitialGroups::GOP)
+            || $user->groups->contains('code', InitialGroups::BOARD)
+            || $user->groups->contains('code', InitialGroups::PEDAGOGIC)
+            || $user->groups->contains('code', InitialGroups::RESPONSIBLE_PEDAGOGIC);
+
+
 
         $user_groups = [];
         foreach (Auth::user()->groups->toArray() as $group){
             $user_groups[] = $group["id"];
         }
-
+        //LOG::channel('users_login')->info("User groups: " .  json_encode($user_groups));
         $myCourseOnly = $isManagement ? false : $search === "true";
+        //LOG::channel('users_login')->info("$myCourseOnly: " . json_encode($myCourseOnly) );
         $this->builder->where(function ($query) use ($user_groups, $myCourseOnly) {
             $query->whereHas('viewers', function (Builder $queryIn) use($user_groups) {
                 $queryIn->whereIn('group_id', $user_groups);

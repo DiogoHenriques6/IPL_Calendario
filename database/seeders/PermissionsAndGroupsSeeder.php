@@ -221,6 +221,7 @@ class PermissionsAndGroupsSeeder extends Seeder
             ["code" => "view_comments",                     "section_code" => "calendar",           "name_pt" => "Ver comentários",                                 "name_en" => "See comments",                    "is_general" => true  ],
             ["code" => "view_calendar_history",             "section_code" => "calendar",           "name_pt" => "Ver o histórico do calendário",                   "name_en" => "View calendar history",           "is_general" => true  ],
             ["code" => "view_actual_phase",                 "section_code" => "calendar",           "name_pt" => "Ver fase atual",                                  "name_en" => "See current phase",               "is_general" => true  ],
+            ["code" => "approve_publication",                 "section_code" => "calendar",           "name_pt" => "Aprovar Publicação",                              "name_en" => "Approve Publication",               "is_general" => true  ],
 
             ["code" => "publish_calendar",                  "section_code" => "calendar",           "name_pt" => "Publicar calendário",                             "name_en" => "Publish calendar",                "is_general" => true  ],
             ["code" => "create_copy",                       "section_code" => "calendar",           "name_pt" => "Criar cópia",                                     "name_en" => "Create copy",                     "is_general" => true  ],
