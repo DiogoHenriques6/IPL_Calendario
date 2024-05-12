@@ -27,7 +27,7 @@ class CalendarController extends Controller
         $perPage = request('per_page', 20);
 
         $calendars = Calendar::filter($filters)->ofAcademicYear($request->cookie('academic_year'));
-//        return json_encode($filters);
+
         if(!$request->has("myCourseOnly")){
             $calendars->filter(new CalendarFilters(["myCourseOnly" => false]));
         }

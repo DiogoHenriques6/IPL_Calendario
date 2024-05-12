@@ -16,6 +16,7 @@ class CourseListResource extends JsonResource
         if($request->has('epoch')){
             $epochId = Semester::where('code', $request->input('epoch'))->first()->id;
         }
+
         return [
             'id'            => $this->id,
             'code'          => $this->code,

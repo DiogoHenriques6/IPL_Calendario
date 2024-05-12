@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use function PHPUnit\Framework\isEmpty;
 
 class CourseController extends Controller
 {
@@ -39,7 +40,7 @@ class CourseController extends Controller
             $userId = Auth::user()->id;
             $userGroups = Auth::user()->groups()->get();
             $courseIds = [];
-
+            $groupCourseQuery = [];
             foreach ($userGroups as $group) {
 //                        LOG::channel('sync_test')->info("Group: " . $group->code);
                 if ($group->gopSchool()->exists()) {
@@ -47,34 +48,37 @@ class CourseController extends Controller
                     $groupCourseQuery->where('school_id', $group->gopSchool->id)->pluck('id');
 //                            LOG::channel('sync_test')->info("Size Units GOP: " . $groupCourseUnitsQuery->get()->count());
                 }
-
-                if($group->code == "coordinator"){
+                if ($group->code == "gop") {
                     $groupCourseQuery = clone $courseList;
-                    $groupCourseQuery->where('coordinator_user_id', $userId)->pluck('id');
-//                            LOG::channel('sync_test')->info("Size Units cordenador: " . $groupCourseUnitsQuery->get()->count());
                 }
 
-                $groupCourses= $groupCourseQuery->get();
+                    if ($group->code == "coordinator") {
+                        $groupCourseQuery = clone $courseList;
+                        $groupCourseQuery->where('coordinator_user_id', $userId)->pluck('id');
+//                            LOG::channel('sync_test')->info("Size Units cordenador: " . $groupCourseUnitsQuery->get()->count());
+                    }
+
+                    if (isEmpty($groupCourseQuery))
+                        $groupCourses = $groupCourseQuery->get();
 //                        LOG::channel('sync_test')->info("Size Course Units: " . $groupCourseUnits->count());
 
-                // Collect course unit IDs
-                foreach ($groupCourses as $course) {
-                    $courseIds[] = $course->id;
+                    // Collect course unit IDs
+                    foreach ($groupCourses as $course) {
+                        $courseIds[] = $course->id;
+                    }
                 }
-            }
-            $courseList = CourseUnit::whereIn('id', $courseIds);
+                $courseList = Course::whereIn('id', $courseIds);
+
         }
-        else{
-            if( request('school') ){
-                $courseList->where('school_id', request('school'));
-            }
-            if( request('degree') && !$request->has('without-degrees')){
-                $courseList->where('degree', (request('degree') == "no-degree" ? "" : request('degree')));
-            }
-            if(request('degree', "") != "no-degree"){
-                // remove courses that have no degree associated, unless requested
-                $courseList->where('degree', (request('without-degrees', '') == '' ? '<>' : '='), '');
-            }
+        if( request('school') ){
+            $courseList->where('school_id', request('school'));
+        }
+        if( request('degree') && !$request->has('without-degrees')){
+            $courseList->where('degree', (request('degree') == "no-degree" ? "" : request('degree')));
+        }
+        if(request('degree', "") != "no-degree"){
+            // remove courses that have no degree associated, unless requested
+            $courseList->where('degree', (request('without-degrees', '') == '' ? '<>' : '='), '');
         }
 
         $courseList->filter($filters);
