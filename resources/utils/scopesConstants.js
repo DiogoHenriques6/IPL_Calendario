@@ -5,6 +5,7 @@ const SCOPES = {
     VIEW_COMMENTS: 'view_comments',
     VIEW_CALENDAR_HISTORY: 'view_calendar_history',
     VIEW_ACTUAL_PHASE: 'view_actual_phase',
+    APPROVE_PUBLICATION: 'approve_publication',
 
     PUBLISH_CALENDAR: 'publish_calendar',
     CREATE_COPY: 'create_copy',
@@ -77,6 +78,7 @@ export const CALENDAR_SCOPES = [
     SCOPES.VIEW_ACTUAL_PHASE,
     SCOPES.PUBLISH_CALENDAR,
     SCOPES.CREATE_COPY,
+    SCOPES.APPROVE_PUBLICATION,
 ];
 
 export const COURSE_UNIT_SCOPES = [

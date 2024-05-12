@@ -38,6 +38,7 @@ use App\Utils\Utils;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class CalendarService
 {
@@ -164,9 +165,12 @@ class CalendarService
         // $request->input("message")
         if(Auth::user()->groups()->board()->exists()){
             if($request->input("accepted")) {
+                // if the board accepts the calendar, will be published
                 self::publish($calendar);
                 return;
+                // TODO send email see CalendarPublished.php
             } else {
+                // if the board rejects the calendar, it goes back to the GOP
                 $calendar->calendar_phase_id = CalendarPhase::phaseEditGop();
                 $calendar->save();
                 CalendarChanged::dispatch($calendar);

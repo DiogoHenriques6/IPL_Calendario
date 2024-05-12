@@ -25,12 +25,12 @@ class CalendarPublished
         $this->calendar = $calendar;
 
         //$users = $calendar->course()->students()->pluck('email');
-        $students = $calendar->course->students()->pluck('email')->join(', ');//->toArray();
+        //$students = $calendar->course->students()->pluck('email')->join(', ');//->toArray();
         // TODO > send to teachers as well? Or just students?
         //foreach ($students as $recipient) {
-        if($students != "") {
-            Mail::bcc($students)->send(new CalendarPublishedEmail($calendar));//queue
-        }
+        //if($students != "") {
+        //    Mail::bcc($students)->send(new CalendarPublishedEmail($calendar));//queue
+        //}
         //}
     }
 }
