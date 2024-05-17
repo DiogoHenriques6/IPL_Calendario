@@ -136,7 +136,7 @@ class LoginController extends Controller
         }
 
         $scopes = $user->permissions()->where('group_permissions.enabled', true)->groupBy('permissions.code')->pluck('permissions.code')->values()->toArray();
-
+        LOG::channel('sync_test')->info($scopes);
         $accessToken = $user->createToken('authToken', $scopes)->accessToken;
 
         $selectedYear = AcademicYear::where('selected', true)->first();
@@ -145,13 +145,19 @@ class LoginController extends Controller
         } else {
             $activeYear = 0;
         }
+        $currentGroup = [
+            'key' => $user->groups()->first()->id,
+            'text' => $user->groups()->first()->code,
+            'value' => $user->groups()->first()->name_pt
+        ];
 
         $utils = new Utils();
         return response()->json([
             'user'          => new UserResource($user),
             'accessToken'   => $accessToken,
-            'academicYear'  => $utils->getFullYearsAcademicYear($selectedYear ? $selectedYear->display : 0)
-        ], Response::HTTP_OK)->withCookie('academic_year', $activeYear);
+            'academicYear'  => $utils->getFullYearsAcademicYear($selectedYear ? $selectedYear->display : 0),
+            'currentGroup'  =>$currentGroup
+        ], Response::HTTP_OK)->withCookie('academic_year', $activeYear )->withCookie('selectedGroup',$user->groups()->first()->id);
     }
 
 

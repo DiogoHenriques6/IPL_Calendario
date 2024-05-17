@@ -226,8 +226,8 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                                     <>
                                         { localStorage.getItem('groups')?.indexOf('board') >= 0 || localStorage.getItem('groups')?.indexOf('pedagogic') >= 0 ? (
                                             <>
-                                                <Button color="red" onClick={rejectCalendarHandler}>{ t('Rejeitar') }</Button>
-                                                <Button color="green" onClick={acceptCalendarHandler}>{ t('Validar') }</Button>
+                                                <Button color="red" onClick={rejectCalendarHandler}>{ t('Necessário reformulação') }</Button>
+                                                <Button color="green" onClick={acceptCalendarHandler}>{ t('Aprovar') }</Button>
                                             </>
                                         ) : (
                                             <Button color="teal" onClick={openSubmitModalHandler}>{ t('Submeter') }</Button>

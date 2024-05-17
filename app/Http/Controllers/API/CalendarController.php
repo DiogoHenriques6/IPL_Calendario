@@ -16,6 +16,7 @@ use App\Models\Semester;
 use App\Services\CalendarService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 class CalendarController extends Controller
 {
@@ -25,13 +26,12 @@ class CalendarController extends Controller
     {
         $lang = (in_array($request->header("lang"), ["en", "pt"]) ? $request->header("lang") : "pt");
         $perPage = request('per_page', 20);
+        $calendars = [];
 
         $calendars = Calendar::filter($filters)->ofAcademicYear($request->cookie('academic_year'));
-
         if(!$request->has("myCourseOnly")){
-            $calendars->filter(new CalendarFilters(["myCourseOnly" => false]));
+            $calendars->filter(new CalendarFilters(['myCourseOnly' => false]));
         }
-//        return $calendars;
         return CalendarListResource::collection($calendars->orderBy('previous_calendar_id')->paginate($perPage));
     }
 
