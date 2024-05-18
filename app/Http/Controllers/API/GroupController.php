@@ -18,6 +18,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class GroupController extends Controller
 {
@@ -96,6 +97,11 @@ class GroupController extends Controller
 
     public function switch(SelectedGroupSwitchRequest $request)
     {
-        return response()->json()->withCookie('selectedGroup', $request->switch);
+        $group = Group::find($request->switch);
+        $permissions = $group->permissions()->where('group_permissions.enabled', true)
+            ->groupBy('permissions.code')->pluck('permissions.code')
+            ->values()->toArray();
+        LOG::channel('sync_test')->info("Permissions", $permissions);
+        return response()->json($permissions)->withCookie('selectedGroup', $request->switch);
     }
 }

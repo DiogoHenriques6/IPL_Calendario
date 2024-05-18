@@ -27,12 +27,4 @@ class SelectedGroupSwitchRequest extends FormRequest
             'switch' => 'required|exists:groups,id'
         ];
     }
-
-    public function messages()
-    {
-        return [
-            'switch.required' => 'The group to switch to is required',
-            'switch.exists' => 'The group to switch to does not exist'
-        ];
-    }
 }

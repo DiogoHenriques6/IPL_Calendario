@@ -46,31 +46,31 @@ class CalendarFilters extends QueryFilters
                 $isManagement = true;
                 break;
             case str_contains($currentGroup->code, InitialGroups::GOP):
-                Log::channel('sync_test')->info($currentGroup->code);
+//                Log::channel('sync_test')->info($currentGroup->code);
                 $schoolId = $currentGroup->gopSchool()->pluck('id');
                 break;
             case str_contains($currentGroup->code,InitialGroups::BOARD):
-                Log::channel('sync_test')->info($currentGroup->code);
+//                Log::channel('sync_test')->info($currentGroup->code);
                 $schoolId = $currentGroup->boardSchool()->pluck('id');
                 break;
             case str_contains($currentGroup->code,InitialGroups::PEDAGOGIC):
-                Log::channel('sync_test')->info($currentGroup->code);
+//                Log::channel('sync_test')->info($currentGroup->code);
                 $schoolId = $currentGroup->pedagogicSchool()->pluck('id');
                 break;
             case str_contains($currentGroup->code,InitialGroups::RESPONSIBLE_PEDAGOGIC):
-                Log::channel('sync_test')->info($currentGroup->code);
+//                Log::channel('sync_test')->info($currentGroup->code);
                 $isManagement = true;
                 break;
             case str_contains($currentGroup->code,InitialGroups::COMISSION_CCP):
-                Log::channel('sync_test')->info($currentGroup->code);
+//                Log::channel('sync_test')->info($currentGroup->code);
                 $courseId = Auth::user()->courses->pluck('id');
                 break;
             case str_contains($currentGroup->code,InitialGroups::COORDINATOR):
-                Log::channel('sync_test')->info($currentGroup->code);
+//                Log::channel('sync_test')->info($currentGroup->code);
                 $courseId = Course::where('coordinator_user_id', Auth::user()->id)->pluck('id');
                 break;
             case str_contains($currentGroup->code,InitialGroups::RESPONSIBLE):
-                Log::channel('sync_test')->info($currentGroup->code);
+//                Log::channel('sync_test')->info($currentGroup->code);
                 $courseId = CourseUnit::where('responsible_user_id',Auth::user()->id)->pluck('course_id');
                 break;
             default:
@@ -90,9 +90,7 @@ class CalendarFilters extends QueryFilters
 //            $query->whereHas('viewers', function (Builder $queryIn) use($user_groups) {
 //                $queryIn->whereIn('group_id', $user_groups);
 //            });
-        LOG::channel('sync_test')->info($search);
         if($courseId != null){
-            Log::channel('sync_test')->info($courseId);
             $this->builder->whereIn('course_id', $courseId)
                 ->where(function ($query) use ($currentGroup, $search) {
                     $query->whereHas('viewers', function (Builder $queryIn) use($currentGroup) {

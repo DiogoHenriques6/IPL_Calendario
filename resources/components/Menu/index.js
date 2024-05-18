@@ -40,6 +40,7 @@ const HeaderMenu = () => {
                     if(!localStorage.getItem('selectedGroup')){
                         setSelectedGroup(response?.data?.data[0])
                         localStorage.setItem('selectedGroup', [response?.data?.data[0].key, response?.data?.data[0].text, response?.data?.data[0].value]);
+
                     }
                     else{
                         var selectedGroupString = localStorage.getItem('selectedGroup').split(',');
@@ -50,7 +51,8 @@ const HeaderMenu = () => {
                         });
                     }
                 }
-            })
+            });
+        // localStorage.setItem('scopes', sessionStorage.getItem('scopes'));
 
         axios.get('academic-years/menu').then((response) => {
             if (response.status >= 200 && response.status < 300) {
@@ -72,10 +74,12 @@ const HeaderMenu = () => {
             localStorage.removeItem('calendarPermissions');
             localStorage.removeItem('academicYear');
             localStorage.removeItem('selectedGroup');
+            sessionStorage.removeItem('scopes');
             dispatch(logout());
             navigate('/login');
         });
     };
+
 
     const switchAcademicYear = (academicYear) => {
         axios.post('academic-years/switch', {
@@ -88,17 +92,19 @@ const HeaderMenu = () => {
                 window.location.reload();
             });
     };
-
+    //TODO if we change it on a page that the new group has no permissions it returns the webpage no permissions
+    // LOCALSTORAGE not updating correctly... check why fix it
     const switchSelectedGroup = (group) => {
         axios.post('user-group/switch', {
             switch: group.key,
-            })
-            .then(() => {
+        })
+            .then((res) => {
                 setSelectedGroup(group);
                 localStorage.setItem('selectedGroup', [group.key, group.text, group.value]);
+                localStorage.setItem('scopes',JSON.stringify(res.data));
                 dispatch(setCurrentGroup(group));
                 window.location.reload();
-            });
+            })
     };
 
 
@@ -165,7 +171,8 @@ const HeaderMenu = () => {
 
                 <Menu.Menu position="right">
                     {userGroups?.length === 1 && (
-                        <Menu.Item>{userGroups[0].text}</Menu.Item>
+                        // <Menu.Item>{userGroups[0].text}</Menu.Item>
+                        <></>
                     )}
                     {userGroups?.length > 1 && (
                         <Dropdown item text={selectedGroup?.text}>
