@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Requests\SelectedGroupSwitchRequest;
 use App\Http\Resources\Admin\Edit\GroupEditResource;
 use App\Http\Resources\Admin\PermissionSectionsByPhaseResource;
 use App\Http\Resources\Admin\PermissionSectionsResource;
+use App\Http\Resources\MyGroupsResource;
 use App\Models\CalendarPhase;
 use App\Models\Group;
 use App\Http\Controllers\Controller;
@@ -13,7 +15,10 @@ use App\Http\Resources\GroupsResource;
 use App\Models\Permission;
 use App\Models\PermissionSection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class GroupController extends Controller
 {
@@ -85,5 +90,18 @@ class GroupController extends Controller
         return response()->json(["id" => $newGroup->id], Response::HTTP_CREATED);
     }
 
+    public function getUserGroup()
+    {
+        return MyGroupsResource::collection(Auth::user()->groups);
+    }
 
+    public function switch(SelectedGroupSwitchRequest $request)
+    {
+        $group = Group::find($request->switch);
+        $permissions = $group->permissions()->where('group_permissions.enabled', true)
+            ->groupBy('permissions.code')->pluck('permissions.code')
+            ->values()->toArray();
+        LOG::channel('sync_test')->info("Permissions", $permissions);
+        return response()->json($permissions)->withCookie('selectedGroup', $request->switch);
+    }
 }

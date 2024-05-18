@@ -57,39 +57,45 @@ class CourseUnitController extends Controller
             $userGroups = Auth::user()->groups()->get();
 //            return json_encode($userGroups);
             if(!$allUCs) {
-                //had to change $userGroups to Auth::user()->groups()
-                if (!Auth::user()->groups()->superAdmin()->exists() && !Auth::user()->groups()->admin()->exists() && !Auth::user()->groups()->responsiblePedagogic()->exists()) {
-                    $courseUnitIds = [];
-                    $baseCourseUnitQuery = CourseUnit::with('methods')->filter($filters, $lang)->ofAcademicYear($request->cookie('academic_year'));
-                    foreach ($userGroups as $group) {
-//                        LOG::channel('sync_test')->info("Group: " . $group->code);
-                        if ($group->gopSchool()->exists()) {
-                            $groupCourseUnitsQuery = clone $baseCourseUnitQuery;
-                            $groupCourseUnitsQuery->whereIn('course_id', Course::where('school_id', $group->gopSchool->id)->pluck('id'));
-//                            LOG::channel('sync_test')->info("Size Units GOP: " . $groupCourseUnitsQuery->get()->count());
-                        }
+                $currentUserId = $request->cookie('selectedGroup');
+                $currentGroup = Group::where('id', $currentUserId)->first();
 
-                        if($group->code == "coordinator"){
-                            $groupCourseUnitsQuery = clone $baseCourseUnitQuery;
-                            $groupCourseUnitsQuery->whereIn('course_id', Course::where('coordinator_user_id', $userId)->pluck('id'));
-//                            LOG::channel('sync_test')->info("Size Units cordenador: " . $groupCourseUnitsQuery->get()->count());
-                        }
+                $schoolId = null;
+                $courseId = null;
+                switch ($currentGroup->code) {
+                    case str_contains($currentGroup->code, InitialGroups::GOP):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                        $schoolId = $currentGroup->gopSchool()->pluck('id');
+                        break;
+                    case str_contains($currentGroup->code, InitialGroups::BOARD):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                        $schoolId = $currentGroup->boardSchool()->pluck('id');
+                        break;
+                    case str_contains($currentGroup->code, InitialGroups::PEDAGOGIC):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                        $schoolId = $currentGroup->pedagogicSchool()->pluck('id');
+                        break;
+                    case str_contains($currentGroup->code, InitialGroups::COMISSION_CCP):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                        $courseId = Auth::user()->courses->pluck('id');
+                        break;
+                    case str_contains($currentGroup->code, InitialGroups::COORDINATOR):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                        $courseId = Course::where('coordinator_user_id', Auth::user()->id)->pluck('id');
+                        break;
+                    case str_contains($currentGroup->code, InitialGroups::RESPONSIBLE):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                        $courseUnits = CourseUnit::where('responsible_user_id', Auth::user()->id);
+                        break;
+                }
 
-                        if($group->code == "responsible_course_unit"){
-                            $groupCourseUnitsQuery = clone $baseCourseUnitQuery;
-                            $groupCourseUnitsQuery->where('responsible_user_id', $userId);
-//                            LOG::channel('sync_test')->info("Size Course Units Responsavel: " . $groupCourseUnitsQuery->get()->count());
-                        }
+                if ($schoolId != null) {
+                    $courses = Course::where('school_id', $schoolId)->pluck('id');
+                    $courseUnits->whereIn('course_id', $courses);
+                }
 
-                        $groupCourseUnits = $groupCourseUnitsQuery->get();
-//                        LOG::channel('sync_test')->info("Size Course Units: " . $groupCourseUnits->count());
-
-                        // Collect course unit IDs
-                        foreach ($groupCourseUnits as $courseUnit) {
-                            $courseUnitIds[] = $courseUnit->id;
-                        }
-                    }
-                    $courseUnits = CourseUnit::whereIn('id', $courseUnitIds);
+                if ($courseId != null) {
+                    $courseUnits->whereIn('course_id', $courseId);
                 }
             }
             if( request('semester') ){

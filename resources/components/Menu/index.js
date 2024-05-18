@@ -4,7 +4,7 @@ import {Link, useNavigate, useLocation} from 'react-router-dom';
 import {Container, Menu, Dropdown, Icon, Label} from 'semantic-ui-react';
 import axios from 'axios';
 import {useTranslation} from "react-i18next";
-import {logout, setAcademicYear} from '../../redux/app/actions';
+import {logout, setAcademicYear, setCurrentGroup} from '../../redux/app/actions';
 import {
     ACADEMIC_YEAR_SCOPES,
     CALENDAR_PHASES_SCOPES,
@@ -19,6 +19,7 @@ import {
     USER_SCOPES,
 } from '../../utils/scopesConstants';
 import ShowComponentIfAuthorized from '../ShowComponentIfAuthorized';
+import {toast} from "react-toastify";
 
 const HeaderMenu = () => {
     const navigate = useNavigate();
@@ -27,8 +28,32 @@ const HeaderMenu = () => {
     const dispatch = useDispatch();
     const { t } = useTranslation();
     const [academicYearsList, setAcademicYearsList] = useState([]);
+    const [userGroups, setUserGroups] = useState([]);
+    const [selectedGroup, setSelectedGroup] = useState(null);
 
     useEffect(() => {
+        //TODO join both api calls into one (less time loading)
+            axios.get('user-group/menu').then((response) => {
+                // console.log(response?.data?.data);
+                if (response.status >= 200 && response.status < 300) {
+                    setUserGroups(response?.data?.data);
+                    if(!localStorage.getItem('selectedGroup')){
+                        setSelectedGroup(response?.data?.data[0])
+                        localStorage.setItem('selectedGroup', [response?.data?.data[0].key, response?.data?.data[0].text, response?.data?.data[0].value]);
+
+                    }
+                    else{
+                        var selectedGroupString = localStorage.getItem('selectedGroup').split(',');
+                        setSelectedGroup({
+                            key: parseInt(selectedGroupString[0].trim()),
+                            text: selectedGroupString[1].trim(),
+                            value: selectedGroupString[2].trim()
+                        });
+                    }
+                }
+            });
+        // localStorage.setItem('scopes', sessionStorage.getItem('scopes'));
+
         axios.get('academic-years/menu').then((response) => {
             if (response.status >= 200 && response.status < 300) {
                 dispatch(setAcademicYear(response?.data?.data?.find((year) => year.selected)));
@@ -36,6 +61,7 @@ const HeaderMenu = () => {
             }
         });
     }, []);
+
 
     const logoutUser = () => {
         axios.post('/logout').then(() => {
@@ -47,10 +73,13 @@ const HeaderMenu = () => {
             localStorage.removeItem('scopes');
             localStorage.removeItem('calendarPermissions');
             localStorage.removeItem('academicYear');
+            localStorage.removeItem('selectedGroup');
+            sessionStorage.removeItem('scopes');
             dispatch(logout());
             navigate('/login');
         });
     };
+
 
     const switchAcademicYear = (academicYear) => {
         axios.post('academic-years/switch', {
@@ -63,6 +92,22 @@ const HeaderMenu = () => {
                 window.location.reload();
             });
     };
+    //TODO if we change it on a page that the new group has no permissions it returns the webpage no permissions
+    // LOCALSTORAGE not updating correctly... check why fix it
+    const switchSelectedGroup = (group) => {
+        axios.post('user-group/switch', {
+            switch: group.key,
+        })
+            .then((res) => {
+                setSelectedGroup(group);
+                localStorage.setItem('selectedGroup', [group.key, group.text, group.value]);
+                localStorage.setItem('scopes',JSON.stringify(res.data));
+                dispatch(setCurrentGroup(group));
+                window.location.reload();
+            })
+    };
+
+
 
     const selectedAcademicYear = useSelector((state) => state.app.academicYear);
 
@@ -123,7 +168,33 @@ const HeaderMenu = () => {
                         </Dropdown.Menu>
                     </Dropdown>
                 </ShowComponentIfAuthorized>
+
                 <Menu.Menu position="right">
+                    {userGroups?.length === 1 && (
+                        // <Menu.Item>{userGroups[0].text}</Menu.Item>
+                        <></>
+                    )}
+                    {userGroups?.length > 1 && (
+                        <Dropdown item text={selectedGroup?.text}>
+                            <Dropdown.Menu>
+                                {userGroups?.map((group) => (
+                                    <Dropdown.Item key={group?.key} onClick={()=>{switchSelectedGroup(group)}}>
+                                        {selectedGroup && group.key === selectedGroup.key ? (
+                                            <span className={"align-items-center"}>
+                                                <b className={"margin-right-xs"}>{group?.text}</b>
+                                                <Label circular color={"green"} empty />
+                                            </span>
+                                        ) : (
+                                            <span className={"align-items-center"}>
+                                                <span className={"margin-right-xs"}>{group?.text}</span>
+                                            </span>
+                                        )}
+                                    </Dropdown.Item>
+                                ))}
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    )}
+
                     {academicYearsList?.length === 1 && (
                         <Menu.Item>{academicYearsList[0].display}</Menu.Item>
                     )}

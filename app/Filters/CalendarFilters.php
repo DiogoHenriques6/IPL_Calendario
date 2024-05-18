@@ -4,6 +4,7 @@ namespace App\Filters;
 
 use App\Models\Course;
 use App\Models\CourseUnit;
+use App\Models\Group;
 use App\Models\InitialGroups;
 use App\Models\CalendarPhase;
 use App\Models\Semester;
@@ -30,30 +31,94 @@ class CalendarFilters extends QueryFilters
 
         // TODO Make this filter be more dynamic to have in account the groups for the schools (eg: "gop_estg")
         //TODO Make this filter to have in account multiple groups at the same time (eg: "cc", "responsible")
-        $isManagement = $user->groups->contains('code', InitialGroups::ADMIN) || $user->groups->contains('code', InitialGroups::SUPER_ADMIN) || $user->groups->contains('code', InitialGroups::GOP);
-        $isManagement = $isManagement || $user->groups->contains('code', InitialGroups::BOARD) || $user->groups->contains('code', InitialGroups::PEDAGOGIC) || $user->groups->contains('code', InitialGroups::RESPONSIBLE_PEDAGOGIC);
+        $selectedGroupId = request()->cookie('selectedGroup');
+        $currentGroup = Group::where('id', $selectedGroupId)->first();
+        $isManagement = false;
+        $schoolId = null;
+        $courseId = null;
+        $isWatcher = false;
+        switch ($currentGroup->code) {
+            case InitialGroups::ADMIN :
+                $isManagement = true;
 
-        $user_groups = [];
-        foreach (Auth::user()->groups->toArray() as $group){
-            $user_groups[] = $group["id"];
+                break;
+            case InitialGroups::SUPER_ADMIN:
+                $isManagement = true;
+                break;
+            case str_contains($currentGroup->code, InitialGroups::GOP):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->gopSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code,InitialGroups::BOARD):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->boardSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code,InitialGroups::PEDAGOGIC):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->pedagogicSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code,InitialGroups::RESPONSIBLE_PEDAGOGIC):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $isManagement = true;
+                break;
+            case str_contains($currentGroup->code,InitialGroups::COMISSION_CCP):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $courseId = Auth::user()->courses->pluck('id');
+                break;
+            case str_contains($currentGroup->code,InitialGroups::COORDINATOR):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $courseId = Course::where('coordinator_user_id', Auth::user()->id)->pluck('id');
+                break;
+            case str_contains($currentGroup->code,InitialGroups::RESPONSIBLE):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $courseId = CourseUnit::where('responsible_user_id',Auth::user()->id)->pluck('course_id');
+                break;
+            default:
+                $isWatcher = true;
         }
-        LOG::channel('sync_test')->info($user_groups);
 
-        $myCourseOnly = $isManagement ? false : $search === "true";
-        //get calendars groups can see
-        $this->builder->where(function ($query) use ($user_groups, $myCourseOnly) {
-            $query->whereHas('viewers', function (Builder $queryIn) use($user_groups) {
-                $queryIn->whereIn('group_id', $user_groups);
-            });
-            //show every published calendar
-            if(!$myCourseOnly){
-                $query->orWhere('is_published', true)->orWhere('is_temporary', true);
-            }
-        });
-        Log::channel('sync_test')->info($this->builder->toSql());
         if($isManagement){
             return $this;
         }
+
+        if($schoolId != null){
+            $this->builder->whereIn('course_id', Course::where('school_id',$schoolId)->pluck('id'));
+            return $this;
+        }
+
+//        $this->builder->where(function ($query) use ($user_groups, $myCourseOnly) {
+//            $query->whereHas('viewers', function (Builder $queryIn) use($user_groups) {
+//                $queryIn->whereIn('group_id', $user_groups);
+//            });
+        if($courseId != null){
+            $this->builder->whereIn('course_id', $courseId)
+                ->where(function ($query) use ($currentGroup, $search) {
+                    $query->whereHas('viewers', function (Builder $queryIn) use($currentGroup) {
+                        $queryIn->where('group_id', $currentGroup->id);
+                    });
+                });
+            if(!$search)
+                $this->builder->orWhere('is_published', true)->orWhere('is_temporary', true);
+            return $this;
+        }
+
+
+
+        if($isWatcher){
+            $this->builder->where(function ($query) use ($currentGroup, $search) {
+                    $query->whereHas('viewers', function (Builder $queryIn) use($currentGroup) {
+                        $queryIn->where('group_id', $currentGroup->id);
+                    });
+                });
+            if(!$search)
+                $this->builder->orWhere('is_published', true)->orWhere('is_temporary', true);
+            return $this;
+        }
+
+
+
+//        Log::channel('sync_test')->info($this->builder->toSql());
+
 
         // List for coordinator
         //      -> meus > curso
@@ -108,8 +173,10 @@ class CalendarFilters extends QueryFilters
         //      -> Todos > mostra todos os publicados (definitivos)
         if ($user->groups->contains('code', InitialGroups::TEACHER) && $user->groups->count() == 1){
             // $search === "true" -> myCourseOnly = true
+            LOG ::channel('sync_test')->info($currentGroup->code);
             if ($search === "true") {
-                return $this->builder->whereIn('course_id', Auth::user()->courseUnits->pluck('course_id'));
+                return $this->builder->where('viewers',$currentGroup->id)
+                    ->whereIn('course_id', Auth::user()->courseUnits->pluck('course_id'));
             }
         }
     }
