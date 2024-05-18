@@ -209,6 +209,39 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
         return phaseFound?.phases.includes(calendarPhase);
     }
 
+    function openLogsModal() {
+        axios.get('/calendar-logs/' + calendarId).then((response) => {
+            if (response.status === 200) {
+                let logs = response.data.data;
+                let seenCourseUnits = new Set();
+                let logsText = '';
+                logs.forEach((log) => {
+                    if (!seenCourseUnits.has(log.course_unit_name)) {
+                        logsText += '<h3>' + log.course_unit_name + '</h3><br>';
+                        seenCourseUnits.add(log.course_unit_name);
+                    }
+                    logsText += '<b>' + log.author + '</b> - ' + moment(log.created_at).locale(selectedLanguage).format('YYYY/MM/DD, HH:mm:ss') + ' - ';
+                    if (log.is_create === 1){
+                        logsText += 'adicionou o metodo de avaliação <b>' + log.method_name + '</b> à UC <b>' + log.course_unit_name + '</b>';
+                    }else{
+                        logsText += 'alterou o metodo de avaliação <b>' + log.method_name + '</b> à UC <b>' + log.course_unit_name + '</b> de dia ' + log.old_date + ' para dia ' + log.new_date;
+                    }
+                    logsText += '<br><hr>';
+                });
+
+                SweetAlertComponent.fire({
+                    title: t('Logs do calendário'),
+                    html: logsText,
+                    width:'80%',
+                    confirmButtonText: t('Fechar'),
+                    confirmButtonColor: '#21ba45',
+                });
+            } else {
+                toast(t('Ocorreu um erro ao tentar obter os logs do calendário!'), errorConfig);
+            }
+        });
+    }
+
     return (
         <>
             <div className='main-content-title-section'>
@@ -355,9 +388,20 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                                     ) : (
                                         <div>
                                             <div>
-                                                <span>
-                                                    <Header as="h5">{ t('Última alteração') }:</Header>
-                                                </span>
+                                                <div className='display-flex'>
+                                                    <span>
+                                                        <Header as="h5">{t('Última alteração')}:</Header>
+                                                    </span>
+                                                    <ShowComponentIfAuthorized permission={SCOPES.SEE_LOGS}>
+                                                        <button className="ui circular big icon button"
+                                                                style={{padding: 0, marginLeft: 10}}
+                                                                data-tooltip="Ver logs" onClick={openLogsModal}>
+                                                            <i className="icon info circle"
+                                                               style={{cursor: 'pointer'}}></i>
+                                                        </button>
+                                                    </ShowComponentIfAuthorized>
+                                                </div>
+
                                                 <div className='margin-top-xs'>
                                                     {moment(calendarInfo?.calendar_last_update).locale(selectedLanguage).format('DD MMMM, YYYY HH:mm')}
                                                 </div>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\CalendarChangeController;
+use App\Http\Controllers\API\CalendarLogsController;
 use App\Http\Controllers\API\CalendarPhaseController;
 use App\Http\Controllers\API\EvaluationTypeController;
 use App\Http\Controllers\API\GroupController;
@@ -292,6 +293,10 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/course-unit-groups',                    'store'  );
         Route::patch('/course-unit-groups/{courseUnitGroup}', 'update' );
         Route::delete('/course-unit-groups/{courseUnitGroup}','destroy');
+    });
+
+    Route::controller(CalendarLogsController::class)->group(function () {
+        Route::get('/calendar-logs/{calendarID}', 'logsFromCalendar');
     });
 
 //     Route::get('/search/users',         [LdapController::class, 'searchUsers']      );

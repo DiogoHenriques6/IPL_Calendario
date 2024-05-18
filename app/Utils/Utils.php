@@ -1,13 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * Project: calendar-v2
- * User: Miguel Cerejo
- * Date: 4/18/2022
- * Time: 8:58 PM
- *
- * File: Utils.php
- */
 
 namespace App\Utils;
 

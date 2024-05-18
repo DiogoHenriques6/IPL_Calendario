@@ -221,7 +221,6 @@ class PermissionsAndGroupsSeeder extends Seeder
             ["code" => "view_comments",                     "section_code" => "calendar",           "name_pt" => "Ver comentários",                                 "name_en" => "See comments",                    "is_general" => true  ],
             ["code" => "view_calendar_history",             "section_code" => "calendar",           "name_pt" => "Ver o histórico do calendário",                   "name_en" => "View calendar history",           "is_general" => true  ],
             ["code" => "view_actual_phase",                 "section_code" => "calendar",           "name_pt" => "Ver fase atual",                                  "name_en" => "See current phase",               "is_general" => true  ],
-            ["code" => "approve_publication",                 "section_code" => "calendar",           "name_pt" => "Aprovar Publicação",                              "name_en" => "Approve Publication",               "is_general" => true  ],
 
             ["code" => "publish_calendar",                  "section_code" => "calendar",           "name_pt" => "Publicar calendário",                             "name_en" => "Publish calendar",                "is_general" => true  ],
             ["code" => "create_copy",                       "section_code" => "calendar",           "name_pt" => "Criar cópia",                                     "name_en" => "Create copy",                     "is_general" => true  ],
@@ -284,10 +283,8 @@ class PermissionsAndGroupsSeeder extends Seeder
             ["code" => "add_interruption",                  "section_code" => "interruption",       "name_pt" => "Adicionar interrupções",                          "name_en" => "Add interruption",                "is_general" => false ],
             ["code" => "edit_interruption",                 "section_code" => "interruption",       "name_pt" => "Editar interrupções",                             "name_en" => "Edit interruptions",              "is_general" => false ],
             ["code" => "remove_interruption",               "section_code" => "interruption",       "name_pt" => "Remover interrupções",                            "name_en" => "Remove interruptions",            "is_general" => false ],
+            ["code" => "approve_publication",               "section_code" => "calendar",           "name_pt" => "Aprovar Publicação",                              "name_en" => "Approve Publication",             "is_general" => false ],
         ];
-
-        $super_admin_id = Group::where('code', 'super_admin')->first()->id;
-        $phase_system_id = CalendarPhase::where('code', 'system')->first()->id;
 
         foreach ($newPermissions as $newPerm) {
             $newPermission = new Permission();

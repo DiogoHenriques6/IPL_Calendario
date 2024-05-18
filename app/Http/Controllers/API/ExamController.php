@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\NewExamRequest;
 use App\Http\Resources\ExamResource;
 use App\Models\Calendar;
+use App\Models\CalendarLog;
 use App\Models\Course;
 use App\Models\CourseUnit;
 use App\Models\CourseUnitGroup;
@@ -165,6 +166,14 @@ class ExamController extends Controller
         } else {
             $newExam = new Exam($request->all());
             $newExam->save();
+            $newLog = new CalendarLog();
+            $newLog->calendar_id = $calendarId;
+            $newLog->couse_unit_id = $request->course_unit_id;
+            $newLog->exam_id = $newExam->id;
+            $newLog->user_id = auth()->user()->id;
+            $newLog->is_create = "1";
+            $newLog->new_date = $request->date_start;
+            $newLog->save();
         }
         if($newExam){
             return response()->json(new ExamResource($newExam), Response::HTTP_CREATED);
@@ -268,6 +277,18 @@ class ExamController extends Controller
             $exam->observations_pt = $request->observations_pt;
             $exam->observations_en = $request->observations_en;
             $exam->save();
+            // Create a log
+            $newLog = new CalendarLog();
+            $newLog->calendar_id = $request->calendar_id;
+            $newLog->couse_unit_id = $request->course_unit_id;
+            $newLog->exam_id = $exam->id;
+            $newLog->user_id = auth()->user()->id;
+            $newLog->is_update = "1";
+            //Vai buscar o ultimo log pertencente ao exame que está a ser atualizado
+            $lastLog = CalendarLog::where('exam_id', $exam->id)->orderBy('id', 'desc')->first();
+            $newLog->old_date = $lastLog->new_date;
+            $newLog->new_date = $request->date_start;
+            $newLog->save();
         //}
         return response()->json(new ExamResource($exam), Response::HTTP_OK);
     }
