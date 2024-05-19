@@ -79,7 +79,7 @@ class LoginController extends Controller
                     //            if(!$user = User::where('name', $request->email)->first()){
 
                     $response = Http::get('https://www.dei.estg.ipleiria.pt/servicos/projetos/get_inscricoes_aluno.php?anoletivo='. $academicYearCode .'&num_aluno='.$request->email.'&formato=json');
-                    Log::channel('sync_test')->info('https://www.dei.estg.ipleiria.pt/servicos/projetos/get_inscricoes_aluno.php?anoletivo='. $academicYearCode .'&num_aluno='.$request->email.'&formato=json');
+//                    Log::channel('sync_test')->info('https://www.dei.estg.ipleiria.pt/servicos/projetos/get_inscricoes_aluno.php?anoletivo='. $academicYearCode .'&num_aluno='.$request->email.'&formato=json');
 
                     $student_data = $response->body();
                     $student_units = json_decode($student_data);
@@ -134,8 +134,12 @@ class LoginController extends Controller
         if (!$user->enabled) {
             return response()->json("Unauthorized.", Response::HTTP_UNAUTHORIZED);
         }
-
-        $scopes = $user->permissions()->where('group_permissions.enabled', true)->groupBy('permissions.code')->pluck('permissions.code')->values()->toArray();
+        $currentGroup = [
+            'key' => $user->groups()->first()->id,
+            'text' => $user->groups()->first()->code,
+            'value' => $user->groups()->first()->name_pt
+        ];
+        $scopes =  $user->groups()->first()->permissions()->where('group_permissions.enabled', true)->groupBy('permissions.code')->pluck('permissions.code')->values()->toArray();
         LOG::channel('sync_test')->info($scopes);
         $accessToken = $user->createToken('authToken', $scopes)->accessToken;
 
@@ -145,11 +149,7 @@ class LoginController extends Controller
         } else {
             $activeYear = 0;
         }
-        $currentGroup = [
-            'key' => $user->groups()->first()->id,
-            'text' => $user->groups()->first()->code,
-            'value' => $user->groups()->first()->name_pt
-        ];
+
 
         $utils = new Utils();
         return response()->json([

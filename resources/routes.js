@@ -116,7 +116,7 @@ const RouterList = (isLoggedIn) => {
                 },
                 {
                     path: "/unidade-curricular",
-                    element: (isAuthorized.VIEW_COURSE_UNITS) ? <MultiPageBase /> : <Navigate to="/no-permissions" />,
+                    element: (isAuthorized.VIEW_COURSE_UNITS) ? <MultiPageBase /> : <Navigate to="/calendario" />,
                     children: [
                         { path: 'novo', exact: true, element: (isAuthorized.CREATE_COURSE_UNITS) ? <UnidadeCurricularDetail /> : <Navigate to="/unidade-curricular" />},
                         { path: ':id', exact: true, element: <UnidadeCurricularDetail />},
@@ -128,7 +128,7 @@ const RouterList = (isLoggedIn) => {
                 },
                 {
                     path: "/agrupamento-unidade-curricular",
-                    element: (isAuthorized.VIEW_UC_GROUPS) ? <MultiPageBase /> : <Navigate to="/no-permissions" />,
+                    element: (isAuthorized.VIEW_UC_GROUPS) ? <MultiPageBase /> : <Navigate to="/calendario" />,
                     children: [
                         { path: 'novo', exact: true, element: <AgrupamentoUnidadeCurricularDetail />},
                         { path: 'edit/:id', exact: true, element: <AgrupamentoUnidadeCurricularDetail />},
@@ -138,7 +138,7 @@ const RouterList = (isLoggedIn) => {
                 },
                 {
                     path:"/curso",
-                    element: (isAuthorized.VIEW_COURSES) ? <MultiPageBase /> : <Navigate to="/no-permissions" />,
+                    element: (isAuthorized.VIEW_COURSES) ? <MultiPageBase /> : <Navigate to="/calendario" />,
                     children: [
                         { path: ':id', exact: true, element: <CursoDetail />},
                         { path: '', exact: true, element: <CursoList /> },

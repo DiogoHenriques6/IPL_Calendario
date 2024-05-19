@@ -139,7 +139,7 @@ const NotFoundPage = () => {
                         <h2>{ t("Página não pode ser acedida") }</h2>
                         <h4>{ t("A página que tentou aceder, não existe.") }</h4>
                         <h5>{ t("Clique no botão para voltar para uma página inicial.") }</h5>
-                        <Button as={Link} to="/" color="green">{ t("Ínicio") }</Button>
+                        <Button as={Link} to="/calendario" color="green">{ t("Ínicio") }</Button>
                     </Grid.Column>
                 </Grid.Row>
             </Grid>

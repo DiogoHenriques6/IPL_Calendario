@@ -39,8 +39,10 @@ const HeaderMenu = () => {
                     setUserGroups(response?.data?.data);
                     if(!localStorage.getItem('selectedGroup')){
                         setSelectedGroup(response?.data?.data[0])
-                        localStorage.setItem('selectedGroup', [response?.data?.data[0].key, response?.data?.data[0].text, response?.data?.data[0].value]);
-
+                        localStorage.setItem('selectedGroup',
+                            [response?.data?.data[0].key,
+                            response?.data?.data[0].text,
+                            response?.data?.data[0].value]);
                     }
                     else{
                         var selectedGroupString = localStorage.getItem('selectedGroup').split(',');
@@ -52,14 +54,13 @@ const HeaderMenu = () => {
                     }
                 }
             });
-        // localStorage.setItem('scopes', sessionStorage.getItem('scopes'));
 
-        axios.get('academic-years/menu').then((response) => {
-            if (response.status >= 200 && response.status < 300) {
-                dispatch(setAcademicYear(response?.data?.data?.find((year) => year.selected)));
-                setAcademicYearsList(response?.data?.data);
-            }
-        });
+            axios.get('academic-years/menu').then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    dispatch(setAcademicYear(response?.data?.data?.find((year) => year.selected)));
+                    setAcademicYearsList(response?.data?.data);
+                }
+            });
     }, []);
 
 
@@ -74,7 +75,6 @@ const HeaderMenu = () => {
             localStorage.removeItem('calendarPermissions');
             localStorage.removeItem('academicYear');
             localStorage.removeItem('selectedGroup');
-            sessionStorage.removeItem('scopes');
             dispatch(logout());
             navigate('/login');
         });
@@ -100,8 +100,8 @@ const HeaderMenu = () => {
         })
             .then((res) => {
                 setSelectedGroup(group);
-                localStorage.setItem('selectedGroup', [group.key, group.text, group.value]);
-                localStorage.setItem('scopes',JSON.stringify(res.data));
+                localStorage.setItem('selectedGroup', [group.key, group.text, group.value])
+                localStorage.setItem('scopes', JSON.stringify(res.data));
                 dispatch(setCurrentGroup(group));
                 window.location.reload();
             })

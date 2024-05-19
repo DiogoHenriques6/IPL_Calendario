@@ -50,12 +50,13 @@ function App() {
     const navigate = useNavigate();
     const authToken = localStorage.getItem('authToken');
     useEffect(() => {
+        //TODO check if this is necessary or just redundant
         if(authToken && window.location.pathname !== '/login') {
-            axios.get('/permissions').then((res) => {
-                if (res.status === 200) {
-                    localStorage.setItem('scopes', JSON.stringify(res.data));
-                }
-            });
+            // axios.get('/permissions').then((res) => {
+            //     if (res.status === 200) {
+            //         localStorage.setItem('scopes', JSON.stringify(res.data));
+            //     }
+            // });
         }
     }, [authToken]);
     useEffect(() => {

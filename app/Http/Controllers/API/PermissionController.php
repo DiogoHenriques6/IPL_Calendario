@@ -22,9 +22,11 @@ use Illuminate\Support\Facades\Auth;
 
 class PermissionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Auth::user()
+        //returns permissions for each user selectedGroup new
+        $currentGroup = Group::where('id', $request->cookie('selectedGroup'))->first();
+        return $currentGroup
             ->permissions()
             ->where('group_permissions.enabled', true)
             ->groupBy('permissions.code')->pluck('permissions.code')->values()->toArray();

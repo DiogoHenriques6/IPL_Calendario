@@ -33,6 +33,7 @@ const LoginPage = () => {
                     localStorage.setItem('authToken', data.accessToken);
                     localStorage.setItem('academicYear', data.academicYear);
                     const {scopes} = jwtDecode(data.accessToken);
+                    // also set in app.js but is rendered in time there
                     localStorage.setItem('scopes', JSON.stringify(scopes));
                     if (scopes?.length === 0) {
                         return (window.location = '/calendario/');
