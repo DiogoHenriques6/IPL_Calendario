@@ -71,7 +71,9 @@ class CourseController extends Controller
         }
 
         if($schoolId != null){
-            $courseList->whereIn('school_id', $schoolId);
+            if(count($schoolId) > 0){
+                $courseList->whereIn('school_id', $schoolId);
+            }
         }
 
         if($courseId != null){

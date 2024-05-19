@@ -30,6 +30,8 @@ const HeaderMenu = () => {
     const [academicYearsList, setAcademicYearsList] = useState([]);
     const [userGroups, setUserGroups] = useState([]);
     const [selectedGroup, setSelectedGroup] = useState(null);
+    const isDisabled = academicYearsList.length === 0;
+
 
     useEffect(() => {
         //TODO join both api calls into one (less time loading)
@@ -107,6 +109,11 @@ const HeaderMenu = () => {
             })
     };
 
+    const handleClick = (e) => {
+        if (academicYearsList.length === 0) {
+            e.preventDefault();
+        }
+    };
 
 
     const selectedAcademicYear = useSelector((state) => state.app.academicYear);
@@ -119,20 +126,30 @@ const HeaderMenu = () => {
                     {t('menu.Calendários') }
                 </Menu.Item>
                 <ShowComponentIfAuthorized permission={[COURSE_UNIT_SCOPES[0]]}>
-                    <Menu.Item  as={Link} to="/unidade-curricular" disabled={academicYearsList.length === 0}
-                                className={ location.pathname.includes('/unidade-curricular') ? 'active' : ''}>
+                    <Menu.Item as={Link}
+                               to="/unidade-curricular"
+                               onClick={handleClick}
+                               className={`${isDisabled ? 'disabled' : ''} ${location.pathname.includes('/unidade-curricular') ? 'active' : ''} item`}
+                    >
                         {t('menu.Unidades Curriculares')}
                     </Menu.Item>
                 </ShowComponentIfAuthorized>
                 <ShowComponentIfAuthorized permission={[UC_GROUPS_SCOPES[0]]}>
-                    <Menu.Item as={Link} to="/agrupamento-unidade-curricular" disabled={academicYearsList.length === 0}
-                               className={ location.pathname.includes('/agrupamento-unidade-curricular') ? 'active' : ''}>
-                        {t('menu.UCs Agrupadas')}
+                    <Menu.Item as={Link}
+                               to="/agrupamento-unidade-curricular"
+                               onClick={handleClick}
+                               className={`${isDisabled ? 'disabled' : ''} ${location.pathname.includes('/agrupamento-unidade-curricular') ? 'active' : ''} item`}
+                       >
+                            {t('menu.UCs Agrupadas')}
                     </Menu.Item>
                 </ShowComponentIfAuthorized>
                 <ShowComponentIfAuthorized permission={[COURSE_SCOPES[0]]}>
-                    <Menu.Item as={Link} to="/curso" disabled={academicYearsList.length === 0}
-                               className={ location.pathname.includes('/curso') ? 'active' : ''}>
+                    <Menu.Item
+                        as={Link}
+                        to="/curso"
+                        onClick={handleClick}
+                        className={`${isDisabled ? 'disabled' : ''} ${location.pathname.includes('/curso') ? 'active' : ''} item`}
+                    >
                         {t('menu.Cursos')}
                     </Menu.Item>
                 </ShowComponentIfAuthorized>
@@ -154,7 +171,8 @@ const HeaderMenu = () => {
                                 <Dropdown.Item disabled={academicYearsList.length === 0} as={Link} to="/fases-calendario">{t('menu.Fases Calendário')}</Dropdown.Item>
                             </ShowComponentIfAuthorized>
                             <ShowComponentIfAuthorized permission={[...INTERRUPTION_TYPES_SCOPES,]}>
-                                <Dropdown.Item disabled={academicYearsList.length === 0} as={Link} to="/tipo-interrupcao">{t('menu.Tipos Interrupções')}</Dropdown.Item>
+                                <Dropdown.Item disabled={academicYearsList.length === 0}
+                                               as={Link} to="/tipo-interrupcao">{t('menu.Tipos Interrupções')}</Dropdown.Item>
                             </ShowComponentIfAuthorized>
                             <ShowComponentIfAuthorized permission={[...EVALUATION_TYPE_SCOPES]}>
                                 <Dropdown.Item disabled={academicYearsList.length === 0} as={Link} to="/tipo-avaliacao">{t('menu.Tipos Avaliações')}</Dropdown.Item>

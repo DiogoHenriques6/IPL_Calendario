@@ -90,8 +90,10 @@ class CourseUnitController extends Controller
                 }
 
                 if ($schoolId != null) {
-                    $courses = Course::where('school_id', $schoolId)->pluck('id');
-                    $courseUnits->whereIn('course_id', $courses);
+                    if(count($schoolId) > 0) {
+                        $courses = Course::where('school_id', $schoolId)->pluck('id');
+                        $courseUnits->whereIn('course_id', $courses);
+                    }
                 }
 
                 if ($courseId != null) {

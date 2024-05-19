@@ -46,8 +46,9 @@ class CalendarFilters extends QueryFilters
                 $isManagement = true;
                 break;
             case str_contains($currentGroup->code, InitialGroups::GOP):
-//                Log::channel('sync_test')->info($currentGroup->code);
+                Log::channel('sync_test')->info($currentGroup->code);
                 $schoolId = $currentGroup->gopSchool()->pluck('id');
+                LOG::channel('sync_test')->info($schoolId);
                 break;
             case str_contains($currentGroup->code,InitialGroups::BOARD):
 //                Log::channel('sync_test')->info($currentGroup->code);
@@ -82,8 +83,10 @@ class CalendarFilters extends QueryFilters
         }
 
         if($schoolId != null){
-            $this->builder->whereIn('course_id', Course::where('school_id',$schoolId)->pluck('id'));
-            return $this;
+            if(count($schoolId) > 0){
+                $this->builder->whereIn('course_id', Course::where('school_id', $schoolId)->pluck('id'));
+                return $this;
+            }
         }
 
 //        $this->builder->where(function ($query) use ($user_groups, $myCourseOnly) {
@@ -150,35 +153,8 @@ class CalendarFilters extends QueryFilters
             }
         }
 
-
-        // List for students
-        //      -> meus > do meu curso
-        //      -> Todos > mostra todos os publicados (definitivos)
-        if (count($user->groups) === 1 && $user->groups->contains('code', InitialGroups::STUDENT)) {
-            if ($search === "true") {
-                return $this->builder->published()
-                            ->whereIn('course_id', Auth::user()->courses->pluck('id'))
-                            ->orWhere('calendar_phase_id', CalendarPhase::phaseEvaluationStudents());
-            }
-
-            return $this->builder->published()
-                        ->orWhere('calendar_phase_id', CalendarPhase::phaseEvaluationStudents())
-                        ->whereIn('course_id', Auth::user()->courses->pluck('id'));
-        }
         // List for CCP
 
-
-        // List for teacher
-        //      -> meus > cursos das suas UCs
-        //      -> Todos > mostra todos os publicados (definitivos)
-        if ($user->groups->contains('code', InitialGroups::TEACHER) && $user->groups->count() == 1){
-            // $search === "true" -> myCourseOnly = true
-            LOG ::channel('sync_test')->info($currentGroup->code);
-            if ($search === "true") {
-                return $this->builder->where('viewers',$currentGroup->id)
-                    ->whereIn('course_id', Auth::user()->courseUnits->pluck('course_id'));
-            }
-        }
     }
 
 
