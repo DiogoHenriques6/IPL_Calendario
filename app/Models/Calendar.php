@@ -122,4 +122,9 @@ class Calendar extends Model
     public function scopeOfAcademicYear($query, $academicYearId) {
         return $query->where('academic_year_id', $academicYearId);
     }
+
+    public function logs()
+    {
+        return $this->hasMany(CalendarLog::class);
+    }
 }

@@ -1,13 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * Project: calendar-v2
- * User: Miguel Cerejo
- * Date: 7/4/2022
- * Time: 1:19 AM
- *
- * File: CalendarService.php
- */
 
 namespace App\Services;
 
@@ -167,11 +158,11 @@ class CalendarService
             if($request->input("accepted")) {
                 // if the board accepts the calendar, will be published
                 self::publish($calendar);
-                return;
+                return "Success";
                 // TODO send email see CalendarPublished.php
             } else {
                 // if the board rejects the calendar, it goes back to the GOP
-                $calendar->calendar_phase_id = CalendarPhase::phaseEditGop();
+                $calendar->calendar_phase_id = CalendarPhase::phaseEditCC();
                 $calendar->save();
                 CalendarChanged::dispatch($calendar);
             }
@@ -254,7 +245,7 @@ class CalendarService
         }
 
         // clone the epochs
-        // TODO miguel.cerejo
+        // TODO
         foreach ($calendar->epochs as $epoch) {
             $newEpoch = $clone->epochs()->create($epoch->toArray());
             // clone the exams
