@@ -15,7 +15,7 @@ class CalendarLog extends Model
 
     protected $fillable = [
         'calendar_id',
-        'couse_unit_id',
+        'course_unit_id',
         'exam_id',
         'user_id',
         'old_date',
@@ -31,7 +31,7 @@ class CalendarLog extends Model
 
     public function courseUnit()
     {
-        return $this->belongsTo(CourseUnit::class, 'couse_unit_id');
+        return $this->belongsTo(CourseUnit::class, 'course_unit_id');
     }
 
     public function exam()

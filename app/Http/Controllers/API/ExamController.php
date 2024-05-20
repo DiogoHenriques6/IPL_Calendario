@@ -168,7 +168,7 @@ class ExamController extends Controller
             $newExam->save();
             $newLog = new CalendarLog();
             $newLog->calendar_id = $calendarId;
-            $newLog->couse_unit_id = $request->course_unit_id;
+            $newLog->course_unit_id = $request->course_unit_id;
             $newLog->exam_id = $newExam->id;
             $newLog->user_id = auth()->user()->id;
             $newLog->is_create = "1";
@@ -280,7 +280,7 @@ class ExamController extends Controller
             // Create a log
             $newLog = new CalendarLog();
             $newLog->calendar_id = $request->calendar_id;
-            $newLog->couse_unit_id = $request->course_unit_id;
+            $newLog->course_unit_id = $request->course_unit_id;
             $newLog->exam_id = $exam->id;
             $newLog->user_id = auth()->user()->id;
             $newLog->is_update = "1";

@@ -215,19 +215,24 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                 let logs = response.data.data;
                 let seenCourseUnits = new Set();
                 let logsText = '';
-                logs.forEach((log) => {
-                    if (!seenCourseUnits.has(log.course_unit_name)) {
-                        logsText += '<h3>' + log.course_unit_name + '</h3><br>';
-                        seenCourseUnits.add(log.course_unit_name);
-                    }
-                    logsText += '<b>' + log.author + '</b> - ' + moment(log.created_at).locale(selectedLanguage).format('YYYY/MM/DD, HH:mm:ss') + ' - ';
-                    if (log.is_create === 1){
-                        logsText += 'adicionou o metodo de avaliação <b>' + log.method_name + '</b> à UC <b>' + log.course_unit_name + '</b>';
-                    }else{
-                        logsText += 'alterou o metodo de avaliação <b>' + log.method_name + '</b> à UC <b>' + log.course_unit_name + '</b> de dia ' + log.old_date + ' para dia ' + log.new_date;
-                    }
-                    logsText += '<br><hr>';
-                });
+                if (logs.length === 0) {
+                    logsText = t('Não existem logs');
+                }else{
+                    logs.forEach((log) => {
+
+                        if (!seenCourseUnits.has(log.course_unit_name)) {
+                            logsText += '<h3>' + log.course_unit_name + '</h3><br>';
+                            seenCourseUnits.add(log.course_unit_name);
+                        }
+                        logsText += '<b>' + log.author + '</b> - ' + moment(log.created_at).locale(selectedLanguage).format('YYYY/MM/DD, HH:mm:ss') + ' - ';
+                        if (log.is_create === 1){
+                            logsText += 'adicionou o metodo de avaliação <b>' + log.method_name + '</b> à UC <b>' + log.course_unit_name + '</b>';
+                        }else{
+                            logsText += 'alterou o metodo de avaliação <b>' + log.method_name + '</b> à UC <b>' + log.course_unit_name + '</b> de dia ' + log.old_date + ' para dia ' + log.new_date;
+                        }
+                        logsText += '<br><hr>';
+                    });
+                }
 
                 SweetAlertComponent.fire({
                     title: t('Logs do calendário'),
