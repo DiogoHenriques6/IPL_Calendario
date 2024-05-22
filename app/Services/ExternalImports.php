@@ -108,7 +108,7 @@ class ExternalImports
 
             $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
             if($response->failed()){
-                Log::channel('docentes_sync.log')->info('FAILED - "importDocentesFromWebService" sync for Year code (' . $academicYearCode . ') and semester (' . $semester . ')');
+                Log::channel('courses_sync')->info('FAILED - "importDocentesFromWebService" sync');
             }
             else{
                 $teachers_data = $response->body();
@@ -116,8 +116,6 @@ class ExternalImports
 
                 foreach ($teachers as $teacher) {
                     if (!empty($teacher)) {
-//                        LOG::channel("sync_test")->info("User " .json_encode($teacher));
-
                         // if the user is not created, it will create a new record for the user.
                         $foundUser = User::firstOrCreate([
                             "email" => $teacher->email,
@@ -133,7 +131,7 @@ class ExternalImports
             foreach ($schools as $school) {
 
                 // From URL to get webpage contents
-                $apiEndpoint = $school->base_link . 'get_aulas_curso_tipo.php?' . $school->query_param_semester . '=S' . $semester . '&' . $school->query_param_academic_year . '=' . $academicYearCode . '&formato=json';
+                $apiEndpoint = $school->base_link . 'get_aulas_curso_tipo.php?' . $school->query_param_semester . '=S' . $semester . '&' . "" . "". $school->query_param_academic_year . '=' . $academicYearCode . '&formato=json';
 //                Log::channel('sync_test')->info($apiEndpoint);
 
                 $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);

@@ -24,6 +24,8 @@ class NewMethodRequest extends FormRequest
             "methods.*.weight"             => "required|numeric",
             'methods.*.description_pt'     => "required",
             'methods.*.description_en'     => "required",
+            'methods.*.initials_pt'        => "required",
+            'methods.*.initials_en'        => "required",
             "removed"                      => "sometimes|array",
             "removed.*"                    => "integer|exists:methods,id"
         ];

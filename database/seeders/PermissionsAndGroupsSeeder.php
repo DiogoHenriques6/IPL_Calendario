@@ -139,17 +139,18 @@ class PermissionsAndGroupsSeeder extends Seeder
         }
 
         $evaluationTypes = [
-            ["code" => "written_exam",              "name_pt" => "Prova escrita",                    "name_en" => "Written test"                     ],
-            ["code" => "oral_exam",                 "name_pt" => "Prova oral",                       "name_en" => "Oral test"                        ],
-            ["code" => "practical_exam",            "name_pt" => "Teste prático",                    "name_en" => "Practical test"                   ],
-            ["code" => "report",                    "name_pt" => "Relatório ou trabalho escrito",    "name_en" => "Report or written work"           ],
-            ["code" => "public_oral_presentation",  "name_pt" => "Apresentação oral pública",        "name_en" => "Public oral presentation"         ],
-            ["code" => "prototype",                 "name_pt" => "Protótipo",                        "name_en" => "Prototype"                        ],
-            ["code" => "laboratory_work",           "name_pt" => "Trabalho laboratorial",            "name_en" => "Laboratory work"                  ],
-            ["code" => "project",                   "name_pt" => "Projeto",                          "name_en" => "Project"                          ],
-            ["code" => "internship",                "name_pt" => "Estágios ou projetos externos",    "name_en" => "Internships or external projects" ],
-            ["code" => "portfolio",                 "name_pt" => "Portfólio",                        "name_en" => "Portfolio"                        ],
-            ["code" => "statement_release",         "name_pt" => "Lançamento do enunciado",          "name_en" => "Statement release"                ],
+        ["code" => "written_exam",                  "initials_pt"=>"P.E",                       "initials_en"=>"W.E",          "name_pt" => "Prova escrita",                    "name_en" => "Written test"                     ],
+            ["code" => "oral_exam",                 "initials_pt"=>"P.O",                       "initials_en"=>"O.E",          "name_pt" => "Prova oral",                       "name_en" => "Oral test"                        ],
+            ["code" => "practical_exam",            "initials_pt"=>"T.P",                       "initials_en"=>"P.E",          "name_pt" => "Teste prático",                    "name_en" => "Practical test"                   ],
+            ["code" => "report",                    "initials_pt"=>"Rel.",                      "initials_en"=>"Report",       "name_pt" => "Relatório ou trabalho escrito",    "name_en" => "Report or written work"           ],
+            ["code" => "public_oral_presentation",  "initials_pt"=>"A.O",                       "initials_en"=>"P.O.P",        "name_pt" => "Apresentação oral pública",        "name_en" => "Public oral presentation"         ],
+            ["code" => "prototype",                 "initials_pt"=>"Prot",                      "initials_en"=>"Prot",         "name_pt" => "Protótipo",                        "name_en" => "Prototype"                        ],
+            ["code" => "laboratory_work",           "initials_pt"=>"T.L",                       "initials_en"=>"Lab W.",       "name_pt" => "Trabalho laboratorial",            "name_en" => "Laboratory work"                  ],
+            ["code" => "project",                   "initials_pt"=>"Proj. - Con.Des.Exp",       "initials_en"=>"Proj.",        "name_pt" => "Projeto",                          "name_en" => "Project"                          ],
+            ["code" => "internship",                "initials_pt"=>"T.Ext",                     "initials_en"=>"Ext. W",       "name_pt" => "Estágios ou projetos externos",    "name_en" => "Internships or external projects" ],
+            ["code" => "portfolio",                 "initials_pt"=>"Port",                      "initials_en"=>"Port",         "name_pt" => "Portfólio",                        "name_en" => "Portfolio"                        ],
+            ["code" => "statement_release",         "initials_pt"=>"Enun",                      "initials_en"=>"G.R",          "name_pt" => "Lançamento do enunciado",          "name_en" => "Statement release"],
+            ["code" => "project_theme",             "initials_pt"=>"Proj.-Tema",                "initials_en"=>"W.D",          "name_pt" => "Tema de trabalho/projeto",         "name_en" => "Worksheet Delivery"],
         ];
 
         foreach ($evaluationTypes as $evaluationType) {

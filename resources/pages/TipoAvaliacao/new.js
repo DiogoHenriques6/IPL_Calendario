@@ -39,17 +39,17 @@ const New = () => {
     }, [paramsId, loading, evaluationTypeDetail, navigate]);
 
     const initialValues = useMemo(() => {
-        const { id, code, name_pt, name_en, enabled = true } = evaluationTypeDetail;
+        const { id, code, name_pt, name_en, initials_pt, initials_en, enabled = true } = evaluationTypeDetail;
 
-        return { id, code, name_pt, name_en, enabled };
+        return { id, code, name_pt, name_en, initials_pt, initials_en, enabled };
     }, [evaluationTypeDetail]);
 
-    const onSubmit = ({ id, code, name_pt, name_en, enabled }) => {
+    const onSubmit = ({ id, code, name_pt, name_en, initials_pt, initials_en,  enabled }) => {
         setIsSaving(true);
         const isNew = !id;
         const axiosFn = isNew ? axios.post : axios.patch;
 
-        axiosFn(`/evaluation-types/${!isNew ? id : ''}`, {id: (!isNew ? id : null), code, name_pt, name_en, enabled }).then((res) => {
+        axiosFn(`/evaluation-types/${!isNew ? id : ''}`, {id: (!isNew ? id : null), code, name_pt, name_en, initials_pt, initials_en, enabled }).then((res) => {
             setIsSaving(false);
             setFormErrors([]);
             if (res.status === 200) {
@@ -102,6 +102,18 @@ const New = () => {
                                 <Field name="name_en" validate={required}>
                                     {( { input: nameEnInput, meta}) => (
                                         <Form.Input label={t('Nome EN')} {...nameEnInput} error={ meta.touched && meta.error } />
+                                    )}
+                                </Field>
+                            </Form.Group>
+                            <Form.Group widths="equal">
+                                <Field name="initials_pt" validate={required}>
+                                    {( { input: initialsPtInput, meta}) => (
+                                        <Form.Input label={t('Abreviatura PT')} {...initialsPtInput} error={ meta.touched && meta.error } />
+                                    )}
+                                </Field>
+                                <Field name="initials_en" validate={required}>
+                                    {( { input: initialsEnInput, meta}) => (
+                                        <Form.Input label={t('Abreviatura EN')} {...initialsEnInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                             </Form.Group>

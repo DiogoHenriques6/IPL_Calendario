@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->string('name_pt');
             $table->string('name_en');
+            $table->string('initials_pt')->notNullable();
+            $table->string('initials_en')->notNullable();
             $table->boolean('enabled')->default(true);
 
             $table->timestamp('created_at')->useCurrent();

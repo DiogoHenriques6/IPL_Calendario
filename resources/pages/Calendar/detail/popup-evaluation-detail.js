@@ -50,7 +50,6 @@ const PopupEvaluationDetail = ( {isPublished, isOpen, currentPhaseId, onClose, e
     const getCalendarEvent = (type) => {
         axios.get(`/exams/${examId}/calendar-event?type=${type}`).then((response) => {
             if (response?.status >= 200) {
-                console.log(response.data);
                 window.open(response.data);//, '_blank');//.focus();
 
                 var blob = new Blob([icsMSG], { type: 'text/calendar;charset=utf-8' });

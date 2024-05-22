@@ -9,7 +9,7 @@ class EvaluationType extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["code", "name_pt", "name_en", "enabled"];
+    protected $fillable = ["code", "name_pt", "name_en", "initials_pt", "initials_en", "enabled"];
 
     public function exams()
     {
