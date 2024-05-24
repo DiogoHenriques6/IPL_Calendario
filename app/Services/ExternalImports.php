@@ -96,7 +96,7 @@ class ExternalImports
             $academicYearCode = substr($academicYear->code,0,4). "/" .substr($academicYear->code,4,6);
 
             // get list of schools that have "base_link" data
-            $schools = School::whereNotNull('base_link')->where('base_link', '<>', '')->get();
+            $schools = School::whereNotNull('index_campus')->where('index_campus', '<>', '')->get();
             $webservice = Webservice::where('id', 1)->firstOrFail();
 
 

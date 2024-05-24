@@ -132,8 +132,8 @@ class PermissionsAndGroupsSeeder extends Seeder
 
             "query_param_academic_year"         => "anoletivo",
             "query_param_semester"              => "semestre",
-            "query_param_course_code"           => "cod_curso",
-            "query_param_course_unit_code"      => "cod_uc",
+            "query_param_course"                => "cod_curso",
+            "query_param_course_unit"           => "cod_uc",
             "query_param_campus"                => "campus",
         ];
 

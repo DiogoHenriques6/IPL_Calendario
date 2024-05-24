@@ -52,7 +52,6 @@ return new class extends Migration
             $table->string('query_param_semester')->nullable();
             $table->string('query_param_course')->nullable();
             $table->string('query_param_campus')->nullable();
-            $table->string('query_param_course')->nullable();
             $table->string('query_param_course_unit')->nullable();
 
             $table->timestamp('created_at')->useCurrent();
