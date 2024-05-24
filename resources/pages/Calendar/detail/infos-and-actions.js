@@ -4,10 +4,11 @@ import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router';
 import { useParams} from "react-router-dom";
 import { useTranslation} from "react-i18next";
-import {Card, Button, Sticky, Grid, Header, List, GridColumn, Icon, Popup, Label, Placeholder} from 'semantic-ui-react';
+import {Card, Button, Sticky, Grid, Header, List, GridColumn, Icon, Popup, Label, Placeholder, Table, Input, Modal, Confirm} from 'semantic-ui-react';
 import { toast} from 'react-toastify';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+
 
 import ShowComponentIfAuthorized from '../../../components/ShowComponentIfAuthorized';
 import SCOPES from '../../../utils/scopesConstants';
@@ -51,6 +52,80 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
 
     const [creatingCopy, setCreatingCopy] = useState(false);
 
+    const [showModal, setShowModal] = useState(false);
+    const [ucFilter, setUCFilter] = useState('');
+    const [methodFilter, setMethodFilter] = useState('');
+    const [filteredData, setFilteredData] = useState([]);
+    const [data, setData] = useState([]);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+
+
+    const handleUCFilterChange = (event) => {
+        setUCFilter(event.target.value);
+        filterData(event.target.value, methodFilter);
+    };
+
+    const handleClearUCFilter = () => {
+        setUCFilter('');
+        filterData('', methodFilter);
+    };
+
+    const handleMethodFilterChange = (event) => {
+        setMethodFilter(event.target.value);
+        filterData(ucFilter, event.target.value);
+    };
+
+    const handleClearMethodFilter = () => {
+        setMethodFilter('');
+        filterData(ucFilter, '');
+    };
+
+    const removeAccents = (str) => {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    };
+
+    const filterData = (ucFilter, methodFilter) => {
+        const filtered = data.filter(item =>
+            removeAccents(item.course_unit_name.toLowerCase()).includes(removeAccents(ucFilter.toLowerCase())) &&
+            removeAccents(item.method_name.toLowerCase()).includes(removeAccents(methodFilter.toLowerCase()))
+        );
+        setFilteredData(filtered);
+    };
+
+    const handleShowModalLogs = () => {
+        axios.get('/calendar-logs/' + calendarId).then((response) => {
+            if (response.status === 200) {
+                setData(response.data.data)
+                setFilteredData(response.data.data)
+                setShowModal(true)
+            }else{
+                toast(t('Ocorreu um erro ao tentar obter os logs do calendário!'), errorConfig);
+            }
+        });
+    };
+
+    const handleCloseModal = () => setShowModal(false);
+
+    const handleDelete = () => {
+        setShowModal(false)
+        setShowConfirmation(true);
+    };
+
+    const handleConfirmDelete = () => {
+        axios.delete('/calendar-logs/' + calendarId).then((response) => {
+            if (response.status === 200) {
+                toast(t('Logs apagados com sucesso!'), successConfig);
+            } else {
+                toast(t('Ocorreu um erro ao tentar apagar os logs!'), errorConfig);
+            }
+        });
+        setShowConfirmation(false);
+    };
+
+    const handleCancelDelete = () => {
+        setShowConfirmation(false);
+        setShowModal(true);
+    };
     const createCopy = () => {
         SweetAlertComponent.fire({
             title: t('Atenção!'),
@@ -209,44 +284,6 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
         return phaseFound?.phases.includes(calendarPhase);
     }
 
-    function openLogsModal() {
-        axios.get('/calendar-logs/' + calendarId).then((response) => {
-            if (response.status === 200) {
-                let logs = response.data.data;
-                let seenCourseUnits = new Set();
-                let logsText = '';
-                if (logs.length === 0) {
-                    logsText = t('Não existem logs');
-                }else{
-                    logs.forEach((log) => {
-
-                        if (!seenCourseUnits.has(log.course_unit_name)) {
-                            logsText += '<h3>' + log.course_unit_name + '</h3><br>';
-                            seenCourseUnits.add(log.course_unit_name);
-                        }
-                        logsText += '<b>' + log.author + '</b> - ' + moment(log.created_at).locale(selectedLanguage).format('YYYY/MM/DD, HH:mm:ss') + ' - ';
-                        if (log.is_create === 1){
-                            logsText += 'adicionou o metodo de avaliação <b>' + log.method_name + '</b> à UC <b>' + log.course_unit_name + '</b>';
-                        }else{
-                            logsText += 'alterou o metodo de avaliação <b>' + log.method_name + '</b> à UC <b>' + log.course_unit_name + '</b> de dia ' + log.old_date + ' para dia ' + log.new_date;
-                        }
-                        logsText += '<br><hr>';
-                    });
-                }
-
-                SweetAlertComponent.fire({
-                    title: t('Logs do calendário'),
-                    html: logsText,
-                    width:'80%',
-                    confirmButtonText: t('Fechar'),
-                    confirmButtonColor: '#21ba45',
-                });
-            } else {
-                toast(t('Ocorreu um erro ao tentar obter os logs do calendário!'), errorConfig);
-            }
-        });
-    }
-
     return (
         <>
             <div className='main-content-title-section'>
@@ -400,7 +437,7 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                                                     <ShowComponentIfAuthorized permission={SCOPES.SEE_LOGS}>
                                                         <button className="ui circular big icon button"
                                                                 style={{padding: 0, marginLeft: 10}}
-                                                                data-tooltip="Ver logs" onClick={openLogsModal}>
+                                                                data-tooltip="Ver logs" onClick={handleShowModalLogs}>
                                                             <i className="icon info circle"
                                                                style={{cursor: 'pointer'}}></i>
                                                         </button>
@@ -490,11 +527,89 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                     </Card>
                 </Sticky>
             </div>
+            <ShowComponentIfAuthorized permission={[SCOPES.SEE_LOGS]}>
+                <Modal open={showModal} onClose={handleCloseModal} size="fullscreen">
+                    <Modal.Header>
+                        Logs do calendário
+                        <ShowComponentIfAuthorized permission={[SCOPES.DELETE_LOGS]}>
+                            <Icon name="trash" onClick={handleDelete} style={{ float: 'right', cursor: 'pointer' }} />
 
+                        </ShowComponentIfAuthorized>
+                    </Modal.Header>
+                    <Modal.Content>
+                        <Input
+                            placeholder="Filtrar por UC..."
+                            value={ucFilter}
+                            onChange={handleUCFilterChange}
+                            icon={<Icon name="x" link onClick={handleClearUCFilter} />}
+                        />
+                        <Input
+                            placeholder="Filtrar por método..."
+                            value={methodFilter}
+                            onChange={handleMethodFilterChange}
+                            style={{ marginLeft: '10px' }}
+                            icon={<Icon name="x" link onClick={handleClearMethodFilter} />}
+                        />
+                        <Table celled >
+                            <Table.Header>
+                                <Table.Row>
+                                    <Table.HeaderCell>Ano Curricular</Table.HeaderCell>
+                                    <Table.HeaderCell>User</Table.HeaderCell>
+                                    <Table.HeaderCell>Ação</Table.HeaderCell>
+                                    <Table.HeaderCell>Método</Table.HeaderCell>
+                                    <Table.HeaderCell>UC</Table.HeaderCell>
+                                    <Table.HeaderCell>Data do exame</Table.HeaderCell>
+                                    <Table.HeaderCell>Data da ação</Table.HeaderCell>
+                                </Table.Row>
+                            </Table.Header>
+                            <Table.Body>
+                                {filteredData.map((item) => {
+                                    let action, data = '';
+                                    if (item.is_create === 1){
+                                        action = 'adicionou o método de avaliação'
+                                        data = item.new_date
+                                    }else if(item.is_update === 1){
+                                        action = 'alterou o método de avaliação'
+                                        data = 'de ' + item.old_date + ' para ' + item.new_date
+                                    }else{
+                                        action = 'removeu o método de avaliação'
+                                        data = item.new_date
+                                    }
+                                    return (
+                                    <Table.Row key={item.id}>
+                                        <Table.Cell>{item.academic_year}</Table.Cell>
+                                        <Table.Cell>{item.author}</Table.Cell>
+                                        <Table.Cell>{action}</Table.Cell>
+                                        <Table.Cell>{item.method_name}</Table.Cell>
+                                        <Table.Cell>{item.course_unit_name}</Table.Cell>
+                                        <Table.Cell>{data}</Table.Cell>
+                                        <Table.Cell>{item.created_at}</Table.Cell>
+                                    </Table.Row>
+                                    );
+                                })}
+                            </Table.Body>
+                        </Table>
+                    </Modal.Content>
+                    <Modal.Actions>
+                        <Button onClick={handleCloseModal}>Fechar</Button>
+                    </Modal.Actions>
+                </Modal>
+            </ShowComponentIfAuthorized>
             <ShowComponentIfAuthorized permission={[SCOPES.CHANGE_CALENDAR_PHASE, SCOPES.PUBLISH_CALENDAR]}>
                 <PopupSubmitCalendar isOpen={openSubmitModal} onClose={closeSubmitModalHandler} calendarId={calendarId} currentPhaseId={phase?.id} updatePhase={updatePhaseHandler}/>
             </ShowComponentIfAuthorized>
-
+            <ShowComponentIfAuthorized permission={[SCOPES.DELETE_LOGS]}>
+                <Modal open={showConfirmation}>
+                    <Modal.Header>Confirmação</Modal.Header>
+                    <Modal.Content>
+                        <p>Deseja apagar todas as logs relacionadas com este calendário? </p>
+                    </Modal.Content>
+                    <Modal.Actions>
+                        <Button color='red' onClick={handleConfirmDelete}>Apagar</Button>
+                        <Button onClick={handleCancelDelete}>Cancelar</Button>
+                    </Modal.Actions>
+                </Modal>
+            </ShowComponentIfAuthorized>
             <ShowComponentIfAuthorized permission={[SCOPES.ADD_EXAMS, SCOPES.EDIT_EXAMS, SCOPES.REMOVE_EXAMS, SCOPES.EDIT_COURSE_UNITS]}>
                 <PopupRevisionDetail isOpen={openRevisionModal} onClose={closeRevisionModalHandler} warnings={warnings}/>
             </ShowComponentIfAuthorized>

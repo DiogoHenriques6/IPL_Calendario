@@ -32,7 +32,7 @@ return new class extends Migration
             $table->foreign('calendar_id')->references('id')->on('calendars');
             $table->foreign('course_unit_id')->references('id')->on('course_units');
             $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('exam_id')->references('id')->on('exams')->onDelete('cascade');
+            $table->foreign('exam_id')->references('id')->on('exams');
 
             $table->softDeletes();
         });

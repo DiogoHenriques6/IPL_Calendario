@@ -90,6 +90,7 @@ class AuthServiceProvider extends ServiceProvider
             'remove_interruption'               => '',
             'approve_publication'               => '',
             'see_logs'                          => '',
+            'delete_logs'                       => '',
         ]);
 
         // Passport::routes();

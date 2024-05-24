@@ -299,6 +299,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::controller(CalendarLogsController::class)->group(function () {
         Route::get('/calendar-logs/{calendarID}', 'logsFromCalendar');
+        Route::delete('/calendar-logs/{calendarID}', 'deleteLogsFromCalendar');
     });
 
 //     Route::get('/search/users',         [LdapController::class, 'searchUsers']      );

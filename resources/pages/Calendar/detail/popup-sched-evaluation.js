@@ -60,7 +60,7 @@ const PopupScheduleEvaluation = ( {scheduleInformation, interruptions, isOpen, o
     }, [scheduleInformation])
 
     useEffect(() => {
-        console.log(scheduleInformation);
+        //console.log(scheduleInformation);
         if (loadRemainingCourseUnits) {
             axios.get(`/available-methods/${calendarId}/?epoch_id=${selectedEpoch}&year=${scheduleInformation.scholarYear}`)
                 .then((response) => {

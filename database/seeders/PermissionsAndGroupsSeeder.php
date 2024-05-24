@@ -221,6 +221,8 @@ class PermissionsAndGroupsSeeder extends Seeder
             ["code" => "view_comments",                     "section_code" => "calendar",           "name_pt" => "Ver comentários",                                 "name_en" => "See comments",                    "is_general" => true  ],
             ["code" => "view_calendar_history",             "section_code" => "calendar",           "name_pt" => "Ver o histórico do calendário",                   "name_en" => "View calendar history",           "is_general" => true  ],
             ["code" => "view_actual_phase",                 "section_code" => "calendar",           "name_pt" => "Ver fase atual",                                  "name_en" => "See current phase",               "is_general" => true  ],
+            ["code" => "see_logs",                          "section_code" => "calendar",           "name_pt" => "Ver logs",                                        "name_en" => "See logs",                        "is_general" => true  ],
+            ["code" => "delete_logs",                       "section_code" => "calendar",           "name_pt" => "Eliminar logs",                                   "name_en" => "Delete logs",                     "is_general" => true  ],
 
             ["code" => "publish_calendar",                  "section_code" => "calendar",           "name_pt" => "Publicar calendário",                             "name_en" => "Publish calendar",                "is_general" => true  ],
             ["code" => "create_copy",                       "section_code" => "calendar",           "name_pt" => "Criar cópia",                                     "name_en" => "Create copy",                     "is_general" => true  ],
@@ -277,13 +279,14 @@ class PermissionsAndGroupsSeeder extends Seeder
             ["code" => "add_comments",                      "section_code" => "calendar",           "name_pt" => "Adicionar comentários",                           "name_en" => "Add comments",                    "is_general" => false ],
             ["code" => "ignore_comments",                   "section_code" => "calendar",           "name_pt" => "Ignorar comentários",                             "name_en" => "Ignore comments",                 "is_general" => false ],
             ["code" => "change_calendar_phase",             "section_code" => "calendar",           "name_pt" => "Mudar fase de calendário",                        "name_en" => "Change calendar phase",           "is_general" => false ],
+            ["code" => "approve_publication",               "section_code" => "calendar",           "name_pt" => "Aprovar publicação",                              "name_en" => "Approve publication",             "is_general" => false ],
             ["code" => "add_exams",                         "section_code" => "evaluation",         "name_pt" => "Adicionar avaliações",                            "name_en" => "Add exams",                       "is_general" => false ],
             ["code" => "edit_exams",                        "section_code" => "evaluation",         "name_pt" => "Editar avaliações",                               "name_en" => "Edit exams",                      "is_general" => false ],
             ["code" => "remove_exams",                      "section_code" => "evaluation",         "name_pt" => "Remover avaliações",                              "name_en" => "Remove exams",                    "is_general" => false ],
             ["code" => "add_interruption",                  "section_code" => "interruption",       "name_pt" => "Adicionar interrupções",                          "name_en" => "Add interruption",                "is_general" => false ],
             ["code" => "edit_interruption",                 "section_code" => "interruption",       "name_pt" => "Editar interrupções",                             "name_en" => "Edit interruptions",              "is_general" => false ],
             ["code" => "remove_interruption",               "section_code" => "interruption",       "name_pt" => "Remover interrupções",                            "name_en" => "Remove interruptions",            "is_general" => false ],
-            ["code" => "approve_publication",               "section_code" => "calendar",           "name_pt" => "Aprovar Publicação",                              "name_en" => "Approve Publication",             "is_general" => false ],
+
         ];
 
         foreach ($newPermissions as $newPerm) {

@@ -116,7 +116,7 @@ const PopupSubmit = ( {isOpen, onClose, calendarId, currentPhaseId, updatePhase}
     const onSave = () => {
         const viewGroups = calendarGroups.filter((item) => item.selected).map((item) => item.id);
         // setUpdatingCalendarPhase(true);
-        console.log("Phase",calendarPhase);
+        //console.log("Phase",calendarPhase);
         axios.patch(`/calendar/${calendarId}`, {
             'calendar_phase_id': calendarPhase,
             'temporary': isTemporary,

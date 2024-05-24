@@ -20,7 +20,7 @@ const FilterOptionTeacher = ({ widthSize, eventHandler, value, isSearch = true, 
                     text: teacher.name,
                     value: teacher.email,
                 }));
-                console.log(teachersOptions);
+                //console.log(teachersOptions);
                 // response.data.unshift({value: '', text: t((isSearch ? "Todos os Professores" : "Professores"))});
                 setTeachersOptions(options);
                 setLoading(false);

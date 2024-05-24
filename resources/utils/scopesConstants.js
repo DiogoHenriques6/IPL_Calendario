@@ -7,6 +7,7 @@ const SCOPES = {
     VIEW_ACTUAL_PHASE: 'view_actual_phase',
     APPROVE_PUBLICATION: 'approve_publication',
     SEE_LOGS: 'see_logs',
+    DELETE_LOGS: 'delete_logs',
 
     PUBLISH_CALENDAR: 'publish_calendar',
     CREATE_COPY: 'create_copy',

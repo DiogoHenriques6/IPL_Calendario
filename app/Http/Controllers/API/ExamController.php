@@ -164,8 +164,26 @@ class ExamController extends Controller
                 }
             }
         } else {
-            $newExam = new Exam($request->all());
-            $newExam->save();
+            //verifica se existe algum exame com o mesmo metodo o mesmo epoch e a mesma UC apagado
+            $exam = Exam::onlyTrashed()->where('method_id', $request->method_id)->where('epoch_id', $epochId)->where('course_unit_id', $request->course_unit_id)->first();
+            if ($exam) {
+                $exam->restore();
+                $exam->room = $request->room;
+                $exam->date_start = $request->date_start;
+                $exam->date_end = $request->date_end;
+                $exam->in_class = $request->in_class;
+                $exam->hour = $request->hour;
+                $exam->duration_minutes = $request->duration_minutes;
+                $exam->observations_pt = $request->observations_pt;
+                $exam->observations_en = $request->observations_en;
+                $exam->description_pt = $request->description_pt;
+                $exam->description_en = $request->description_en;
+                $exam->save();
+                $newExam = $exam;
+            } else {
+                $newExam = new Exam($request->all());
+                $newExam->save();
+            }
             $newLog = new CalendarLog();
             $newLog->calendar_id = $calendarId;
             $newLog->course_unit_id = $request->course_unit_id;
@@ -262,6 +280,21 @@ class ExamController extends Controller
             }
         } else {
         */
+
+            // Create a log
+            $newLog = new CalendarLog();
+            $newLog->calendar_id = $request->calendar_id;
+            $newLog->course_unit_id = $request->course_unit_id;
+            $newLog->exam_id = $exam->id;
+            $newLog->user_id = auth()->user()->id;
+            $newLog->is_update = "1";
+            //Vai buscar a data do exame antes de ser alterada
+            $examDataBeforeUpdate = Exam::find($exam->id);
+            $examDataBeforeUpdate = $examDataBeforeUpdate->date_start;
+            $newLog->old_date = $examDataBeforeUpdate;
+            $newLog->new_date = $request->date_start;
+            $newLog->save();
+
             //$exam->calendar_id     = $request->calendar_id;
             //$exam->course_id       = $request->course_id;
             $exam->epoch_id        = $request->epoch_id;
@@ -277,18 +310,6 @@ class ExamController extends Controller
             $exam->observations_pt = $request->observations_pt;
             $exam->observations_en = $request->observations_en;
             $exam->save();
-            // Create a log
-            $newLog = new CalendarLog();
-            $newLog->calendar_id = $request->calendar_id;
-            $newLog->course_unit_id = $request->course_unit_id;
-            $newLog->exam_id = $exam->id;
-            $newLog->user_id = auth()->user()->id;
-            $newLog->is_update = "1";
-            //Vai buscar o ultimo log pertencente ao exame que está a ser atualizado
-            $lastLog = CalendarLog::where('exam_id', $exam->id)->orderBy('id', 'desc')->first();
-            $newLog->old_date = $lastLog->new_date;
-            $newLog->new_date = $request->date_start;
-            $newLog->save();
         //}
         return response()->json(new ExamResource($exam), Response::HTTP_OK);
     }
@@ -357,6 +378,7 @@ class ExamController extends Controller
             return response()->json("Not allowed to delete exams on Published Calendars!", Response::HTTP_FORBIDDEN);
         }
         $belongsToGroup = $exam->courseUnit->group;
+
         if($belongsToGroup) {
             // TODO validate how the grouped exams will work
             /*foreach ($exam->method->courseUnits as $courseUnit) {
@@ -370,10 +392,18 @@ class ExamController extends Controller
                     $examToDelete->epoch->calendar()->touch();
                 }
             }*/
-            $exam->delete();
-        } else {
-            $exam->delete();
         }
+        $newLog = new CalendarLog();
+        $newLog->calendar_id = $exam->epoch->calendar->id;
+        $newLog->course_unit_id = $exam->course_unit_id;
+        $newLog->exam_id = $exam->id;
+        $newLog->user_id = auth()->user()->id;
+        $lastLog = CalendarLog::where('exam_id', $exam->id)->orderBy('id', 'desc')->first();
+        $newLog->new_date = $lastLog->new_date;
+        $newLog->save();
+
+        $exam->delete();
+
         return response()->json("Removed!");
     }
 }

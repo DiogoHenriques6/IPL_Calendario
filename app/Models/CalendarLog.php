@@ -26,7 +26,7 @@ class CalendarLog extends Model
 
     public function calendar()
     {
-        return $this->belongsTo(Calendar::class, 'calendar_id');
+        return $this->belongsTo(Calendar::class, 'calendar_id')->withTrashed();
     }
 
     public function courseUnit()
@@ -36,7 +36,7 @@ class CalendarLog extends Model
 
     public function exam()
     {
-        return $this->belongsTo(Exam::class, 'exam_id');
+        return $this->belongsTo(Exam::class, 'exam_id')->withTrashed();
     }
 
     public function user()

@@ -58,7 +58,7 @@ const UserDetail = () => {
     };
 
     const onChangePassword = () => {
-        console.log("pass");
+        //console.log("pass");
         axios.post(`/user/${id}/password`, {
             old: oldPassword,
             new: newPassword,

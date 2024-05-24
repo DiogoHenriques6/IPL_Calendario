@@ -20,9 +20,9 @@ const Step1 = ({setActiveSemester, activeSemester}) => {
 
     useEffect(() => {
         const currYear = localStorage.getItem('academicYear'); // 2021-2022
-        console.log("Year",currYear);
+        //console.log("Year",currYear);
         if(currYear && currYear != 0) {
-            console.log("HERE");
+            //console.log("HERE");
             setMinDate(new Date(currYear.split("-")[0], 8, 1)); // 2021-09-01
             setMaxDate(new Date(currYear.split("-")[1], 11, 31)); // 2021-09-01
         }
