@@ -163,17 +163,20 @@
         "Grupo de Utilizador": "User Groups",
 
         "Configuração das colunas": "Columns configuration",
-        "Apenas o formato CSV é aceite pelo importador, por isso, deverá seguir as normas de construção de um CSV.": "Only the CSV format is accepted by the importer, so you should follow the rules for building a CSV.",
-        "O caracter utilizado para separação de colunas, é:" :"The character used for column separation is:",
-        "Os índices (index) começam no número 0, por isso, tenha em atenção este facto e faça a 'conversão' para o index correto." : "The indices (index) start at the number 0, so be aware of this fact and 'convert' to the correct index.",
+        "Apenas o formato JSON é aceite pelo importador.": "Only JSON format is accepted by the importer.",
+
+        "Os índices deverão corresponder ao parâmetro JSON que se deseja guardar." : "The indexes should match the JSON parameter you want to save.",
         "Exemplo:" :"Example:",
-        "O nome da unidade curricular é a segunda (2ª) coluna, então deveremos converter para o index = 1, pois retiramos sempre 1 unidade ao número da ordem da coluna." : "The name of the curricular unit is the second (2nd) column, so we must convert to index = 1, as we always remove 1 unit from the order number of the column.",
+        "O nome da unidade curricular é o parâmetro DS_DISCIP, então deveremos utilizar esse parametro para obter os dados relativos aos nomes das unidades curriculares." : "The name of the curricular unit is the DS_DISCIP parameter, so we should use this parameter to obtain the data related to the names of the curricular units.",
 
         "Configuração da queryString": "Configuration of queryString",
         "Dicas de implementação": "Implementation Tips",
         "Sugere-se que as variáveis que recebem os dados relativos ao ano letivo e ao semestre, sejam de acordo com a lista seguinte:": "It is suggested that the variables that receive data related to the academic year and semester are according to the following list:",
         "anoletivo -> Pronto a receber no formato: 202122": "academic year -> Ready to receive in format: 202122",
         "periodo -> Pronto a receber no formato (S1/S2)":  "semester -> Ready to receive in format (S1/S2)",
+
+        "https://www.example.com/webservice?anoletivo=202122&periodo=S1": "https://www.example.com/webservice?anoletivo=202122&periodo=S1",
+
         "Ainda assim, poderá querer escolher outros nomes para estes campos, no formulário abaixo.": "Still, you may want to choose other names for these fields in the form below.",
         "No final, o URL deverá ser semelhante ao seguinte:":  "In the end, the URL should look like the following:",
 
@@ -185,6 +188,9 @@
         "Index coluna Ano curricular da Unidade Curricular" :  "Index column Curricular year of Curricular Unit",
         "Nome do parâmetro para o ano letivo" : "Parameter Name for the academic year",
         "Nome do parâmetro para o semestre" :  "Parameter Name for the semester",
+        "Nome do parâmetro para o campus:": "Parameter Name for the campus:",
+        "Nome do parâmetro para o curso" : "Parameter Name for the course",
+        "Nome do parâmetro para a unidade curricular" : "Parameter Name for the curricular unit",
         "Grupo GOP da escola" : "GOP Group of school",
         "Grupo Direção da escola" :  "Management group of school",
         "Grupo Pedagógico da escola" : "Pedagogic group of school",
