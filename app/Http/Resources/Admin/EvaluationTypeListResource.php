@@ -20,6 +20,8 @@ class EvaluationTypeListResource extends JsonResource
             'name'      => ($request->header("lang") == "en" ? $this->name_en : $this->name_pt),
             'name_pt'   => $this->name_pt,
             'name_en'   => $this->name_en,
+            'initials_pt'=> $this->initials_pt,
+            'initials_en'=> $this->initials_en,
             'enabled'   => $this->enabled
         ];
     }

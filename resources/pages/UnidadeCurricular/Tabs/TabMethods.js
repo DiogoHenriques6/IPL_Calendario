@@ -143,7 +143,9 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                         minimum: method.minimum,
                         weight: method.weight,
                         description_pt: method.description_pt,
-                        description_en: method.description_en
+                        description_en: method.description_en,
+                        initials_pt: method.initials_pt,
+                        initials_en: method.initials_en
                     })
                 });
             });
@@ -195,6 +197,8 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                 evaluation_type_id: undefined,
                 description_pt: '',
                 description_en: '',
+                initials_pt: '',
+                initials_en: '',
                 is_blocked: false
             });
             return copy;
@@ -389,11 +393,13 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                             } else {
                                                                 copy[index].methods[methodIndex].description_pt = evaluationTypes.filter((x) => x.id === value)[0].name_pt + " " + nextExamIndex;
                                                                 copy[index].methods[methodIndex].description_en = evaluationTypes.filter((x) => x.id === value)[0].name_en + " " + nextExamIndex;
+                                                                copy[index].methods[methodIndex].initials_pt = evaluationTypes.filter((x) => x.id === value)[0].initials_pt + " " + nextExamIndex;
+                                                                copy[index].methods[methodIndex].initials_en = evaluationTypes.filter((x) => x.id === value)[0].initials_en + " " + nextExamIndex;
                                                                 copy[index].methods[methodIndex].name = evaluationTypes.filter((x) => x.id === value)[0].name_pt;
                                                                 copy[index].methods[methodIndex].code = evaluationTypes.filter((x) => x.id === value)[0].code;
                                                                 copy[index].methods[methodIndex].grouped_id = Math.floor(Math.random() * 1000);
                                                             }
-                                                            // hardcode: add statement release and oral presentation métodos for projects and reports on profs request
+                                                            // TODO hardcode: add statement release and oral presentation métodos for projects and reports on profs request
                                                             if(copy[index].methods[methodIndex].code.toLowerCase() === "project" || copy[index].methods[methodIndex].code.toLowerCase() === "report") {
                                                                 const hasOralPresentation = copy[index].methods.filter((item) => item.evaluation_type_id === 5).length > 0;
                                                                 if (!hasOralPresentation) {
@@ -405,6 +411,8 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                                         description: "",
                                                                         description_en: "Statement release",
                                                                         description_pt: "Lançamento do enunciado",
+                                                                        initials_pt: "LE",
+                                                                        initials_en: "SR",
                                                                         is_blocked: true,
                                                                         grouped_id: copy[index].methods[methodIndex].grouped_id
                                                                     });
@@ -416,6 +424,8 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                                         description: "",
                                                                         description_en: "Public oral presentation",
                                                                         description_pt: "Apresentação oral pública",
+                                                                        initials_pt: "AOP",
+                                                                        initials_en: "POP",
                                                                         is_blocked: true,
                                                                         grouped_id: copy[index].methods[methodIndex].grouped_id
                                                                     });

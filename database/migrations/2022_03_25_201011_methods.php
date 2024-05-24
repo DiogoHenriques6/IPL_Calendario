@@ -25,6 +25,8 @@ return new class extends Migration
             $table->decimal("weight");
             $table->string('description_pt');
             $table->string('description_en');
+            $table->string('initials_pt')->notNullable();
+            $table->string('initials_en')->notNullable();
             $table->boolean("enabled")->default(true);
             $table->foreign('evaluation_type_id')->references('id')->on('evaluation_types');
 

@@ -89,12 +89,17 @@ const New = () => {
             index_course_unit_passed,
             index_course_unit_flunk,
             index_course_unit_branch,
-
+            index_docentes_email,
+            index_docentes_name,
             query_param_academic_year,
             query_param_semester,
+            query_param_campus,
+            query_param_course,
+            query_param_course_unit,
             gop_group_id,
             board_group_id,
             pedagogic_group_id,
+            index_campus
         } = school || {};
         return {
             id,
@@ -116,11 +121,19 @@ const New = () => {
             index_course_unit_passed,
             index_course_unit_flunk,
             index_course_unit_branch,
+            index_docentes_email,
+            index_docentes_name,
+
+
             query_param_academic_year,
             query_param_semester,
+            query_param_campus,
+            query_param_course,
+            query_param_course_unit,
             gop_group_id,
             board_group_id,
             pedagogic_group_id,
+            index_campus
         };
     }, [school]);
 
@@ -139,11 +152,17 @@ const New = () => {
             index_course_unit_passed,
             index_course_unit_flunk,
             index_course_unit_branch,
+            index_docentes_email,
+            index_docentes_name,
             query_param_academic_year,
             query_param_semester,
+            query_param_campus,
+            query_param_course,
+            query_param_course_unit,
             gop_group_id,
             board_group_id,
-            pedagogic_group_id
+            pedagogic_group_id,
+            index_campus
     }) => {
         if(!index_course_code || !index_course_name_pt || !index_course_name_en || !index_course_initials ||
             !index_course_unit_name_pt || !index_course_unit_name_en || !index_course_unit_initials || !index_course_unit_curricular_year ||
@@ -169,7 +188,10 @@ const New = () => {
             index_course_unit_code, index_course_unit_name_pt, index_course_unit_name_en, index_course_unit_initials,
             index_course_unit_registered, index_course_unit_passed, index_course_unit_flunk, index_course_unit_branch,
             index_course_unit_curricular_year, index_course_unit_teachers,
-            query_param_academic_year, query_param_semester
+            index_docentes_email, index_docentes_name,
+            query_param_academic_year, query_param_semester,
+            query_param_campus, query_param_course, query_param_course_unit,
+            index_campus
         }).then((res) => {
             setIsSaving(false);
             setFormErrors([]);
@@ -201,21 +223,14 @@ const New = () => {
                     <Message>
                         <Message.Header>{ t('Dicas de implementação') }</Message.Header>
                         <Message.Content>
-                            { t('Apenas o formato CSV é aceite pelo importador, por isso, deverá seguir as normas de construção de um CSV.') }
+                            { t('Apenas o formato JSON é aceite pelo importador.') }
                         </Message.Content>
                         <br/>
                         <Message.Content>
-                            { t('O caracter utilizado para separação de colunas, é:') + ' ' }
-                            <strong>
-                                <code>;</code>
-                            </strong>
-                        </Message.Content>
-                        <br/>
-                        <Message.Content>
-                            { t("Os índices (index) começam no número 0, por isso, tenha em atenção este facto e faça a 'conversão' para o index correto.") }
+                            { t("Os índices deverão corresponder ao parâmetro JSON que se deseja guardar.") }
                             <br/>
-                            <strong>{ t('Exemplo:') }</strong>
-                            { t('O nome da unidade curricular é a segunda (2ª) coluna, então deveremos converter para o index = 1, pois retiramos sempre 1 unidade ao número da ordem da coluna.') }
+                            <strong>{ ('Exemplo:') } </strong>
+                            { t( 'O nome da unidade curricular é o parâmetro DS_DISCIP, então deveremos utilizar esse parametro para obter os dados relativos aos nomes das unidades curriculares.') }
                         </Message.Content>
                     </Message>
 
@@ -295,6 +310,18 @@ const New = () => {
                                         <Form.Input type='text' label={ t("Index coluna Professores do curso") } {...index_course_unit_teachersInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
+                                <Field name="index_docentes_email" validate={required}>
+                                    {({input: index_docentes_emailInput, meta}) => (
+                                        <Form.Input type='text' label={ t("Index coluna Email do docente") } {...index_docentes_emailInput} error={ meta.touched && meta.error } />
+                                    )}
+                                </Field>
+                                <Field name="index_docentes_name" validate={required}>
+                                    {({input: index_docentes_nameInput, meta}) => (
+                                        <Form.Input type='text' label={ t("Index coluna Nome do docente") } {...index_docentes_nameInput} error={ meta.touched && meta.error } />
+                                    )}
+                                </Field>
+                            </Form.Group>
+                            <Form.Group widths="equal">
                                 <Field name="index_course_unit_registered" validate={required}>
                                     {({input: index_course_unit_registeredInput, meta}) => (
                                         <Form.Input type='text' label={ t("Index coluna Alunos Registados") } {...index_course_unit_registeredInput} error={ meta.touched && meta.error } />
@@ -327,7 +354,7 @@ const New = () => {
                         </Message.Content>
                         <Message.List
                             items={[
-                                t('anoletivo -> Pronto a receber no formato: 202122'),
+                                t('anoletivo -> Pronto a receber no formato: 2021/22'),
                                 t('periodo -> Pronto a receber no formato (S1/S2)'),
                             ]}
                         />
@@ -337,13 +364,13 @@ const New = () => {
                         <Message.Content>
                             <strong>
                                 { t('No final, o URL deverá ser semelhante ao seguinte:') }
-                                <i>http://www.dei.estg.ipleiria.pt/intranet/horarios/ws/inscricoes/cursos_ucs.php?anoletivo=202122&periodo=S1</i>
+                                <i>https://www.dei.estg.ipleiria.pt/servicos/projetos/get_aulas_curso_tipo.php?anoletivo=2021/22&periodo=S1&format0=json</i>
                             </strong>
                         </Message.Content>
                     </Message>
                     <Card fluid>
                         <Card.Content>
-                            <Form.Group widths="equal">
+                            <Form.Group widths="3">
                                 <Field name="query_param_academic_year" validate={required}>
                                     {({input: query_param_academic_yearInput, meta}) => (
                                         <Form.Input placeholder={t('anoletivo -> Pronto a receber no formato: 202122')} label={ t("Nome do parâmetro para o ano letivo") } {...query_param_academic_yearInput} error={ meta.touched && meta.error } />
@@ -352,6 +379,23 @@ const New = () => {
                                 <Field name="query_param_semester" validate={required}>
                                     {({input: query_param_semesterInput, meta}) => (
                                         <Form.Input placeholder={t('periodo -> Pronto a receber no formato (S1/S2)')} label={ t("Nome do parâmetro para o semestre") } {...query_param_semesterInput} error={ meta.touched && meta.error } />
+                                    )}
+                                </Field>
+                                <Field name="query_param_campus" validate={required}>
+                                    {({input: query_param_campusInput, meta}) => (
+                                        <Form.Input placeholder={t('campus')} label={ t("Nome do parâmetro para o campus") } {...query_param_campusInput} error={ meta.touched && meta.error } />
+                                    )}
+                                </Field>
+                            </Form.Group>
+                            <Form.Group widths="equal">
+                                <Field name="query_param_course" validate={required}>
+                                    {({input: query_param_courseInput, meta}) => (
+                                        <Form.Input placeholder={t('Curso')} label={ t("Nome do parâmetro para o curso") } {...query_param_courseInput} error={ meta.touched && meta.error } />
+                                    )}
+                                </Field>
+                                <Field name="query_param_course_unit" validate={required}>
+                                    {({input: query_param_course_unitsInput, meta}) => (
+                                        <Form.Input placeholder={t('Unidade Curricular')} label={ t("Nome do parâmetro para a unidade curricular") } {...query_param_course_unitsInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                             </Form.Group>
@@ -417,6 +461,11 @@ const New = () => {
                                             {...pedagogic_group_idInput} selectOnBlur={false} loading={loadingGroups}
                                             onChange={(e, {value}) => pedagogic_group_idInput.onChange(value)}
                                             label={ t("Grupo Pedagógico da escola") } error={ meta.touched && meta.error } />
+                                    )}
+                                </Field>
+                                <Field name="index_campus" validate={required}>
+                                    {({input: index_campusInput, meta}) => (
+                                        <Form.Input type='text' label={ t("Index coluna Campus") } {...index_campusInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                             </Form.Group>

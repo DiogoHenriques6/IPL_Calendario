@@ -22,6 +22,8 @@ class EvaluationTypeRequest extends FormRequest
             'code'      => 'string|max:120|unique:evaluation_types,code,' . $this->id,
             'name_pt'   => 'string|max:255|unique:evaluation_types,name_pt,' . $this->id,
             'name_en'   => 'string|max:255|unique:evaluation_types,name_en,' . $this->id,
+            'initials_pt' => 'string|max:20|unique:evaluation_types,initials_pt,' . $this->id,
+            'initials_en' => 'string|max:20|unique:evaluation_types,initials_en,' . $this->id,
             'enabled'   => 'required|boolean',
         ];
 

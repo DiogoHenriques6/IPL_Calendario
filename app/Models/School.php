@@ -15,30 +15,10 @@ class School extends Model
         'code',
         'name_pt',
         'name_en',
-        'base_link',
-
-        'index_course_code',
-        'index_course_name_pt',
-        'index_course_name_en',
-        'index_course_initials',
-        'index_course_unit_code',
-        'index_course_unit_name_pt',
-        'index_course_unit_name_en',
-        'index_course_unit_initials',
-        'index_course_unit_curricular_year',
-        'index_course_unit_teachers',
-
-        'index_course_unit_registered',
-        'index_course_unit_passed',
-        'index_course_unit_flunk',
-
-        'index_course_unit_branch',
-
-        'query_param_academic_year',
-        'query_param_semester',
         'gop_group_id',
         'board_group_id',
-        'pedagogic_group_id'
+        'pedagogic_group_id',
+        'index_campus'
     ];
 
     public $timestamps = false;

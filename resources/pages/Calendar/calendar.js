@@ -348,7 +348,6 @@ const Calendar = () => {
                                         return item;
                                     }
                                 }
-
                             });
 
                            // define epochs daily
@@ -515,7 +514,6 @@ const Calendar = () => {
     const weekDayContentCell = (epoch, days, courseIndex, year, weekDay, weekDayIndex, epochsLength) => {
         // TODO add exam to the dates (by single cols or colspan)
         const day = days.find((day) => day.weekDay === weekDay);
-
         const firstDayAvailable = moment(days[0].date);
         const lastDayAvailable = moment(days[days.length - 1].date);
         const {interruption} = day || {};
@@ -582,6 +580,7 @@ const Calendar = () => {
             if (existingExamsAtThisDate?.length) {
                 // show a button per exam in this day
                 examsComponents = existingExamsAtThisDate.map((exam) => {
+                    console.log(exam.method);
                     return (
                         // <Button key={exam.id} onClick={() => openExamDetailHandler(year, exam)} isModified={differences?.includes(exam.id)} >
                         // For the Future (drag and drop
@@ -601,7 +600,7 @@ const Calendar = () => {
                             )}
                             <div className="btn-exam-content">
                                 <div className="btn-exam-label">{ (exam.hour ? exam.hour + ' ' : (exam.in_class ? t('Aula') + " - " : "" ) ) + (exam.course_unit.initials || exam.course_unit.name_full) }</div>
-                                <div className="btn-exam-type">{ (exam.method?.description || exam.method?.name) }</div>
+                                <div className="btn-exam-type">{ (exam.method?.initials || exam.method?.name) }</div>
                             </div>
                         </Button>
                     );
