@@ -13,6 +13,7 @@ use App\Models\PermissionSection;
 use App\Models\School;
 use App\Models\Semester;
 use App\Models\User;
+use App\Models\Webservice;
 use Illuminate\Database\Seeder;
 
 class PermissionsAndGroupsSeeder extends Seeder
@@ -77,41 +78,11 @@ class PermissionsAndGroupsSeeder extends Seeder
         }
 
         $schools = [
-            ["code" => "ESAD.CR",   "name_pt" => "Escola Superior de Artes e Design - Caldas da Rainha",   "name_en" => "School of Arts and Design - Caldas da Rainha"  ],
-            ["code" => "ESECS",     "name_pt" => "Escola Superior de Educação e Ciências Sociais",         "name_en" => "School of Education and Social Sciences"       ],
-            ["code" => "ESSLEI",    "name_pt" => "Escola Superior de Saúde",                               "name_en" => "School of Health Sciences"                     ],
-            [
-                "code"                              => "ESTG",
-                "name_pt"                           => "Escola Superior de Tecnologia e Gestão",
-                "name_en"                           => "School of Technology and Management",
-                "base_link"                         => "https://www.dei.estg.ipleiria.pt/servicos/projetos/",
-
-                "index_course_code"                 => "cod_curso",//"0",
-                "index_course_name_pt"              => "DS_CURSO",//"1",
-                "index_course_name_en"              => "cursoIngles",
-                "index_course_initials"             => "acronimoCurso",//"11",
-
-                "index_course_unit_code"            => "COD_UC",//"2",
-                "index_course_unit_name_pt"         => "DS_DISCIP",//"3",
-                "index_course_unit_name_en"         => "ucIngles",
-                "index_course_unit_initials"        => "ABRV_UNIDADE_CURRICULAR",
-
-                "index_course_unit_teachers"        => "docentesUC",//"7",
-                "index_course_unit_curricular_year" => "DS_ANO_CURRICULAR",//"5",
-
-                "index_course_unit_registered"      => "inscritos",//"8",
-                "index_course_unit_passed"          => "aprovados",//"9",
-                "index_course_unit_flunk"           => "reprovados",//"10",
-
-                "index_course_unit_branch"          => "BK_SIGES_CD_RAMO_UC",
-
-                "query_param_academic_year"         => "anoletivo",
-                "query_param_semester"              => "semestre",
-                "gop_group_id"                      => "12",
-                "board_group_id"                    => "13",
-                "pedagogic_group_id"                => "14",
-            ],
-            ["code" => "ESTM",  "name_pt" => "Escola Superior de Turismo e Tecnologia do Mar - Peniche",    "name_en" => "School of Tourism and Maritime Technology - Peniche" ],
+            ["code" => "ESAD.CR",   "name_pt" => "Escola Superior de Artes e Design - Caldas da Rainha",        "name_en" => "School of Arts and Design - Caldas da Rainha"         ],
+            ["code" => "ESECS",     "name_pt" => "Escola Superior de Educação e Ciências Sociais",              "name_en" => "School of Education and Social Sciences"              ],
+            ["code" => "ESSLEI",    "name_pt" => "Escola Superior de Saúde",                                    "name_en" => "School of Health Sciences"                            ],
+            ["code" => "ESTG",      "name_pt" => "Escola Superior de Tecnologia e Gestão",                      "name_en" => "School of Technology and Management"                  ],
+            ["code" => "ESTM",      "name_pt" => "Escola Superior de Turismo e Tecnologia do Mar - Peniche",    "name_en" => "School of Tourism and Maritime Technology - Peniche"  ],
         ];
 
         foreach ($schools as $school) {
@@ -130,6 +101,44 @@ class PermissionsAndGroupsSeeder extends Seeder
             ["name_pt" => "Dia aberto",          "name_en" => "Open Day",        "mandatory" => false ],
             ["name_pt" => "Carnaval",            "name_en" => "Carnival",        "mandatory" => false ],
         ];
+
+        $webservice = [
+            "base_link"                         => "https://www.dei.estg.ipleiria.pt/servicos/projetos/",
+
+            "course_units_link"                 => "get_aulas_curso_tipo.php",
+            "teachers_by_uc_link"               => "get_docentes_ucs.php",
+            "teachers_link"                     => "get_docentes_dep.php",
+
+            "index_course_code"                 => "cod_curso",//"0",
+            "index_course_name_pt"              => "DS_CURSO",//"1",
+            "index_course_name_en"              => "cursoIngles",
+            "index_course_initials"             => "acronimoCurso",//"11",
+
+            "index_course_unit_code"            => "COD_UC",//"2",
+            "index_course_unit_name_pt"         => "DS_DISCIP",//"3",
+            "index_course_unit_name_en"         => "ucIngles",
+            "index_course_unit_initials"        => "ABRV_UNIDADE_CURRICULAR",
+
+            "index_course_unit_teachers"        => "docentesUC",//"7",
+            "index_docentes_email"              => "email",//"6",
+            "index_docentes_name"               => "nome",//"5",
+            "index_course_unit_curricular_year" => "DS_ANO_CURRICULAR",//"5",
+
+            "index_course_unit_registered"      => "inscritos",//"8",
+            "index_course_unit_passed"          => "aprovados",//"9",
+            "index_course_unit_flunk"           => "reprovados",//"10",
+
+            "index_course_unit_branch"          => "BK_SIGES_CD_RAMO_UC",
+
+            "query_param_academic_year"         => "anoletivo",
+            "query_param_semester"              => "semestre",
+            "query_param_course_code"           => "cod_curso",
+            "query_param_course_unit_code"      => "cod_uc",
+            "query_param_campus"                => "campus",
+        ];
+
+        $newWebservice = new Webservice($webservice);
+        $newWebservice->save();
 
         foreach ($interruptionTypes as $interruptionType) {
             $newInterruptionType = new InterruptionType($interruptionType);
