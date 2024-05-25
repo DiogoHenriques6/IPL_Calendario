@@ -197,7 +197,6 @@ class ExternalImports
                             $teachersByUC = $teachersDictionary[$identifier];
                         }
 
-
                         $course = Course::firstOrCreate(
                             [
                                 "code" => $courseUnit->{$webservice->index_course_code},
@@ -227,12 +226,12 @@ class ExternalImports
                             }
                             if($course->name_en !=  $courseUnit->{$webservice->index_course_name_en} || $course->name_en == '') {
                                 $hasUpdate = true;
-                                $course->name_en  = $courseUnit->{$webservice->index_course_name_en} !== '' ? $courseUnit->{$webservice->index_course_name_en} : $courseUnit->{$school->index_course_name_pt};
+                                $course->name_en  = $courseUnit->{$webservice->index_course_name_en} !== '' ? $courseUnit->{$webservice->index_course_name_en} : $courseUnit->{$webservice->index_course_name_pt};
                                 // this will duplicate the value as default, to prevent empty states
                             }
-                            if($course->degree != DegreesUtil::getDegreeId($webservice->{$school->index_course_name_pt})) {
+                            if($course->degree != DegreesUtil::getDegreeId($courseUnit->{$webservice->index_course_name_pt})) {
                                 $hasUpdate = true;
-                                $course->degree = DegreesUtil::getDegreeId($webservice->{$school->index_course_name_pt});
+                                $course->degree = DegreesUtil::getDegreeId($courseUnit->{$webservice->index_course_name_pt});
                             }
                             if($hasUpdate){
                                 $course->save();
@@ -241,6 +240,7 @@ class ExternalImports
                         } else {
                             $coursesCount["created"]++;
                         }
+
 //                        Log::channel('sync_test')->info('Cursos (' . $course . ')' );
 
                         // https://laravel.com/docs/9.x/eloquent-relationships#syncing-associations
@@ -263,7 +263,6 @@ class ExternalImports
 //                      Log::channel('sync_test')->info('Branchs (' . $branch );
 
                         // Retrieve CourseUnit by code or create it if it doesn't exist...
-
                         $newestCourseUnit = CourseUnit::firstOrCreate(
                             [
                                 "code" => $courseUnit->{$webservice->index_course_unit_code},
@@ -283,7 +282,6 @@ class ExternalImports
                                 "flunk"     =>  $teachersByUC->{$webservice->index_course_unit_flunk}     ? (int)$teachersByUC->{$webservice->index_course_unit_flunk}       : 0,
                             ]
                         );
-
 
                         // check for updates and then update the different value
                         // user just created in the database; it didn't exist before.
@@ -334,16 +332,15 @@ class ExternalImports
 
 
                         // Retrieve CourseUnit by code or create it if it doesn't exist...
-//                        LOG::channel("sync_test")->info("here1");
-                        if(!empty($teachersByUC->{$webservice->index_course_unit_teachers})) {
 
+                        if(!empty($teachersByUC->{$webservice->index_course_unit_teachers})) {
+                            LOG::channel("courses_sync")->info(["Teacher: " , isset($teachersByUC->{$webservice->index_course_unit_teachers})]);
                             $teachers = explode(",", $teachersByUC->{$webservice->index_course_unit_teachers});
-//                            Log::channel('sync_test')->info('Teacher -' . $teachersByUC->{$school->index_course_unit_teachers});
+//                            Log::channel('sync_test')->info('Teacher -' . $teachersByUC->{$webservice->index_course_unit_teachers});
                             $teachersForCourseUnit = [];
                             foreach ($teachers as $teacher) {
 
                                 if (!empty($teacher)) {
-
                                         // validate if user already exists on our USERS table
                                         $foundUser =User::where('name', 'like', "%$teacher%")->orWhere('email', 'like', "%$teacher%")->first();
                                         if (is_null($foundUser)) {
@@ -354,27 +351,27 @@ class ExternalImports
                                                 continue;
                                             }
                                             $teacher_data = $response->body();
-//                                            LOG::channel("sync_test")->info("Username " .$teacher_data);
                                             $newTeacher = json_decode($teacher_data);
                                             if(empty($newTeacher)){
                                                 continue;
                                             }
-//                                            LOG::channel("sync_test")->info("UserArray " . $newTeacher->email);
-
                                             $foundUser = User::create([
                                                 "email" => $newTeacher->{$webservice->index_docentes_email},
                                                 "name" => $newTeacher->{$webservice->index_docentes_name},
                                                 "password" => "",
                                             ]);
+
                                         }
                                         $foundUser->groups()->syncWithoutDetaching(Group::isTeacher()->get());
                                         $teachersForCourseUnit[] = $foundUser->id;
                                 }
                             }
+
                             $newestCourseUnit->teachers()->sync($teachersForCourseUnit, true);
                         }
                     }
                 }
+
                 //get all courses without num_years and update the number
                 $courses = Course::whereNull('num_years')->get();
                 foreach ($courses as $course) {
