@@ -129,6 +129,7 @@ class ExternalImports
 //            Log::channel('sync_test')->info("Quantity of teachers: " . sizeof($teachers));
             // Loop for each saved school
             foreach ($schools as $school) {
+                LOG::channel("sync_test")->info("School: " . $school->code);
 
                 // From URL to get webpage
                 //TODO try to change the S to be dinamic
@@ -190,6 +191,7 @@ class ExternalImports
                             continue;
                         }
 //                        Log::channel('sync_test')->info('Course Unit - ' . json_encode($courseUnit));
+                        $teachersByUC = [];
                         $identifier = $courseUnit->{$webservice->index_course_code} . '_' . $courseUnit->{$webservice->index_course_unit_code};
                         if (isset($teachersDictionary[$identifier])) {
                             $teachersByUC = $teachersDictionary[$identifier];
