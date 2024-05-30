@@ -116,6 +116,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
 
     useEffect(() => {
         isFormValid(epochs);
+        console.log(epochs);
     }, [epochs]);
 
     const loadMethods = () => {
@@ -443,7 +444,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                 )}
                                             </Table.Cell>
                                             <Table.Cell width={3} colSpan={method.is_blocked ? 3 : 0}>
-                                                <Form.Input placeholder={t("Descrição PT")} fluid value={method.description_pt} disabled={hasGroup}
+                                                <Form.Input placeholder={t("Descrição PT")} fluid value={method.description_pt} disabled
                                                             onChange={
                                                         (ev, {value}) => setEpochs((current) => {
                                                             const copy = [...current];
@@ -452,7 +453,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                         })
                                                     } />
 
-                                                <Form.Input placeholder={t("Descrição EN")} fluid value={method.description_en} disabled={hasGroup} className="margin-top-base"
+                                                <Form.Input placeholder={t("Descrição EN")} fluid value={method.description_en} disabled className="margin-top-base"
                                                     onChange={
                                                         (ev, {value}) => setEpochs((current) => {
                                                             const copy = [...current];
@@ -512,7 +513,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                         <Field name="epoch">
                                             {({input: epochFromInput}) => (
                                                 <Form.Dropdown
-                                                    options={epochs.map((epoch) => ({ key: epoch.id, value: epoch.id, text: epoch.name, disabled: selectedEpochTo.includes(epoch.id) || epoch.methods.length === 0 }))}
+                                                    options={epochs.map((epoch) => ({ key: epoch.id, value: epoch.id, text: i18n.language == 'en' ? epoch.name_en: epoch.name_pt, disabled: selectedEpochTo.includes(epoch.id) || epoch.methods.length === 0 }))}
                                                     value={selectedEpochFrom || -1} placeholder={t("Época a copiar")} selectOnBlur={false} selection search label={ t("Época de origem") }
                                                     onChange={(e, {value}) => epochFromDropdownOnChange(e, value)}
                                                 />
@@ -524,7 +525,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                         { epochs.filter((epoch) => epoch.id != selectedEpochFrom).map((epoch, index) => (
                                             <Field name="epoch" key={index}>
                                                 {({input: epochToInput}) => (
-                                                    <Form.Checkbox checked={selectedEpochTo.includes(epoch.id)} label={ epoch.name } disabled={selectedEpochFrom == -1}
+                                                    <Form.Checkbox checked={selectedEpochTo.includes(epoch.id)} label={ i18n.language == 'en' ? epoch.name_en: epoch.name_pt } disabled={selectedEpochFrom == -1}
                                                                    onChange={(e, {checked}) => epochToDropdownOnChange(epoch.id, checked)}
                                                     />
                                                 )}

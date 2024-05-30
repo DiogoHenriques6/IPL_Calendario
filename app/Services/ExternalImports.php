@@ -360,7 +360,6 @@ class ExternalImports
                                                 "name" => $newTeacher->{$webservice->index_docentes_name},
                                                 "password" => "",
                                             ]);
-
                                         }
                                         $foundUser->groups()->syncWithoutDetaching(Group::isTeacher()->get());
                                         $teachersForCourseUnit[] = $foundUser->id;
