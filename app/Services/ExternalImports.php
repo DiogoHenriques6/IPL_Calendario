@@ -97,6 +97,7 @@ class ExternalImports
 
             // get list of schools that have "base_link" data
             $schools = School::whereNotNull('index_campus')->where('index_campus', '<>', '')->get();
+
             $webservice = Webservice::where('id', 1)->firstOrFail();
 
 
@@ -129,12 +130,12 @@ class ExternalImports
 //            Log::channel('sync_test')->info("Quantity of teachers: " . sizeof($teachers));
             // Loop for each saved school
             foreach ($schools as $school) {
-                LOG::channel("sync_test")->info("School: " . $school->code);
+                LOG::channel("sync_test")->info("School: " . $school->index_campus);
 
                 // From URL to get webpage
                 //TODO try to change the S to be dinamic
                 $apiEndpoint = $webservice->base_link . $webservice->course_units_link. '?' . $webservice->query_param_semester . '=S' . $semester . '&' . $webservice->query_param_campus . '=' . $school->index_campus . '&' . $webservice->query_param_academic_year . '=' . $academicYearCode . '&formato=json';
-//                Log::channel('sync_test')->info($apiEndpoint);
+                Log::channel('sync_test')->info($apiEndpoint);
 
                 $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
                 if($response->failed()){
@@ -154,7 +155,7 @@ class ExternalImports
 
                 //Get docentes by UCs
                 //TODO CHANGE CAMPUS VALUE to dinamic for each school accordingly
-                $apiEndpoint = $webservice->base_link . $webservice->teachers_by_uc_link . '?' . $webservice->query_param_semester . '=S' . $semester . '&' . $webservice->query_param_academic_year . '=' . $academicYearCode . '&' . $webservice->query_param_campus . '=' . 2 . '&formato=json';
+                $apiEndpoint = $webservice->base_link . $webservice->teachers_by_uc_link . '?' . $webservice->query_param_semester . '=S' . $semester . '&' . $webservice->query_param_academic_year . '=' . $academicYearCode . '&' . $webservice->query_param_campus . '=' . $school->index_campus . '&formato=json';
                 Log::channel('sync_test')->info($apiEndpoint);
 
                 $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
@@ -191,10 +192,11 @@ class ExternalImports
                             continue;
                         }
 //                        Log::channel('sync_test')->info('Course Unit - ' . json_encode($courseUnit));
-                        $teachersByUC = [];
+
                         $identifier = $courseUnit->{$webservice->index_course_code} . '_' . $courseUnit->{$webservice->index_course_unit_code};
                         if (isset($teachersDictionary[$identifier])) {
                             $teachersByUC = $teachersDictionary[$identifier];
+                            LOG::channel("sync_test")->info("Teachers: " . json_encode($teachersByUC));
                         }
 
                         $course = Course::firstOrCreate(
@@ -204,7 +206,7 @@ class ExternalImports
                             ],
                             [
                                 "school_id" => $school->id,
-                                "initials"  => $teachersByUC->{$webservice->index_course_initials},//$gen_initials,
+                                "initials"  => isset($teachersByUC) ? $teachersByUC->{$webservice->index_course_initials} : null ,//$gen_initials,
 
                                 "name_pt"   => $courseUnit->{$webservice->index_course_name_pt},
                                 "name_en"   => $courseUnit->{$webservice->index_course_name_en} !== '' ? $courseUnit->{$webservice->index_course_name_en} :$courseUnit->{$webservice->index_course_name_pt}, // this will duplicate the value as default, to prevent empty states// this will duplicate the value as default, to prevent empty states
@@ -334,7 +336,7 @@ class ExternalImports
                         // Retrieve CourseUnit by code or create it if it doesn't exist...
 
                         if(!empty($teachersByUC->{$webservice->index_course_unit_teachers})) {
-                            LOG::channel("courses_sync")->info(["Teacher: " , isset($teachersByUC->{$webservice->index_course_unit_teachers})]);
+//                            LOG::channel("courses_sync")->info(["Teacher: " , isset($teachersByUC->{$webservice->index_course_unit_teachers})]);
                             $teachers = explode(",", $teachersByUC->{$webservice->index_course_unit_teachers});
 //                            Log::channel('sync_test')->info('Teacher -' . $teachersByUC->{$webservice->index_course_unit_teachers});
                             $teachersForCourseUnit = [];
