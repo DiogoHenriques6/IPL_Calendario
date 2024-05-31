@@ -13,9 +13,9 @@ class SchoolResource extends JsonResource
             'id'          => $this->id,
             'name'        => $this->code,
             'description' => ($request->header("lang") == "en" ? $this->name_en : $this->name_pt),
-            'is_configured'   => ($this->base_link != '' && !empty($this->gop_group_id) && !empty($this->board_group_id) && !empty($this->pedagogic_group_id)),
+            'is_configured'   => (!empty($this->index_campus) && !empty($this->gop_group_id) && !empty($this->board_group_id) && !empty($this->pedagogic_group_id)),
 
-            'has_link'      => $this->base_link != '',
+            'has_campus'      => !empty($this->index_campus),
             'has_gop'       => !empty($this->gop_group_id),
             'has_board'     => !empty($this->board_group_id),
             'has_pedagogic' => !empty($this->pedagogic_group_id),

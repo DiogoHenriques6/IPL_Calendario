@@ -10,7 +10,7 @@ import {useTranslation} from "react-i18next";
 import AcademicYears from "../../../components/Filters/AcademicYears";
 
 const UnitTabMethods = ({ groupId, warningsHandler }) => {
-    const { t } = useTranslation();
+    const { t,i18n } = useTranslation();
     const contextRef = createRef();
 
     const [isLoading, setIsLoading] = useState(true);
@@ -143,7 +143,9 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                         minimum: method.minimum,
                         weight: method.weight,
                         description_pt: method.description_pt,
-                        description_en: method.description_en
+                        description_en: method.description_en,
+                        initials_pt: method.initials_pt,
+                        initials_en: method.initials_en,
                     })
                 });
             });
@@ -196,6 +198,8 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                 evaluation_type_id: undefined,
                 description_pt: '',
                 description_en: '',
+                initials_pt: '',
+                initials_en: '',
                 is_blocked: false
             });
             return copy;
@@ -288,11 +292,13 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
     const handleSubmitCopy = () => {
         axios.post('/method/clone-grouped', {
             copy_course_unit_id: curricularUnitSelected,
-            course_unit_group_id: groupId
+            course_unit_group_id: groupId,
+            removed: [...removedMethods]
         }).then((res) => {
             if (res.status === 200) {
                 loadMethods();
                 setOpenCopy(false);
+                setRemovedMethods([]);
             }
         });
     }
@@ -343,7 +349,7 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                     </Sticky>
                     {epochs?.map((item, index) => (
                         <div className={ index > 0 ? "margin-top-m" : ""} key={index}>
-                            <Header as="span">{item.name}</Header>
+                            <Header as="span">{i18n.language == 'en' ? item.name_en: item.name_pt}</Header>
                             <Table compact celled className={"definition-last"}>
                                 <Table.Header>
                                     <Table.Row>
@@ -380,6 +386,8 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                                                             } else {
                                                                 copy[index].methods[methodIndex].description_pt = evaluationTypes.filter((x) => x.id === value)[0].name_pt + " " + nextExamIndex;
                                                                 copy[index].methods[methodIndex].description_en = evaluationTypes.filter((x) => x.id === value)[0].name_en + " " + nextExamIndex;
+                                                                copy[index].methods[methodIndex].initials_pt = evaluationTypes.filter((x) => x.id === value)[0].initials_pt + " " + nextExamIndex;
+                                                                copy[index].methods[methodIndex].initials_en = evaluationTypes.filter((x) => x.id === value)[0].initials_en + " " + nextExamIndex;
                                                                 copy[index].methods[methodIndex].name = evaluationTypes.filter((x) => x.id === value)[0].name_pt;
                                                                 copy[index].methods[methodIndex].code = evaluationTypes.filter((x) => x.id === value)[0].code;
                                                                 copy[index].methods[methodIndex].grouped_id = Math.floor(Math.random() * 1000);
@@ -396,6 +404,8 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                                                                         description: "",
                                                                         description_en: "Statement release",
                                                                         description_pt: "Lançamento do enunciado",
+                                                                        initials_pt: "LE",
+                                                                        initials_en: "SR",
                                                                         is_blocked: true,
                                                                         grouped_id: copy[index].methods[methodIndex].grouped_id
                                                                     });
@@ -407,6 +417,8 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                                                                         description: "",
                                                                         description_en: "Public oral presentation",
                                                                         description_pt: "Apresentação oral pública",
+                                                                        initials_pt: "AOP",
+                                                                        initials_en: "POP",
                                                                         is_blocked: true,
                                                                         grouped_id: copy[index].methods[methodIndex].grouped_id
                                                                     });
@@ -491,7 +503,7 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                                         <Field name="epoch">
                                             {({input: epochFromInput}) => (
                                                 <Form.Dropdown
-                                                    options={epochs.map((epoch) => ({ key: epoch.id, value: epoch.id, text: epoch.name, disabled: selectedEpochTo.includes(epoch.id) || epoch.methods.length === 0 }))}
+                                                    options={epochs.map((epoch) => ({ key: epoch.id, value: epoch.id, text: i18n.language == 'en' ? epoch.name_en: epoch.name_pt, disabled: selectedEpochTo.includes(epoch.id) || epoch.methods.length === 0 }))}
                                                     value={selectedEpochFrom || -1} placeholder={t("Época a copiar")} selectOnBlur={false} selection search label={ t("Época de origem") }
                                                     onChange={(e, {value}) => epochFromDropdownOnChange(e, value)}
                                                 />
@@ -503,7 +515,7 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                                         { epochs.filter((epoch) => epoch.id != selectedEpochFrom).map((epoch, index) => (
                                             <Field name="epoch" key={index}>
                                                 {({input: epochToInput}) => (
-                                                    <Form.Checkbox checked={selectedEpochTo.includes(epoch.id)} label={ epoch.name } disabled={selectedEpochFrom == -1}
+                                                    <Form.Checkbox checked={selectedEpochTo.includes(epoch.id)} label={  i18n.language == 'en' ? epoch.name_en: epoch.name_pt } disabled={selectedEpochFrom == -1}
                                                                    onChange={(e, {checked}) => epochToDropdownOnChange(epoch.id, checked)}
                                                     />
                                                 )}

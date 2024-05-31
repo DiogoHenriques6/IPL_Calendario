@@ -292,11 +292,13 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
     const handleSubmitCopy = () => {
         axios.post('/method/clone', {
             copy_course_unit_id: curricularUnitSelected,
-            new_course_unit_id: unitId
+            new_course_unit_id: unitId,
+            removed: [...removedMethods]
         }).then((res) => {
             if (res.status === 200) {
                 loadMethods();
                 setOpenCopy(false);
+                setRemovedMethods([]);
             }
         });
     }

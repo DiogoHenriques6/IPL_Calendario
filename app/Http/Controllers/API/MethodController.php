@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Requests\CloneMethodRequest;
 use App\Http\Requests\NewGroupMethodRequest;
 use App\Http\Resources\Generic\CourseUnitSearchResource;
 use App\Models\CourseUnit;
@@ -120,11 +121,17 @@ class MethodController extends Controller
         return CourseUnitSearchResource::collection($ucs);
     }
 
-    public function methodsClone(Request $request){
+    public function methodsClone(CloneMethodRequest $request){
+        foreach ($request->removed as $removedMethod) {
+            $this->destroy(Method::find($removedMethod));
+        }
         return $this->cloneMethod($request->copy_course_unit_id, $request->new_course_unit_id, $request->cookie('academic_year'));
     }
 
     public function methodsCloneGrouped(Request $request){
+        foreach ($request->removed as $removedMethod) {
+            $this->destroy(Method::find($removedMethod));
+        }
         // search course unit
         $courseUnitGroup = CourseUnitGroup::find($request->course_unit_group_id);
         $groupCourseUnits = $courseUnitGroup->courseUnits()->get();

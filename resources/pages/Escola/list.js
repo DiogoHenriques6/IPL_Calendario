@@ -63,7 +63,7 @@ const ListSchools = () => {
                             </Table.Row>
                         </Table.Header>
                         <Table.Body>
-                            { schoolList?.map(({ id, name, description, is_configured, has_link, has_gop, has_board, has_pedagogic }, index ) => (
+                            { schoolList?.map(({ id, name, description, is_configured, has_campus, has_gop, has_board, has_pedagogic }, index ) => (
                                 <Table.Row key={index}>
                                     <Table.Cell>{name}</Table.Cell>
                                     <Table.Cell>{description}</Table.Cell>
@@ -75,7 +75,7 @@ const ListSchools = () => {
                                             (
                                                 <Popup trigger={<Icon name='close' />} >
                                                     <List divided relaxed>
-                                                        { !has_link &&      ( <List.Item icon='linkify' content={ t("Link de sincronização não configurado.") } />) }
+                                                        { !has_campus &&    ( <List.Item icon=''   content={ t("Campus da escola não configurado para uso de webservices.") } />) }
                                                         { !has_gop &&       ( <List.Item icon='users'   content={ t("Grupo GOP da escola não configurado.") } />) }
                                                         { !has_board &&     ( <List.Item icon='users'   content={ t("Grupo Direção da escola não configurado.") } />) }
                                                         { !has_pedagogic && ( <List.Item icon='users'   content={ t("Grupo Pedagógico da escola não configurado.") } />) }

@@ -236,8 +236,14 @@ class CourseUnitGroupController extends Controller
                 ->get();
             //byCourseUnit($courseUnit->id)->byEpochType($epochType->id)->ofAcademicYear($yearId)->get();
 
-            $item['methods'] = MethodResource::collection($methods);
-            return $item;
+            $updatedItem = [
+                'id' => $item['id'],
+                'name_pt' => $item['name_pt'],
+                'name_en' => $item['name_en'],
+                'methods' => MethodResource::collection($methods),
+            ];
+
+            return $updatedItem;
         });
 
         return $finalList->all();
