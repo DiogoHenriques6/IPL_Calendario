@@ -19,8 +19,8 @@ class MethodResource extends JsonResource
             'description_pt'        => $this->description_pt,
             'description_en'        => $this->description_en,
             'initials'              => ($request->header("lang") == "en" ? $this->evaluationType->initials_en : $this->evaluationType->initials_pt),
-            'initials_pt'           => $this->evaluationType->initials_pt,
-            'initials_en'           => $this->evaluationType->initials_en,
+            'initials_pt'           => $this->initials_pt,
+            'initials_en'           => $this->initials_en,
             'is_blocked'            => $this->evaluation_type_id == EvaluationType::typeStatementRelease() || $this->evaluation_type_id == EvaluationType::typePublicOralPresentation(),
             'grouped_id'            => '',//TODO group by id of "parent" (like projet has those above in "blocked"
 //            'epoch' => EpochResource::collection($this->epochType),
