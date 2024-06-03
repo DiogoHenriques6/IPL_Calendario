@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {Button, Card, Container, Dimmer, Form, Icon, Loader, Tab, Message, Header} from 'semantic-ui-react';
+import {Button, Card, Container, Dimmer, Form, Icon, Loader, Tab, Message, Header, List} from 'semantic-ui-react';
 import { Field, Form as FinalForm } from 'react-final-form';
 import { useParams, useNavigate} from "react-router-dom";
 import _ from 'lodash';
@@ -22,8 +22,12 @@ const New = () => {
     const isEditMode = !_.isEmpty(school);
     const [tabActiveIndex, setTabActiveIndex] = useState(0);
     const [formErrors, setFormErrors] = useState([]);
+    const [hasCampus, setHasCampus] = useState(false);
 
-    const [groups, setGroups] = useState([]);
+
+    const [gopGroups, setGopGroups] = useState([]);
+    const [boardGroups, setBoardGroups] = useState([]);
+    const [pedagogicGroups, setPedagogicGroups] = useState([]);
     const [loadingGroups, setLoadingGroups] = useState(true);
 
     const required = value => (value ? undefined : 'Required');
@@ -36,12 +40,32 @@ const New = () => {
         setLoadingGroups(true);
         axios.get('/user-group').then((res) => {
             if (res.status === 200) {
-                let groupsMap = res.data.data.map((group) => ({
-                    key: group.id,
-                    value: group.id,
-                    text: group.description,
-                }));
-                setGroups(groupsMap);
+                let gopGroupsMap = res.data.data
+                    .filter(group => group.removable !== 0 && group.name.includes("gop"))
+                    .map((group) => ({
+                        key: group.id,
+                        value: group.id,
+                        text: group.description,
+                    }));
+                let boardGroupsMap = res.data.data
+                    .filter(group => group.removable !== 0 && group.name.includes("board"))
+                    .map((group) => ({
+                        key: group.id,
+                        value: group.id,
+                        text: group.description,
+                    }));
+
+
+                let pedagogicGroupsMap = res.data.data
+                    .filter(group => group.removable !== 0 && group.name.includes("pedagogic"))
+                    .map((group) => ({
+                        key: group.id,
+                        value: group.id,
+                        text: group.description,
+                    }));
+                setGopGroups(gopGroupsMap);
+                setBoardGroups(boardGroupsMap);
+                setPedagogicGroups(pedagogicGroupsMap);
                 setLoadingGroups(false);
             }
         });
@@ -209,6 +233,7 @@ const New = () => {
                     }
                 }
                 setFormErrors(errorsArray);
+                setHasCampus(index_campus != undefined);
                 toast(t('Existiu um problema ao gravar as alterações!'), errorConfig);
             }
         });
@@ -411,6 +436,17 @@ const New = () => {
             <div className="margin-bottom-base">
                 <Link to="/escola"> <Icon name="angle left" /> {t('Voltar à lista')}</Link>
             </div>
+            <div>
+                { hasCampus && (
+                    <Message warning>
+                        <Message.Header>{ t('Os seguintes detalhes da Escola precisam da sua atenção:') }</Message.Header>
+                        <Message.List>
+                                <Message.Item>{ t('Preencha os dados do Indíce Campus para acessar UCs e cursos via webservices.') }</Message.Item>
+                        </Message.List>
+                    </Message>
+                )}
+                <br/>
+            </div>
             <FinalForm onSubmit={onSubmit} initialValues={initialValues} render={({ handleSubmit }) => (
                 <Form>
                     <Card fluid>
@@ -441,7 +477,7 @@ const New = () => {
                             <Form.Group widths="equal" style={{ marginTop: 'var(--space-m)' }}>
                                 <Field name="gop_group_id" validate={required}>
                                     {({input: gop_group_idInput, meta}) => (
-                                        <Form.Dropdown options={groups} selection clearable search
+                                        <Form.Dropdown options={gopGroups} selection clearable search
                                         {...gop_group_idInput} selectOnBlur={false} loading={loadingGroups}
                                         onChange={(e, {value}) => gop_group_idInput.onChange(value)}
                                         label={ t("Grupo GOP da escola") } error={ meta.touched && meta.error } />
@@ -449,7 +485,7 @@ const New = () => {
                                 </Field>
                                 <Field name="board_group_id" validate={required}>
                                     {({input: board_group_idInput, meta}) => (
-                                        <Form.Dropdown options={groups} selection clearable search
+                                        <Form.Dropdown options={boardGroups} selection clearable search
                                             {...board_group_idInput} selectOnBlur={false} loading={loadingGroups}
                                             onChange={(e, {value}) => board_group_idInput.onChange(value)}
                                             label={ t("Grupo Direção da escola") } error={ meta.touched && meta.error } />
@@ -457,7 +493,7 @@ const New = () => {
                                 </Field>
                                 <Field name="pedagogic_group_id" validate={required}>
                                     {({input: pedagogic_group_idInput, meta}) => (
-                                        <Form.Dropdown options={groups} selection clearable search
+                                        <Form.Dropdown options={pedagogicGroups} selection clearable search
                                             {...pedagogic_group_idInput} selectOnBlur={false} loading={loadingGroups}
                                             onChange={(e, {value}) => pedagogic_group_idInput.onChange(value)}
                                             label={ t("Grupo Pedagógico da escola") } error={ meta.touched && meta.error } />

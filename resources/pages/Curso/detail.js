@@ -145,7 +145,7 @@ const Detail = () => {
             <div className="margin-bottom-base">
                 <Link to="/curso"> <Icon name="angle left" /> {t('Voltar à lista')}</Link>
             </div>
-            { !loading && initialValues && ((!initialValues?.coordinator && !hasCoordinator) || !initialValues?.initials || !initialValues?.degree_id ) && (
+            { !loading && initialValues && ((!initialValues?.coordinator && !hasCoordinator)) && (
                 <Message warning>
                     <Message.Header>{ t('Os seguintes detalhes do Curso precisam da sua atenção:') }</Message.Header>
                     <Message.List>

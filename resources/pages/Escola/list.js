@@ -75,7 +75,7 @@ const ListSchools = () => {
                                             (
                                                 <Popup trigger={<Icon name='close' />} >
                                                     <List divided relaxed>
-                                                        { !has_campus &&    ( <List.Item icon=''   content={ t("Campus da escola não configurado para uso de webservices.") } />) }
+                                                        { !has_campus &&    ( <List.Item icon=''        content={ t("Código do campus não configurado.") } />) }
                                                         { !has_gop &&       ( <List.Item icon='users'   content={ t("Grupo GOP da escola não configurado.") } />) }
                                                         { !has_board &&     ( <List.Item icon='users'   content={ t("Grupo Direção da escola não configurado.") } />) }
                                                         { !has_pedagogic && ( <List.Item icon='users'   content={ t("Grupo Pedagógico da escola não configurado.") } />) }

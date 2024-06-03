@@ -196,7 +196,7 @@ class ExternalImports
                         $identifier = $courseUnit->{$webservice->index_course_code} . '_' . $courseUnit->{$webservice->index_course_unit_code};
                         if (isset($teachersDictionary[$identifier])) {
                             $teachersByUC = $teachersDictionary[$identifier];
-                            LOG::channel("sync_test")->info("Teachers: " . json_encode($teachersByUC));
+//                            LOG::channel("sync_test")->info("Teachers: " . json_encode($teachersByUC));
                         }
 
                         $course = Course::firstOrCreate(
