@@ -19,4 +19,9 @@ class CourseFilters extends QueryFilters
             ->orWhere('initials', 'LIKE', "%$search%")
             ->orWhere('name_' . $lang, 'LIKE', "%$search%");
     }
+
+    public function school($school)
+    {
+        return $this->builder->where('school_id', $school);
+    }
 }

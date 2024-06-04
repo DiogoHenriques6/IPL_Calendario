@@ -21,6 +21,7 @@ import PaginationDetail from "../../../components/Pagination";
 import FilterOptionPerPage from "../../../components/Filters/PerPage";
 import {useTranslation} from "react-i18next";
 import FilterOptionDegree from "../../../components/Filters/Degree";
+import FilterOptionPerSchool from "../../../components/Filters/Schools";
 
 const Step3 = ({allCourses, setAllCourses, courses, removeCourse, clearCourses, epoch, addCourse, addMultiCourses, loading, setLoading}) => {
     const { t } = useTranslation();
@@ -31,6 +32,7 @@ const Step3 = ({allCourses, setAllCourses, courses, removeCourse, clearCourses, 
     const [degree, setDegree] = useState();
     const [perPage, setPerPage] = useState(10);
     const [allResults, setAllResults] = useState(false);
+    const [school, setSchool] = useState();
 
     const [paginationInfo, setPaginationInfo] = useState({});
 
@@ -58,7 +60,7 @@ const Step3 = ({allCourses, setAllCourses, courses, removeCourse, clearCourses, 
         } else {
             setCurrentPage(1);
         }
-    }, [courseSearch, perPage, degree, epoch]);
+    }, [courseSearch, perPage, degree, epoch, school]);
 
     const fetchCourses = () => {
         if(!allResults) {
@@ -70,7 +72,7 @@ const Step3 = ({allCourses, setAllCourses, courses, removeCourse, clearCourses, 
         searchLink += `${degree ? `&degree=${degree}` : ''}`;
         searchLink += `${epoch ? `&epoch=${epoch}` : ''}`;
         searchLink += '&per_page=' + ( allResults ? "all" : perPage );
-        //searchLink += `${school ? `&school=${school}` : ''}`;
+        searchLink += `${school ? `&school=${school}` : ''}`;
         //searchLink += `${degree ? `&degree=${degree}` : ''}`;
 
         axios.get(searchLink).then((response) => {
@@ -95,8 +97,9 @@ const Step3 = ({allCourses, setAllCourses, courses, removeCourse, clearCourses, 
         <Container>
             <Card.Content>
                 <Form.Group>
-                    <Form.Input width={6} label={t("Pesquisar curso (Código, Sigla ou Nome)")} placeholder={ t("Pesquisar...") } fluid onChange={_.debounce(searchCourse, 900)}/>
+                    <Form.Input width={6} label={t("Pesquisar curso (Código, Abreviatura ou Nome)")} placeholder={ t("Pesquisar...") } fluid onChange={_.debounce(searchCourse, 900)}/>
                     <FilterOptionDegree widthSize={5} showAllDegrees={true} eventHandler={(value) => setDegree(value)}/>
+                    <FilterOptionPerSchool widthSize={3} eventHandler={(value) => setSchool(value)}/>
                     <FilterOptionPerPage widthSize={2} eventHandler={(value) => setPerPage(value)} />
                 </Form.Group>
             </Card.Content>

@@ -18,6 +18,7 @@ class CourseUnitFilters extends QueryFilters
         $lang = (in_array($this->request->header("lang"), ["en", "pt"]) ? $this->request->header("lang") : "pt");
         return $this->builder->where(function($query) use ($search, $lang){
             $query->where('code', 'like', "%{$search}%")
+                ->orWhere('initials', 'like', "%{$search}%")
                 ->orWhere('name_' . $lang, 'like', "%{$search}%");
         });
     }
@@ -26,15 +27,9 @@ class CourseUnitFilters extends QueryFilters
         return $this->builder->where('semester_id',  Semester::where('number', $semester)->first()->id);
     }
 
-    public function epoch($epoch)
-    {
-        Epoch::findOrFail($epoch);
-
-        return $this->builder->whereHas('methods', function (Builder $query) use ($epoch) {
-            $query->whereHas('epochs', function (Builder $queryEpochs) use ($epoch){
-                $queryEpochs->where('epoch_id', $epoch);
-            });
-        });
+    public function school($school) {
+        $courses = Course::where('school_id', $school)->pluck('id');
+        return $this->builder->whereIn('course_id', $courses);
     }
 
     public function year($year)

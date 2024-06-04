@@ -3,12 +3,31 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {Field, Form as FinalForm} from 'react-final-form';
 import {useNavigate} from 'react-router';
 import {Link, useParams} from 'react-router-dom';
-import {Button, Card, Container, Form, Icon, Message} from 'semantic-ui-react';
+import {
+    Button,
+    Card,
+    Container, Dimmer,
+    Divider,
+    Form,
+    Grid,
+    Header,
+    Icon,
+    Label, Loader,
+    Message, Modal, Popup,
+    Segment,
+    Table
+} from 'semantic-ui-react';
 import axios from 'axios';
 import {toast} from 'react-toastify';
 import {successConfig, errorConfig} from '../../utils/toastConfig';
 import {useTranslation} from "react-i18next";
 import UnitTabsGroup from "./Tabs";
+import FilterOptionDegree from "../../components/Filters/Degree";
+import FilterOptionPerPage from "../../components/Filters/PerPage";
+import FilterOptionPerCourse from "../../components/Filters/Courses";
+import PaginationDetail from "../../components/Pagination";
+import FilterOptionBySemester from "../../components/Filters/Semesters";
+import FilterOptionPerSchool from "../../components/Filters/Schools";
 
 const New = () => {
     const { t } = useTranslation();
@@ -18,46 +37,151 @@ const New = () => {
     let paramsId = id;
 
     const [courseUnitGroupDetail, setCourseUnitGroupDetail] = useState({});
-    const [loading, setLoading] = useState(!!paramsId);
+    const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [courseUnits, setCourseUnitsList] = useState([]);
+    const [selectedCourseUnits, setSelectedCourseUnits] = useState([]);
     const [errorMessages, setErrorMessages] = useState([]);
-    const isEditMode = !_.isEmpty(courseUnitGroupDetail);
+    const isEditMode = !_.isEmpty(paramsId);
     const [coursesCount, setCoursesCount] = useState(0);
+    const [course, setCourse] = useState();
+    const [perPage, setPerPage] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [allResults, setAllResults] = useState(false);
+    const [courseUnitSearch, setCourseUnitSearch] = useState();
+    const [semester, setSemester] = useState();
+    const [school, setSchool] = useState();
 
+    const [paginationInfo, setPaginationInfo] = useState({});
+    const [allCourseUnits, setAllCourseUnits] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
-    const loadCourseUnits = (includingIdsString) => {
-        let link = '/course-units/search';
-        link += '?all=true';
-        link += '&withoutGroup=true';
-        link += (includingIdsString ? '&including=[' + includingIdsString + ']' : '');
+    // const loadCourseUnits = (includingIdsString) => {
+    //     let link = '/course-units/search';
+    //     link += '?all=true';
+    //     link += '&withoutGroup=true';
+    //     link += (includingIdsString ? '&including=[' + includingIdsString + ']' : '');
+    //
+    //     axios.get(link).then((res) => {
+    //         if (res.status === 200) {
+    //             //setCourseUnitsList(res?.data?.data);
+    //             setCourseUnitsList(res?.data?.data?.map((x) => ({
+    //                 key: x.key,
+    //                 value: x.value,
+    //                 text: x.text,
+    //                 disabled: x.has_methods,
+    //                 description: (x.has_methods ? t("Métodos já definidos") + " - " : "") + x.year + " " + t("Ano")
+    //             })));
+    //         }
+    //     });
+    // };
 
-        axios.get(link).then((res) => {
-            if (res.status === 200) {
-                //setCourseUnitsList(res?.data?.data);
-                setCourseUnitsList(res?.data?.data?.map((x) => ({
-                    key: x.key,
-                    value: x.value,
-                    text: x.text,
-                    disabled: x.has_methods,
-                    description: (x.has_methods ? t("Métodos já definidos") + " - " : "") + x.year + " " + t("Ano")
-                })));
+    const handleCloseModal = () => {
+        setShowModal(false);
+    }
+
+    const searchCourseUnit = (evt, {value}) => {
+        setCourseUnitSearch(value);
+    };
+
+    useEffect(() => {
+        fetchCourseUnits();
+    }, [currentPage]);
+
+    useEffect(() => {
+        if(currentPage === 1){
+            fetchCourseUnits();
+        } else {
+            setCurrentPage(1);
+        }
+    }, [courseUnitSearch, course, semester, perPage,school]);
+
+    const clearAllCourseUnits = () => {
+        setSelectedCourseUnits([]);
+    }
+
+    const removeCourseUnit = (id) => {
+        setSelectedCourseUnits([...selectedCourseUnits.filter((courseUnit) => courseUnit.id !== id)]);
+    };
+
+    const changedPage = (activePage) => {
+        setCurrentPage(activePage);
+    }
+
+    useEffect(() => {
+        fetchCourseUnits();
+
+    }, [currentPage]);
+
+    useEffect(() => {
+        if(allResults) {
+            fetchCourseUnits();
+        }
+    }, [allResults]);
+
+    const addMultiCourseUnits = (courseUnitsList) => {
+        const uniqueIds = [];
+        const fullCoursesUnits = [ ...courseUnits, ...courseUnitsList];
+
+        const uniqueCoursesUnits = fullCoursesUnits.filter(element => {
+            const isDuplicate = uniqueIds.includes(element.id);
+            if (!isDuplicate) {
+                uniqueIds.push(element.id);
+                return true;
+            }
+            return false;
+        });
+
+        setSelectedCourseUnits(uniqueCoursesUnits);
+    };
+
+    const fetchCourseUnits = () => {
+        if(!allResults) {
+            setLoading(true);
+        }
+
+        let searchLink = `/course-units/search?page=${currentPage}`;
+        searchLink += `${courseUnitSearch ? `&search=${courseUnitSearch}` : ''}`;
+        searchLink += `${course ? `&course=${course}` : ''}`;
+        searchLink += `${semester ? `&semester=${semester}` : ''}`;
+        searchLink += `${school ? `&school=${school}` : ''}`;
+        searchLink += '&per_page=' + ( allResults ? "all" : perPage );
+
+        axios.get(searchLink).then((response) => {
+            if (response.status >= 200 && response.status < 300) {
+                if(!allResults) {
+                    setCourseUnitsList(response.data.data);
+                    setPaginationInfo(response.data.meta);
+                    setLoading(false);
+                } else {
+                    addMultiCourseUnits(response.data.data);
+                    setAllResults(false);
+                }
             }
         });
+    };
+
+    const addCourseUnit = (courseUnit) => {
+        //TODO acabar modal para confimação de adição de UC
+        //  PREPARAR BACKEND
+        if(courseUnit.has_methods){
+            setShowModal(true);
+        }
+        else {
+            setSelectedCourseUnits([...selectedCourseUnits, {...courseUnit}]);
+        }
     };
 
     // Get grouped UCs
     useEffect(() => {
         if (paramsId) {
             axios.get(`/course-unit-groups/${paramsId}`).then((res) => {
-                loadCourseUnits(res?.data?.data?.course_units?.map((x) => x.id).join(','));
+                // loadCourseUnits(res?.data?.data?.course_units?.map((x) => x.id).join(','));
                 setLoading(false);
                 setCourseUnitGroupDetail(res?.data?.data);
-                setCoursesCount(res?.data?.data?.courseUnits?.length);
+                setCoursesCount(res?.data?.data?.course_units?.length);
                 document.title = t("Detalhe de Agrupamento de Unidades Curriculares - ") + t("Calendários de Avaliação - IPLeiria");
             });
-        } else {
-            loadCourseUnits();
         }
     }, [paramsId]);
 
@@ -72,7 +196,7 @@ const New = () => {
         return {id, description_pt, description_en, courseUnits: (course_units ? course_units.map((x) => x.id) : [])};
     }, [courseUnitGroupDetail]);
 
-    const onSubmit = ({id, description_pt, description_en, courseUnits}) => {
+    const onSubmit = ({id, description_pt, description_en}) => {
         setIsSaving(true);
         const isNew = !id;
         const axiosFn = isNew ? axios.post : axios.patch;
@@ -80,7 +204,7 @@ const New = () => {
         axiosFn(`/course-unit-groups/${!isNew ? id : ''}`, {
             description_pt,
             description_en,
-            course_units: courseUnits,
+            course_units: selectedCourseUnits.map((x) => x.id),
         }).then((res) => {
             setIsSaving(false);
             if (res.status >= 200 && res.status < 300) {
@@ -88,7 +212,7 @@ const New = () => {
                 if(!isEditMode){
                     navigate("/agrupamento-unidade-curricular/edit/" + res.data);
                 } else {
-                    setCoursesCount(courseUnits.length);
+                    setCourseUnitsCount(selectedCourseUnits.length);
                 }
             } else {
                 let errorsArray = [];
@@ -113,15 +237,16 @@ const New = () => {
             <FinalForm onSubmit={onSubmit} initialValues={initialValues} render={({handleSubmit}) => (
                 <Form warning={ errorMessages.length > 0 }>
                     <Card fluid>
-                        <Card.Content header={t(`${isEditMode ? 'Editar' : 'Novo'} Agrupamento de Unidades Curriculares`)} />
-                        { errorMessages.length > 0 && (
+                        <Card.Content
+                            header={t(`${isEditMode ? 'Editar' : 'Novo'} Agrupamento de Unidades Curriculares`)}/>
+                        {errorMessages.length > 0 && (
                             <Card.Content>
                                 <Message warning>
-                                    <Message.Header>{ t('Os seguintes detalhes do Curso precisam da sua atenção:') }</Message.Header>
+                                    <Message.Header>{t('Os seguintes detalhes do Curso precisam da sua atenção:')}</Message.Header>
                                     <Message.List>
-                                        { errorMessages.map((message, index) => (
+                                        {errorMessages.map((message, index) => (
                                             <Message.Item key={index}>
-                                                { message }
+                                                {message}
                                             </Message.Item>
                                         ))}
                                     </Message.List>
@@ -132,42 +257,163 @@ const New = () => {
                             <Form.Group widths="equal">
                                 <Field name="description_pt">
                                     {({input: descriptionPtInput}) => (
-                                        <Form.Input label={ t("Descrição") + " - PT"} {...descriptionPtInput} />
+                                        <Form.Input label={t("Descrição") + " - PT"} {...descriptionPtInput} />
                                     )}
                                 </Field>
                                 <Field name="description_en">
                                     {({input: descriptionEnInput}) => (
-                                        <Form.Input label={ t("Descrição") + " - EN"} {...descriptionEnInput} />
+                                        <Form.Input label={t("Descrição") + " - EN"} {...descriptionEnInput} />
                                     )}
                                 </Field>
                             </Form.Group>
-                            <Form.Group widths="equal">
-                                <Field name="courseUnits">
-                                    {({input: courseUnitsInput}) => (
-                                        <Form.Dropdown options={courseUnits} selection multiple search label={t("Unidades Curriculares")} {...courseUnitsInput}
-                                            onChange={(e, {value}) => courseUnitsInput.onChange(value)}
-                                        />
-                                    )}
-                                </Field>
-                            </Form.Group>
-                            <Message info>
-                                <Message.Content>{ t("Se já tiver os métodos definidos, a UC irá estar desativada, não sendo possível agrupá-la.")}</Message.Content>
-                            </Message>
+
+                            {selectedCourseUnits.length ? (
+                                <div>
+                                    <Header as="h5">
+                                        {t("Unidades Curriculares selecionadas")}
+                                    </Header>
+
+                                    <Grid.Row>
+                                        {selectedCourseUnits.map((courseUnit, index) => (
+                                            <Label key={index} size={"large"} className={"margin-bottom-s"}>
+                                                {courseUnit.code + ' - ' + courseUnit.name}
+                                                <Icon name='delete' color={"red"}
+                                                      onClick={() => removeCourseUnit(courseUnit.id)}/>
+                                            </Label>
+                                        ))}
+                                    </Grid.Row>
+                                    <Card.Content>
+                                        {selectedCourseUnits.length > 0 && (
+                                            <Button floated='right' onClick={() => clearAllCourseUnits()}
+                                                    color="red">{t("Remover unidades curriculares selecionadas") + " (" + selectedCourseUnits.length + ")"}</Button>
+                                        )}
+                                    </Card.Content>
+                                </div>
+                            ) : null}
+                            {coursesCount > 0 ? (
+                                <div>
+                                    <Header as="h5">
+                                        {t("Unidades Curriculares selecionadas")}
+                                    </Header>
+
+                                    <Grid.Row>
+                                        {console.log(coursesCount)}
+                                        {courseUnitGroupDetail?.course_units.map((courseUnit, index) => (
+                                            <Label key={index} size={"large"} className={"margin-bottom-s"}>
+                                                {courseUnit.code + ' - ' + courseUnit.name}
+                                                {/*<Icon name='delete' color={"red"}*/}
+                                                {/*      onClick={() => removeCourseUnit(courseUnit.id)}/>*/}
+                                            </Label>
+                                        ))}
+                                    </Grid.Row>
+                                    <Card.Content>
+                                        {selectedCourseUnits.length > 0 && (
+                                            <Button floated='right' onClick={() => clearAllCourseUnits()}
+                                                    color="red">{t("Remover unidades curriculares selecionadas") + " (" + selectedCourseUnits.length + ")"}</Button>
+                                        )}
+                                    </Card.Content>
+                                </div>
+                            ) : null}
+                            <Card.Content>
+                                <Button onClick={handleSubmit} color="green" icon labelPosition="left" floated="right"
+                                        loading={isSaving}>
+                                    <Icon name={isEditMode ? 'save' : 'plus'}/>
+                                    {isEditMode ? t('Guardar') : t('Criar')}
+                                </Button>
+                            </Card.Content>
+                            {isEditMode && (
+                                <div className={"margin-top-base"}>
+                                    {paramsId && <UnitTabsGroup groupId={paramsId} coursesCount={coursesCount}/>}
+                                </div>
+                            )}
                         </Card.Content>
-                        <Card.Content>
-                            <Button onClick={handleSubmit} color="green" icon labelPosition="left" floated="right" loading={isSaving}>
-                                <Icon name={isEditMode ? 'save' : 'plus'}/>
-                                {isEditMode ? t('Guardar') : t('Criar')}
-                            </Button>
-                        </Card.Content>
+
+                        { !isEditMode && (
+                            <Card.Content>
+                                <Form.Group>
+                                    <Form.Input width={6}
+                                                label={t("Pesquisar unidade curricular (Código, Abreviatura ou Nome)")}
+                                                placeholder={t("Pesquisar...")} fluid
+                                                onChange={_.debounce(searchCourseUnit, 900)}/>
+                                    <FilterOptionPerCourse widthSize={5} showAllDegrees={true} school={school}
+                                                           eventHandler={(value) => setCourse(value)}/>
+                                    <FilterOptionBySemester widthSize={5} eventHandler={(value) => setSemester(value)}/>
+                                    <FilterOptionPerSchool widthSize={3} eventHandler={(value) => setSchool(value)}/>
+                                    <FilterOptionPerPage widthSize={2} eventHandler={(value) => setPerPage(value)}/>
+                                </Form.Group>
+
+                                {!allCourseUnits && (
+                                    <>
+                                        {paginationInfo.total > 0 && (
+                                            <Segment clearing basic>
+                                                <Button floated='right' onClick={() => setAllResults(true)}
+                                                        color="blue">{t("Adicionar todas as unidades curriculares") + " (" + paginationInfo.total + ")"}</Button>
+                                            </Segment>
+                                        )}
+                                        <Grid.Row>
+                                            <Table color="green">
+                                                <Table.Header>
+                                                    <Table.Row>
+                                                        <Table.HeaderCell>{t("Código")}</Table.HeaderCell>
+                                                        <Table.HeaderCell>{t("Abreviatura")}</Table.HeaderCell>
+                                                        <Table.HeaderCell>{t("Nome")}</Table.HeaderCell>
+                                                        <Table.HeaderCell>{t("Curso")}</Table.HeaderCell>
+                                                        <Table.HeaderCell>{t("Semestre")}</Table.HeaderCell>
+                                                        <Table.HeaderCell>{t("Adicionar")}</Table.HeaderCell>
+                                                    </Table.Row>
+                                                </Table.Header>
+                                                <Table.Body>
+                                                    {courseUnits.map((courseUnit, index) => (
+                                                        <Table.Row key={index} warning={courseUnit?.has_group} >
+                                                            <Table.Cell>{courseUnit.code}</Table.Cell>
+                                                            <Table.Cell>{courseUnit.initials}</Table.Cell>
+                                                            <Table.Cell>{courseUnit.name}</Table.Cell>
+                                                            <Table.Cell>{courseUnit.course_description}</Table.Cell>
+                                                            <Table.Cell>{courseUnit.semester}</Table.Cell>
+                                                            <Table.Cell >
+                                                                {courseUnit.has_group ? (
+                                                                    <Popup trigger={<Icon name="warning sign" />} content={<div>{t("Já pertence a uma UC agrupada")}</div>} position='top center'/>
+                                                                ) : (
+                                                                    selectedCourseUnits.find(({id: courseUnitId}) => courseUnitId === courseUnit.id) ? (
+                                                                        <Button onClick={() => removeCourseUnit(courseUnit.id)} color="red">{t("Remover")}</Button>
+                                                                    ) : (
+                                                                        <Button onClick={() => addCourseUnit(courseUnit)} color="teal">{t("Adicionar")}</Button>
+                                                                    )
+                                                                )}
+                                                            </Table.Cell>
+                                                        </Table.Row>
+                                                    ))}
+                                                </Table.Body>
+                                            </Table>
+                                        </Grid.Row>
+                                        <Grid.Row>
+                                            <PaginationDetail currentPage={currentPage} info={paginationInfo}
+                                                              eventHandler={changedPage}/>
+                                        </Grid.Row>
+                                        {loading && (
+                                            <Dimmer active inverted>
+                                                <Loader
+                                                    indeterminate>{t("A carregar os unidades curriculares")}</Loader>
+                                            </Dimmer>
+                                        )}
+                                    </>
+                                )}
+                            </Card.Content>
+                        )}
+
+
                     </Card>
                 </Form>
-            )} />
-            { isEditMode && (
-            <div className={"margin-top-base"}>
-                { paramsId && <UnitTabsGroup groupId={paramsId} coursesCount={coursesCount} /> }
-            </div>
-            )}
+            )}/>
+            <Modal open={showModal} onClose={handleCloseModal}>
+                <Modal.Header>Course Unit</Modal.Header>
+                <Modal.Content>
+                    <Modal.Description>
+                        <p>A unidade curricular </p>
+                        <p>Is it okay to use this photo?</p>
+                    </Modal.Description>
+                </Modal.Content>
+            </Modal>;
         </Container>
     );
 };

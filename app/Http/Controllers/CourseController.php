@@ -134,7 +134,7 @@ class CourseController extends Controller
     public function search(Request $request, CourseFilters $filters)
     {
         $utils = new Utils();
-        $courseList = Course::ofAcademicYear($utils->getCurrentAcademicYear($request))->where('degree', '<>', '');
+        $courseList = Course::filter($filters)->ofAcademicYear($utils->getCurrentAcademicYear($request))->where('degree', '<>', '');
         $hasSearch = false;
         if($request->has('search')) {
             $hasSearch = true;
@@ -225,9 +225,6 @@ class CourseController extends Controller
             $academicYear = AcademicYear::findOrFail($request->cookie('academic_year'));
 
             $calendarsOfCourse = Course::ofAcademicYear($academicYear->id)->where('id', $course->id)->first()->calendars()->delete();
-            /*foreach ($calendarsOfCourse as $calendar) {
-                $calendar->delete();
-            }*/
 
             $course->academicYears()->detach($academicYear->id);
             $count = Course::whereHas('academicYears', function (Builder $query) use($course) {

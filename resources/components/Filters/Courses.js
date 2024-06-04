@@ -5,7 +5,7 @@ import {useTranslation} from "react-i18next";
 import _ from "lodash";
 import {useSearchParams} from "react-router-dom";
 
-const FilterOptionCourse = ({widthSize, eventHandler}) => {
+const FilterOptionCourse = ({widthSize, eventHandler, school}) => {
     const [searchParams] = useSearchParams();
     const searchCourse = searchParams.get('curso');
 
@@ -20,12 +20,19 @@ const FilterOptionCourse = ({widthSize, eventHandler}) => {
         }
     }, [searchCourse]);
 
+    useEffect(() => {
+        loadCourses()
+    }, [school]);
+
     const loadCourses = (search = '', includeCourse) => {
         setLoading(true);
         let link = '/courses-search';
+        link += (school ? '?school=' + school : '');
+        console.log("School",school);
         link += (search ? '?search=' + search : '');
         link += (includeCourse ? (search ? '&' : '?') + 'include=' + includeCourse : '');
         axios.get(link).then((res) => {
+            console.log("Response", res.data.data)
             if (res.status === 200) {
                 res.data.data.unshift({value: '', text: t("Todos os Cursos")});
                 setCoursesOptions(res.data.data);

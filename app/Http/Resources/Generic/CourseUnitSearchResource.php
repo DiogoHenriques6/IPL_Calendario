@@ -11,11 +11,18 @@ class CourseUnitSearchResource extends JsonResource
         $lang_header = $request->header("lang");
 
         return [
-            'key'   => $this->id,
-            'value' => $this->id,
-            'text'  => "($this->code) " . ($lang_header == "en" ? $this->name_en : $this->name_pt) . ($this->branch->branch_number == 0 ? '' : ' (' . ($request->header("lang") == "en" ? $this->branch->initials_en : $this->branch->initials_pt) . ')' ),
-            'has_methods'   => $this->methods->count() > 0,
-            'year'  => $this->curricular_year
-        ];
+                'id'                    => $this->id,
+                'name'                  => ($lang_header == "en" ? $this->name_en : $this->name_pt),
+                'course_description'    => ($lang_header == "en" ? $this->course->name_en : $this->course->name_pt) ." ({$this->course->code})",
+                'initials'              => $this->initials,
+                'code'                  => $this->code,
+                'curricularYear'        => $this->curricular_year,
+                'semester'              => $this->semester->number,
+                'has_group'             => $this->group ? 1 : 0,
+                'group_id'              => $this->group ? $this->group->id : null,
+                'has_methods'           => $this->methods()->exists(),
+                'has_responsable'       => !empty($this->responsible_user_id),
+                'year'  => $this->curricular_year
+            ];
     }
 }

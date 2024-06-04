@@ -43,10 +43,40 @@ class CourseUnitGroupController extends Controller
         $list = CourseUnitGroup::with('courseUnits')->filter($filters)->ofAcademicYear($request->cookie('academic_year'));
 
         $user = Auth::user();
-        // List for coordinator
-        if ($user->groups->contains('code', InitialGroups::COORDINATOR)) {
-            $list->whereHas("courseUnits.course", function ($query){
-                $query->whereIn('course_id', Course::where('coordinator_user_id', Auth::user()->id)->pluck('id'));
+        $currentUserId = $request->cookie('selectedGroup');
+        $currentGroup = Group::where('id', $currentUserId)->first();
+
+
+        $schoolId = null;
+        $courseId = null;
+        switch ($currentGroup->code) {
+            case str_contains($currentGroup->code, InitialGroups::GOP):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->gopSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code, InitialGroups::BOARD):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->boardSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code, InitialGroups::PEDAGOGIC):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->pedagogicSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code, InitialGroups::COORDINATOR):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $courseId = Course::where('coordinator_user_id', Auth::user()->id)->pluck('id');
+                break;
+        }
+
+        if ($schoolId) {
+            $list->whereHas("courseUnits.course", function ($query) use ($schoolId){
+                $query->whereIn('school_id', $schoolId);
+            });
+        }
+
+        if ($courseId) {
+            $list->whereHas("courseUnits.course", function ($query) use ($courseId){
+                $query->whereIn('course_id', $courseId);
             });
         }
         return CourseUnitGroupListResource::collection($list->paginate($perPage));

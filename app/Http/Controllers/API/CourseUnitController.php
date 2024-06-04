@@ -111,58 +111,69 @@ class CourseUnitController extends Controller
     public function search(Request $request, CourseUnitFilters $filters)
     {
         $lang = (in_array($request->header("lang"), ["en", "pt"]) ? $request->header("lang") : "pt");
+        $perPage = request('per_page', 10);
 
         $courseUnits = CourseUnit::filter($filters)->ofAcademicYear($request->cookie('academic_year'));
 
         $userId = Auth::user()->id;
-        $userGroups = Auth::user()->groups();
+        $currentUserId = $request->cookie('selectedGroup');
+        $currentGroup = Group::where('id', $currentUserId)->first();
+
+        $schoolId = null;
+        $courseId = null;
+        switch ($currentGroup->code) {
+            case str_contains($currentGroup->code, InitialGroups::GOP):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->gopSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code, InitialGroups::BOARD):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->boardSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code, InitialGroups::PEDAGOGIC):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->pedagogicSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code, InitialGroups::COMISSION_CCP):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $courseId = Auth::user()->courses->pluck('id');
+                break;
+            case str_contains($currentGroup->code, InitialGroups::COORDINATOR):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $courseId = Course::where('coordinator_user_id', Auth::user()->id)->pluck('id');
+                break;
+            case str_contains($currentGroup->code, InitialGroups::RESPONSIBLE):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $courseUnits = CourseUnit::where('responsible_user_id', Auth::user()->id);
+                break;
+        }
         if ($request->has('all') && $request->all === "true") {
-            if ($userGroups->coordinator()->exists()) {
-                $courseUnits->whereIn('course_id', Course::where('coordinator_user_id', $userId)->pluck('id'));
-                if (Auth::user()->groups()->isTeacher()->get()->count() > 0) {
-                    $courseUnits->orWhereIn('id', Auth::user()->courseUnits->pluck('id'));
+            if ($schoolId != null) {
+                if(count($schoolId) > 0) {
+                    $courses = Course::where('school_id', $schoolId)->pluck('id');
+                    $courseUnits->whereIn('course_id', $courses);
                 }
+            }
+            if ($courseId != null) {
+                $courseUnits->whereIn('course_id', $courseId);
             }
             $courseUnits = $courseUnits->orderBy('name_' . $lang)->get();
-        } else {
-            if (
-                !Auth::user()->groups()->superAdmin()->exists() &&
-                !Auth::user()->groups()->admin()->exists() &&
-                !Auth::user()->groups()->responsiblePedagogic()->exists()
-            ) {
-                if (Auth::user()->groups()->responsible()->exists() && $userGroups->count() == 1) {
-                    $courseUnits->where('responsible_user_id', $userId);
-                }
-                if (Auth::user()->groups()->coordinator()->exists()) {
-                    $courseUnits->whereIn('course_id', Course::where('coordinator_user_id', $userId)->pluck('id'));
-                    if (Auth::user()->groups()->isTeacher()->get()->count() > 0) {
-                        $courseUnits->orWhereIn('id', Auth::user()->courseUnits->pluck('id'));
-                    }
-                }
-
-                if (Auth::user()->groups()->isTeacher()->exists()) {
-                    $courseUnits->whereIn('id', Auth::user()->courseUnits->pluck('id'));
-                }
-
-                $schoolsForTheUser = collect();
-
-                if (Auth::user()->gopSchools->pluck('id')->count() > 0) {
-                    $schoolsForTheUser->push(Auth::user()->gopSchools->pluck('id'));
-                }
-                if (Auth::user()->boardSchools->pluck('id')->count() > 0) {
-                    $schoolsForTheUser->push(Auth::user()->boardSchools->pluck('id'));
-                }
-                if (Auth::user()->pedagogicSchools->pluck('id')->count() > 0) {
-                    $schoolsForTheUser->push(Auth::user()->pedagogicSchools->pluck('id'));
-                }
-
-                if ($schoolsForTheUser->count() > 0) {
-                    $courseUnits->whereIn('course_id', Course::whereIn('school_id', $schoolsForTheUser->toArray())->get()->pluck('id'));
+        }
+        else {
+            if ($schoolId != null) {
+                if(count($schoolId) > 0) {
+                    $courses = Course::where('school_id', $schoolId)->pluck('id');
+                    $courseUnits->whereIn('course_id', $courses);
                 }
             }
-            $courseUnits = $courseUnits->orderBy('name_' . $lang)->limit(30)->get();
+
+            if ($courseId != null) {
+                $courseUnits->whereIn('course_id', $courseId);
+            }
+
+            $courseUnits = $courseUnits->orderBy('name_' . $lang);
         }
-        return CourseUnitSearchResource::collection($courseUnits);
+        return CourseUnitSearchResource::collection( ( $perPage == "all" ? $courseUnits->get() : $courseUnits->paginate($perPage)));
     }
 
     public function years(Request $request){
