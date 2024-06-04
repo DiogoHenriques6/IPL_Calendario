@@ -87,7 +87,7 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
     const filterData = (ucFilter, methodFilter) => {
         const filtered = data.filter(item =>
             removeAccents(item.course_unit_name.toLowerCase()).includes(removeAccents(ucFilter.toLowerCase())) &&
-            removeAccents(item.method_name.toLowerCase()).includes(removeAccents(methodFilter.toLowerCase()))
+            removeAccents(item.method_initials.toLowerCase()).includes(removeAccents(methodFilter.toLowerCase()))
         );
         setFilteredData(filtered);
     };
@@ -537,53 +537,55 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                         </ShowComponentIfAuthorized>
                     </Modal.Header>
                     <Modal.Content>
-                        <Input
-                            placeholder="Filtrar por UC..."
-                            value={ucFilter}
-                            onChange={handleUCFilterChange}
-                            icon={<Icon name="x" link onClick={handleClearUCFilter} />}
-                        />
+                       <Input
+                           placeholder="Filtrar por UC..."
+                           value={ucFilter}
+                           onChange={handleUCFilterChange}
+                           style={{ marginRight: '10px' }}
+                           icon={<Icon name="x" link onClick={handleClearUCFilter} />}
+                       />
                         <Input
                             placeholder="Filtrar por método..."
                             value={methodFilter}
                             onChange={handleMethodFilterChange}
-                            style={{ marginLeft: '10px' }}
                             icon={<Icon name="x" link onClick={handleClearMethodFilter} />}
                         />
                         <Table celled >
                             <Table.Header>
                                 <Table.Row>
                                     <Table.HeaderCell>Ano Curricular</Table.HeaderCell>
-                                    <Table.HeaderCell>User</Table.HeaderCell>
-                                    <Table.HeaderCell>Ação</Table.HeaderCell>
-                                    <Table.HeaderCell>Método</Table.HeaderCell>
+                                    <Table.HeaderCell>Época</Table.HeaderCell>
                                     <Table.HeaderCell>UC</Table.HeaderCell>
+                                    <Table.HeaderCell>Método</Table.HeaderCell>
+                                    <Table.HeaderCell>Ação</Table.HeaderCell>
                                     <Table.HeaderCell>Data do exame</Table.HeaderCell>
                                     <Table.HeaderCell>Data da ação</Table.HeaderCell>
+                                    <Table.HeaderCell>User</Table.HeaderCell>
                                 </Table.Row>
                             </Table.Header>
                             <Table.Body>
                                 {filteredData.map((item) => {
                                     let action, data = '';
                                     if (item.is_create === 1){
-                                        action = 'adicionou o método de avaliação'
+                                        action = 'adicionou o exame'
                                         data = item.new_date
                                     }else if(item.is_update === 1){
-                                        action = 'alterou o método de avaliação'
-                                        data = 'de ' + item.old_date + ' para ' + item.new_date
+                                        action = 'alterou a data do exame'
+                                        data = 'para ' + item.new_date
                                     }else{
-                                        action = 'removeu o método de avaliação'
+                                        action = 'removeu o exame'
                                         data = item.new_date
                                     }
                                     return (
                                     <Table.Row key={item.id}>
                                         <Table.Cell>{item.academic_year}</Table.Cell>
-                                        <Table.Cell>{item.author}</Table.Cell>
-                                        <Table.Cell>{action}</Table.Cell>
-                                        <Table.Cell>{item.method_name}</Table.Cell>
+                                        <Table.Cell>{item.epoch_name}</Table.Cell>
                                         <Table.Cell>{item.course_unit_name}</Table.Cell>
+                                        <Table.Cell>{item.method_initials}</Table.Cell>
+                                        <Table.Cell>{action}</Table.Cell>
                                         <Table.Cell>{data}</Table.Cell>
                                         <Table.Cell>{item.created_at}</Table.Cell>
+                                        <Table.Cell>{item.author}</Table.Cell>
                                     </Table.Row>
                                     );
                                 })}

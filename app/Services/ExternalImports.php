@@ -154,7 +154,6 @@ class ExternalImports
                 Log::channel('courses_sync')->info("Quantity of course units: " . sizeof($courseUnits));
 
                 //Get docentes by UCs
-                //TODO CHANGE CAMPUS VALUE to dinamic for each school accordingly
                 $apiEndpoint = $webservice->base_link . $webservice->teachers_by_uc_link . '?' . $webservice->query_param_semester . '=S' . $semester . '&' . $webservice->query_param_academic_year . '=' . $academicYearCode . '&' . $webservice->query_param_campus . '=' . $school->index_campus . '&formato=json';
                 Log::channel('sync_test')->info($apiEndpoint);
 

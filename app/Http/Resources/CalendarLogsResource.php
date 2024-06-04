@@ -11,16 +11,16 @@ public function toArray($request)
         return [
             'id' => $this->id,
             'academic_year' => $this->calendar->academicYear->display,
+            'epoch_name' => $this->exam->epoch->name,
             'semester' =>  ($request->header("lang") == "en" ? $this->calendar->semester->name_en : $this->calendar->semester->name_pt),
-            'new_date' => $this->new_date,
-            'old_date' => $this->old_date ? $this->old_date : null,
-            'course_unit_id' => $this->courseUnit->code,
+            'new_date' => $this->new_date ? (new \DateTime($this->new_date))->format('d-m-Y') : null,
+            'old_date' => $this->old_date ? (new \DateTime($this->old_date))->format('d-m-Y') : null,
             'course_unit_name' =>  $this->courseUnit->initials,
             'is_create' => $this->is_create,
             'is_update' => $this->is_update,
-            'method_name' =>  ($request->header("lang") == "en" ? $this->exam->method->description_en : $this->exam->method->description_pt),
+            'method_initials' =>  ($request->header("lang") == "en" ? $this->exam->method->initials_en : $this->exam->method->initials_pt),
             'author' => $this->user->name,
-            'created_at' => $this->created_at,
+            'created_at' => (new \DateTime($this->created_at))->format('d-m-Y H:i:s'),
         ];
     }
 }

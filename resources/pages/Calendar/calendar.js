@@ -600,7 +600,7 @@ const Calendar = () => {
                             )}
                             <div className="btn-exam-content">
                                 <div className="btn-exam-label">{ (exam.hour ? exam.hour + ' ' : (exam.in_class ? t('Aula') + " - " : "" ) ) + (exam.course_unit.initials || exam.course_unit.name_full) }</div>
-                                <div className="btn-exam-type">{ (exam.method?.initials || exam.method?.name) }</div>
+                                <div className="btn-exam-type">{ (exam.method?.initials_pt || exam.method?.name) }</div>
                             </div>
                         </Button>
                     );

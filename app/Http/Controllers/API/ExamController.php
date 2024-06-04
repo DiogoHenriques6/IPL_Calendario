@@ -14,7 +14,9 @@ use App\Models\Epoch;
 use App\Models\Exam;
 use App\Models\Method;
 use Carbon\Carbon;
+use DateTime;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 use Spatie\CalendarLinks\Link;
 use Illuminate\Http\Request;
 
@@ -280,20 +282,24 @@ class ExamController extends Controller
             }
         } else {
         */
-
-            // Create a log
-            $newLog = new CalendarLog();
-            $newLog->calendar_id = $request->calendar_id;
-            $newLog->course_unit_id = $request->course_unit_id;
-            $newLog->exam_id = $exam->id;
-            $newLog->user_id = auth()->user()->id;
-            $newLog->is_update = "1";
-            //Vai buscar a data do exame antes de ser alterada
+            //Verifica se a data do exame foi alterada, se sim, cria um log a dizer que a data foi alterada
             $examDataBeforeUpdate = Exam::find($exam->id);
-            $examDataBeforeUpdate = $examDataBeforeUpdate->date_start;
-            $newLog->old_date = $examDataBeforeUpdate;
-            $newLog->new_date = $request->date_start;
-            $newLog->save();
+
+            $date1 = new DateTime($examDataBeforeUpdate->date_start);
+            $date2 = new DateTime($request->date_start);
+            if ($date1->format('Y-m-d') != $date2->format('Y-m-d')){
+                $newLog = new CalendarLog();
+                $newLog->calendar_id = $request->calendar_id;
+                $newLog->course_unit_id = $request->course_unit_id;
+                $newLog->exam_id = $exam->id;
+                $newLog->user_id = auth()->user()->id;
+                $newLog->is_update = "1";
+                //Vai buscar a data do exame antes de ser alterada
+                $newLog->old_date = $examDataBeforeUpdate->date_start;
+                $newLog->new_date = $request->date_start;
+                $newLog->save();
+            }
+
 
             //$exam->calendar_id     = $request->calendar_id;
             //$exam->course_id       = $request->course_id;
