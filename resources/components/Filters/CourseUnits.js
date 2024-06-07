@@ -25,11 +25,15 @@ const FilterOptionCourseUnits = ({widthSize, eventHandler}) => {
         let link = '/course-units/search';
         link += (search ? '?search=' + search : '');
         link += (includeCourseUnit ? (search ? '&' : '?') + 'include=' + includeCourseUnit : '');
+        link += ( (search || includeCourseUnit ? '&' : '?')+ 'has_groups=true');
         axios.get(link).then((res) => {
             if (res.status === 200) {
-                res.data.data.unshift({value: '', text: t("Todas as Unidades curriculares")});
-
-                setCourseUnitsOptions(res?.data?.data?.map(({key, value, text}) => ({key, value, text})));
+                res.data.data.unshift({id: '', name: t("Todas as Unidades curriculares")});
+                setCourseUnitsOptions(res?.data?.data?.map(({ id, name }) => ({
+                    key: id,
+                    value: id,
+                    text: name
+                })));
                 setLoading(false);
                 if(searchCourseUnit && search === ""){
                     let selected = res.data.data.find((item) => item.value == searchCourseUnit);

@@ -47,6 +47,10 @@ class CourseUnitFilters extends QueryFilters
         return $this->builder->where('course_unit_group_id', $groupUnit);
     }
 
+    public function has_groups($hasGroup) {
+        return $this->builder->whereNotNull('course_unit_group_id');
+    }
+
     public function including($ids) {
         return $this->builder->orWhereIn('id', json_decode($ids));
     }

@@ -13,7 +13,8 @@ import {
     Header,
     Icon,
     Label, Loader,
-    Message, Modal, Popup,
+    Message, Modal, ModalContent,
+    ModalActions, Popup,
     Segment,
     Table
 } from 'semantic-ui-react';
@@ -41,6 +42,7 @@ const New = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [courseUnits, setCourseUnitsList] = useState([]);
     const [selectedCourseUnits, setSelectedCourseUnits] = useState([]);
+    const [currentCourseUnit, setCurrentCourseUnit] = useState();
     const [errorMessages, setErrorMessages] = useState([]);
     const isEditMode = !_.isEmpty(paramsId);
     const [coursesCount, setCoursesCount] = useState(0);
@@ -166,6 +168,7 @@ const New = () => {
         //  PREPARAR BACKEND
         if(courseUnit.has_methods){
             setShowModal(true);
+            setCurrentCourseUnit(courseUnit);
         }
         else {
             setSelectedCourseUnits([...selectedCourseUnits, {...courseUnit}]);
@@ -229,6 +232,11 @@ const New = () => {
         });
     };
 
+    function handleAddCourseUnit() {
+        setShowModal(false);
+        setSelectedCourseUnits([...selectedCourseUnits, {...currentCourseUnit}]);
+    }
+
     return (
         <Container>
             <div className="margin-bottom-base">
@@ -266,8 +274,14 @@ const New = () => {
                                     )}
                                 </Field>
                             </Form.Group>
-
-                            {selectedCourseUnits.length ? (
+                            <Card.Content>
+                                <Button onClick={handleSubmit} color="green" icon labelPosition="left" floated="right"
+                                        loading={isSaving}>
+                                    <Icon name={isEditMode ? 'save' : 'plus'}/>
+                                    {isEditMode ? t('Guardar') : t('Criar')}
+                                </Button>
+                            </Card.Content>
+                            {selectedCourseUnits.length  > 0 &&  !isEditMode ? (
                                 <div>
                                     <Header as="h5">
                                         {t("Unidades Curriculares selecionadas")}
@@ -293,11 +307,10 @@ const New = () => {
                             {coursesCount > 0 ? (
                                 <div>
                                     <Header as="h5">
-                                        {t("Unidades Curriculares selecionadas")}
+                                        {t("Unidades Curriculares")}
                                     </Header>
 
                                     <Grid.Row>
-                                        {console.log(coursesCount)}
                                         {courseUnitGroupDetail?.course_units.map((courseUnit, index) => (
                                             <Label key={index} size={"large"} className={"margin-bottom-s"}>
                                                 {courseUnit.code + ' - ' + courseUnit.name}
@@ -306,21 +319,8 @@ const New = () => {
                                             </Label>
                                         ))}
                                     </Grid.Row>
-                                    <Card.Content>
-                                        {selectedCourseUnits.length > 0 && (
-                                            <Button floated='right' onClick={() => clearAllCourseUnits()}
-                                                    color="red">{t("Remover unidades curriculares selecionadas") + " (" + selectedCourseUnits.length + ")"}</Button>
-                                        )}
-                                    </Card.Content>
                                 </div>
                             ) : null}
-                            <Card.Content>
-                                <Button onClick={handleSubmit} color="green" icon labelPosition="left" floated="right"
-                                        loading={isSaving}>
-                                    <Icon name={isEditMode ? 'save' : 'plus'}/>
-                                    {isEditMode ? t('Guardar') : t('Criar')}
-                                </Button>
-                            </Card.Content>
                             {isEditMode && (
                                 <div className={"margin-top-base"}>
                                     {paramsId && <UnitTabsGroup groupId={paramsId} coursesCount={coursesCount}/>}
@@ -405,15 +405,40 @@ const New = () => {
                     </Card>
                 </Form>
             )}/>
-            <Modal open={showModal} onClose={handleCloseModal}>
-                <Modal.Header>Course Unit</Modal.Header>
-                <Modal.Content>
-                    <Modal.Description>
-                        <p>A unidade curricular </p>
-                        <p>Is it okay to use this photo?</p>
-                    </Modal.Description>
-                </Modal.Content>
-            </Modal>;
+            <Modal
+                basic
+                open={showModal}
+                onClose={handleCloseModal}
+                size='small'
+                trigger={<Button>Basic Modal</Button>}
+            >
+                <Header icon>
+                    <Icon name='archive' />
+                    {t("Unidades Curriculares")}
+                </Header>
+                <ModalContent >
+                    <p style={{textAlign: "center"}}>
+                        {t("A unidade curricular possui métodos já estabelecidos. Confirma que deseja agrupar esta unidade curricular mesmo assim?")}
+                    </p>
+                </ModalContent>
+                <ModalActions>
+                    <Button basic color='red' inverted onClick={handleCloseModal}>
+                        <Icon name='remove' /> {t("Cancelar")}
+                    </Button>
+                    <Button color='green' inverted onClick={handleAddCourseUnit}>
+                        <Icon name='checkmark' /> {t("Confirmar")}
+                    </Button>
+                </ModalActions>
+            </Modal>
+            {/*<Modal open={showModal} onClose={handleCloseModal} width={60}>*/}
+            {/*    <Modal.Header>{t("Unidades Curriculares")}</Modal.Header>*/}
+            {/*    <Modal.Content>*/}
+            {/*        <Modal.Description>*/}
+            {/*            <p>A unidade curricular </p>*/}
+            {/*            <p>Is it okay to use this photo?</p>*/}
+            {/*        </Modal.Description>*/}
+            {/*    </Modal.Content>*/}
+            {/*</Modal>;*/}
         </Container>
     );
 };

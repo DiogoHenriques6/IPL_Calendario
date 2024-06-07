@@ -101,7 +101,7 @@ class CourseUnitGroupController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(CourseUnitGroupRequest $request)
     {
@@ -114,11 +114,12 @@ class CourseUnitGroupController extends Controller
 
             if (count($courseUnitEntity->methods) > 0) {
                 $existingMethods = $courseUnitEntity->methods()->pluck('id');
-                $existingMethodsForCourseUnits++;
+                Method::whereIn('id', $existingMethods)->delete();
             }
+
         }
 
-        if ($existingMethodsForCourseUnits <= 1) {
+//        if ($existingMethodsForCourseUnits <= 1) {
             $newCourseUnitGroup = new CourseUnitGroup();
             $newCourseUnitGroup->description_pt = $request->get('description_pt');
             $newCourseUnitGroup->description_en = $request->get('description_en');
@@ -126,11 +127,11 @@ class CourseUnitGroupController extends Controller
             $newCourseUnitGroup->save();
 
             CourseUnit::where('course_unit_group_id', null)->whereIn('id', $request->get('course_units'))->update(['course_unit_group_id' => $newCourseUnitGroup->id]);
+//        }
+        //TODO test
 
-            return response()->json($newCourseUnitGroup->id, Response::HTTP_CREATED);
-        }
-
-        return response()->json("Existing methods for more than 1 course unit in the group!", Response::HTTP_UNPROCESSABLE_ENTITY);
+        return response()->json($newCourseUnitGroup->id, Response::HTTP_CREATED);
+//        return response()->json("Existing methods for more than 1 course unit in the group!", Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     /**
@@ -279,14 +280,14 @@ class CourseUnitGroupController extends Controller
         return $finalList->all();
     }
 
-    public function epochsForCourseUnit(CourseUnitGroup $courseUnitGroup)
-    {
-        // TODO
-        $availableCalendarsForCourseUnit = Calendar::where('course_id', $courseUnit->course_id)->whereIn('semester_id', [$courseUnit->semester_id, 3])->get()->pluck('id');
-        $epochs = Epoch::whereIn('calendar_id', $availableCalendarsForCourseUnit)->groupBy(['epoch_type_id', 'name'])->get(['epoch_type_id', 'name']);
-
-        return response()->json($epochs);
-    }
+//    public function epochsForCourseUnit(CourseUnitGroup $courseUnitGroup)
+//    {
+//        // TODO ????
+//        $availableCalendarsForCourseUnit = Calendar::where('course_id', $courseUnit->course_id)->whereIn('semester_id', [$courseUnit->semester_id, 3])->get()->pluck('id');
+//        $epochs = Epoch::whereIn('calendar_id', $availableCalendarsForCourseUnit)->groupBy(['epoch_type_id', 'name'])->get(['epoch_type_id', 'name']);
+//
+//        return response()->json($epochs);
+//    }
 
     /**
      * List logs associated to the unit

@@ -134,6 +134,7 @@
         "Sim": "Yes",
         "Não": "No",
         "Cancelar": "Cancel",
+        "Confirmar": "Confirm",
         "Voltar à lista": "Return to list",
         "Novo": "New",
         "Guardar": "Save",
@@ -556,6 +557,7 @@
 
 
         "Métodos já definidos": "Methods already defined",
+        "A unidade curricular possui métodos já estabelecidos. Confirma que deseja agrupar esta unidade curricular mesmo assim?": "The curricular unit has already established methods. Do you confirm that you want to group this curricular unit anyway?",
         "O agrupamento de unidade curricular foi criado com sucesso!": "The curricular unit grouping was successfully created!",
         "O agrupamento de unidade curricular foi editado com sucesso!": "The curricular unit grouping was successfully edited!",
         "Editar Agrupamento de Unidades Curriculares": "Edit Curricular Units Grouping",

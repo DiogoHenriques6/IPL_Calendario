@@ -111,13 +111,13 @@ class CourseUnitController extends Controller
     public function search(Request $request, CourseUnitFilters $filters)
     {
         $lang = (in_array($request->header("lang"), ["en", "pt"]) ? $request->header("lang") : "pt");
-        $perPage = request('per_page', 10);
+        $perPage = request('per_page', 20);
 
         $courseUnits = CourseUnit::filter($filters)->ofAcademicYear($request->cookie('academic_year'));
 
         $userId = Auth::user()->id;
-        $currentUserId = $request->cookie('selectedGroup');
-        $currentGroup = Group::where('id', $currentUserId)->first();
+        $currentGroupId = $request->cookie('selectedGroup');
+        $currentGroup = Group::where('id', $currentGroupId)->first();
 
         $schoolId = null;
         $courseId = null;
