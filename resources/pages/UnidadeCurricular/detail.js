@@ -60,6 +60,7 @@ const New = () => {
                 fetchDetail();
                 toast('UC atualizada!', successConfig);
             } else {
+                setLoading(false);
                 toast('Existiu um problema ao gravar as alterações! Contacte um administrador!', errorConfig);
             }
         });
@@ -205,7 +206,7 @@ const New = () => {
                                     </Field>
                                     <Field name="initials">
                                         {({input: initialsInput}) => (
-                                            <Form.Input className='input-readonly' disabled={!hasPermissionToEdit} label={t("Iniciais")} placeholder={t("Iniciais")} {...initialsInput} />
+                                            <Form.Input className='input-readonly' disabled={true || !hasPermissionToEdit} label={t("Iniciais")} placeholder={t("Iniciais")} {...initialsInput} />
                                         )}
                                     </Field>
                                     <ShowComponentIfAuthorized permission={[SCOPES.VIEW_COURSES]}>
@@ -221,30 +222,30 @@ const New = () => {
                             <Form.Group widths="equal">
                                 <Field name="name_pt">
                                     {({input: namePtInput}) => (
-                                        <Form.Input className='input-readonly' disabled={!hasPermissionToEdit} label={t("Nome PT")} placeholder={t("Nome PT")} {...namePtInput} />
+                                        <Form.Input className='input-readonly' disabled={true || !hasPermissionToEdit} label={t("Nome PT")} placeholder={t("Nome PT")} {...namePtInput} />
                                     )}
                                 </Field>
                                 <Field name="name_en">
                                     {({input: nameEnInput}) => (
-                                        <Form.Input className='input-readonly' disabled={!hasPermissionToEdit} label={t("Nome EN")} placeholder={t("Nome EN")} {...nameEnInput} />
+                                        <Form.Input className='input-readonly' disabled={true || !hasPermissionToEdit} label={t("Nome EN")} placeholder={t("Nome EN")} {...nameEnInput} />
                                     )}
                                 </Field>
                             </Form.Group>
                             <Form.Group widths="3">
                                 <Field name="curricularYear">
                                     {({input: curricularYearInput}) => (
-                                        <Form.Input className='input-readonly' disabled={!hasPermissionToEdit } label={t("Ano curricular")} placeholder={t("Ano curricular")} {...curricularYearInput} />
+                                        <Form.Input className='input-readonly' disabled={true || !hasPermissionToEdit } label={t("Ano curricular")} placeholder={t("Ano curricular")} {...curricularYearInput} />
                                     )}
                                 </Field>
                                 <Field name="semester">
                                     {({input: semesterInput}) => (
-                                        <Semesters className='input-readonly' disabled={!hasPermissionToEdit } eventHandler={(value) => {semesterInput.onChange(value);}} value={semesterInput.value} isSearch={false}/>
+                                        <Semesters className='input-readonly' disabled={true || !hasPermissionToEdit } eventHandler={(value) => {semesterInput.onChange(value);}} value={semesterInput.value} isSearch={false}/>
                                     )}
                                 </Field>
                                 <Field name="branch">
                                     {({input: branchInput}) => (
                                         <Form.Dropdown options={branchesList} label={t("Ramo")} placeholder={t("Ramo")} selection search={useComponentIfAuthorized(SCOPES.EDIT_COURSE_UNITS)} {...branchInput}
-                                                       disabled={!useComponentIfAuthorized(SCOPES.EDIT_COURSE_UNITS)}  className={ (useComponentIfAuthorized(SCOPES.EDIT_COURSE_UNITS) ? '' : 'input-readonly') }
+                                                       disabled={true || !useComponentIfAuthorized(SCOPES.EDIT_COURSE_UNITS)}  className={ (useComponentIfAuthorized(SCOPES.EDIT_COURSE_UNITS) ? '' : 'input-readonly') }
                                                        onChange={(e, {value}) => branchInput.onChange(value)}/>
                                     )}
                                 </Field>

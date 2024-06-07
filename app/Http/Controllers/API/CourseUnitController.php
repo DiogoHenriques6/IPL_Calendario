@@ -208,7 +208,7 @@ class CourseUnitController extends Controller
      */
     public function refreshUc(CourseUnit $courseUnit)
     {
-        $academicYear = AcademicYear::find($courseUnit->semester_id);
+        $academicYear = AcademicYear::find($courseUnit->academic_year_id);
         $isImported = ExternalImports::importSingleUCFromWebService($academicYear->code, $courseUnit->course->school_id, $courseUnit->course->code, $courseUnit->code);
         if(!$isImported){
             return response()->json("Error!", Response::HTTP_CONFLICT);

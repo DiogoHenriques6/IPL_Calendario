@@ -205,7 +205,7 @@ class ExternalImports
                             ],
                             [
                                 "school_id" => $school->id,
-                                "initials"  => isset($teachersByUC) ? $teachersByUC->{$webservice->index_course_initials} : null ,//$gen_initials,
+                                "initials"  => $teachersByUC->{$webservice->index_course_initials} ,//$gen_initials,
 
                                 "name_pt"   => $courseUnit->{$webservice->index_course_name_pt},
                                 "name_en"   => $courseUnit->{$webservice->index_course_name_en} !== '' ? $courseUnit->{$webservice->index_course_name_en} :$courseUnit->{$webservice->index_course_name_pt}, // this will duplicate the value as default, to prevent empty states// this will duplicate the value as default, to prevent empty states
@@ -464,7 +464,7 @@ class ExternalImports
             // loop for each course unit
             foreach ($courseUnits as $courseUnit) {
                 if (!empty($courseUnit)) {
-                    if ($courseUnit->{$school->index_course_unit_code} != $coduc) {
+                    if ($courseUnit->{$webservice->index_course_unit_code} != $coduc) {
                         continue;
                     }
                     $apiEndpoint = $webservice->base_link . $webservice->teachers_by_uc_link . '?' . $webservice->query_param_course_unit . '=' .$coduc. '&' . $webservice->query_param_academic_year . '=' . $academicYearCode . '&' . $webservice->query_param_campus . '=' . $school->index_campus . '&formato=json';
@@ -479,6 +479,8 @@ class ExternalImports
 
                     $semester = substr($courseUnit->BK_SIGES_PERIODO_TEMPO, 1, 1);
                     $semester_id = Semester::where("number",$semester)->first()->id;
+
+
                     // Retrieve Course by code or create it if it doesn't exist...
                     $course = Course::firstOrCreate(
                         [
@@ -507,9 +509,9 @@ class ExternalImports
                             $hasUpdate = true;
                             $course->name_pt =  $courseUnit->{$webservice->index_course_name_pt};
                         }
-                        if($course->name_en !=  $courseUnit->{$webservice->index_course_name_en}) {
+                        if($course->name_en !=  $courseUnit->{$webservice->index_course_name_en} || $course->name_en == '') {
                             $hasUpdate = true;
-                            $course->name_en = $courseUnit->{$webservice->index_course_name_en} !== '' ? $courseUnit->{$webservice->index_course_name_en} :$courseUnit->{$webservice->index_course_name_pt};
+                            $course->name_en  = $courseUnit->{$webservice->index_course_name_en} !== '' ? $courseUnit->{$webservice->index_course_name_en} : $courseUnit->{$webservice->index_course_name_pt};
                         }
                         if($course->degree != DegreesUtil::getDegreeId($courseUnit->{$webservice->index_course_name_pt})) {
                             $hasUpdate = true;
@@ -525,15 +527,24 @@ class ExternalImports
                     // https://laravel.com/docs/9.x/eloquent-relationships#syncing-associations
                     //$course->academicYears()->syncWithoutDetaching($academicYearId); // -> Old logic, it had a pivot table [academic_year_course]
                     // Retrieve Branch by course_id or create it if it doesn't exist...
+                    //if "branch_number" != $courseUnit->{$webservice->index_course_unit_branch}, i want to create else keep like it is
+
+
+
                     $branch = Branch::firstOrCreate(
-                        ["course_id" => $course->id],
                         [
-                            "name_pt"       => "Tronco Comum",
-                            "name_en"       => "Common Branch",
-                            "initials_pt"   => "TComum",
-                            "initials_en"   => "CBranch",
+                            "course_id" => $course->id,
+                            "branch_number" => $courseUnit->{$webservice->index_course_unit_branch},
+                            "academic_year_id" => $academicYearId
+                        ],
+                        [
+                            "name_pt"       => ($courseUnit->{$webservice->index_course_unit_branch} == 0 ? "Tronco Comum" : "Ramo " . $courseUnit->{$webservice->index_course_unit_branch}) ,
+                            "name_en"       => ($courseUnit->{$webservice->index_course_unit_branch} == 0 ? "Common Branch" : "Branch " . $courseUnit->{$webservice->index_course_unit_branch}),
+                            "initials_pt"   => ($courseUnit->{$webservice->index_course_unit_branch} == 0 ? "TComum" : "R" . $courseUnit->{$webservice->index_course_unit_branch}),
+                            "initials_en"   => ($courseUnit->{$webservice->index_course_unit_branch} == 0 ? "CBranch" : "B" . $courseUnit->{$webservice->index_course_unit_branch}),
                         ]
                     );
+
                     // Retrieve CourseUnit by code or create it if it doesn't exist...
                     $newestCourseUnit = CourseUnit::firstOrCreate(
                         [
@@ -550,6 +561,7 @@ class ExternalImports
                             "name_en" =>  $courseUnit->{$webservice->index_course_unit_name_en}, // this will duplicate the value as default, to prevent empty states
                         ]
                     );
+
                     // TODO Check branch (ramo)
 
                     // check for updates and then update the different value
@@ -564,13 +576,17 @@ class ExternalImports
                             $hasUpdate = true;
                             $newestCourseUnit->initials = $courseUnit->{$webservice->index_course_unit_initials};
                         }
+                        if($newestCourseUnit->branch_id != $branch->id) {
+                            $hasUpdate = true;
+                            $newestCourseUnit->branch_id = $branch->id;
+                        }
                         if($newestCourseUnit->name_pt != $courseUnit->{$webservice->index_course_unit_name_pt}) {
                             $hasUpdate = true;
                             $newestCourseUnit->name_pt = $courseUnit->{$webservice->index_course_unit_name_pt};
                         }
-                        if($newestCourseUnit->name_en != $courseUnit->{$webservice->index_course_unit_name_en}) {
+                        if($newestCourseUnit->name_en != $courseUnit->{$webservice->index_course_unit_name_en} || $newestCourseUnit->name_en == '') {
                             $hasUpdate = true;
-                            $newestCourseUnit->name_en = $courseUnit->{$webservice->index_course_unit_name_en};
+                            $newestCourseUnit->name_en = $courseUnit->{$webservice->index_course_unit_name_en} != '' ? $courseUnit->{$webservice->index_course_unit_name_en} : $courseUnit->{$webservice->index_course_unit_name_pt};
                         }
                         if($hasUpdate){
                             $newestCourseUnit->save();
@@ -579,6 +595,9 @@ class ExternalImports
                     } else {
                         $courseUnitCount["created"]++;
                     }
+                    Log::channel('sync_test')->info($newestCourseUnit);
+
+
                     if(!empty($teachersByUC->{$webservice->index_course_unit_teachers})) {
 
                         $teachers = explode(",", $teachersByUC->{$webservice->index_course_unit_teachers});
@@ -630,7 +649,7 @@ class ExternalImports
         return true;
     }
 
-    //TODO MISSING STUDENT DATA
+    //TODO maybe delete
     public static function importStudentFromWebService(mixed $email)
     {
         set_time_limit(0);

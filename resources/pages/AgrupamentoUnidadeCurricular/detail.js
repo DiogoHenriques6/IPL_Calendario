@@ -430,15 +430,6 @@ const New = () => {
                     </Button>
                 </ModalActions>
             </Modal>
-            {/*<Modal open={showModal} onClose={handleCloseModal} width={60}>*/}
-            {/*    <Modal.Header>{t("Unidades Curriculares")}</Modal.Header>*/}
-            {/*    <Modal.Content>*/}
-            {/*        <Modal.Description>*/}
-            {/*            <p>A unidade curricular </p>*/}
-            {/*            <p>Is it okay to use this photo?</p>*/}
-            {/*        </Modal.Description>*/}
-            {/*    </Modal.Content>*/}
-            {/*</Modal>;*/}
         </Container>
     );
 };
