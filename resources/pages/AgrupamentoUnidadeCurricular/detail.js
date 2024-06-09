@@ -335,11 +335,11 @@ const New = () => {
                                                 label={t("Pesquisar unidade curricular (Código, Abreviatura ou Nome)")}
                                                 placeholder={t("Pesquisar...")} fluid
                                                 onChange={_.debounce(searchCourseUnit, 900)}/>
-                                    <FilterOptionPerCourse widthSize={5} showAllDegrees={true} school={school}
+                                    <FilterOptionPerCourse heightSize={10} widthSize={5} showAllDegrees={true} school={school}
                                                            eventHandler={(value) => setCourse(value)}/>
-                                    <FilterOptionBySemester widthSize={5} eventHandler={(value) => setSemester(value)}/>
+                                    <FilterOptionBySemester  widthSize={5} eventHandler={(value) => setSemester(value)}/>
                                     <FilterOptionPerSchool widthSize={3} eventHandler={(value) => setSchool(value)}/>
-                                    <FilterOptionPerPage widthSize={2} eventHandler={(value) => setPerPage(value)}/>
+                                    <FilterOptionPerPage  widthSize={2} eventHandler={(value) => setPerPage(value)}/>
                                 </Form.Group>
 
                                 {!allCourseUnits && (
@@ -364,15 +364,21 @@ const New = () => {
                                                 </Table.Header>
                                                 <Table.Body>
                                                     {courseUnits.map((courseUnit, index) => (
-                                                        <Table.Row key={index} warning={courseUnit?.has_group} >
+                                                        <Table.Row key={index} warning={courseUnit?.has_group == 1} >
                                                             <Table.Cell>{courseUnit.code}</Table.Cell>
                                                             <Table.Cell>{courseUnit.initials}</Table.Cell>
                                                             <Table.Cell>{courseUnit.name}</Table.Cell>
                                                             <Table.Cell>{courseUnit.course_description}</Table.Cell>
                                                             <Table.Cell>{courseUnit.semester}</Table.Cell>
                                                             <Table.Cell >
-                                                                {courseUnit.has_group ? (
-                                                                    <Popup trigger={<Icon name="warning sign" />} content={<div>{t("Já pertence a uma UC agrupada")}</div>} position='top center'/>
+                                                                {courseUnit.has_group == 1 ? (
+                                                                    <div className={"padding-left-xl" }>
+                                                                        <Popup  trigger={
+                                                                            <Icon name="warning sign" />
+                                                                        }
+                                                                               content={<div>{t("Já pertence a uma UC agrupada") }</div>}
+                                                                               position='top center'/>
+                                                                    </div>
                                                                 ) : (
                                                                     selectedCourseUnits.find(({id: courseUnitId}) => courseUnitId === courseUnit.id) ? (
                                                                         <Button onClick={() => removeCourseUnit(courseUnit.id)} color="red">{t("Remover")}</Button>
@@ -410,7 +416,6 @@ const New = () => {
                 open={showModal}
                 onClose={handleCloseModal}
                 size='small'
-                trigger={<Button>Basic Modal</Button>}
             >
                 <Header icon>
                     <Icon name='archive' />

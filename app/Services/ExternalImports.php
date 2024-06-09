@@ -367,7 +367,7 @@ class ExternalImports
                                 }
                             }
 
-                            $newestCourseUnit->teachers()->sync($teachersForCourseUnit, true);
+                            $newestCourseUnit->teachers()->syncWithoutDetaching($teachersForCourseUnit, true);
                         }
                     }
                 }
@@ -634,13 +634,10 @@ class ExternalImports
                                 $teachersForCourseUnit[] = $foundUser->id;
                             }
                         }
-                        $newestCourseUnit->teachers()->sync($teachersForCourseUnit, true);
+                        $newestCourseUnit->teachers()->syncWithoutDetaching($teachersForCourseUnit, true);
                     }
-                    // https://laravel.com/docs/9.x/eloquent-relationships#syncing-associations
-                    $newestCourseUnit->teachers()->sync($teachersForCourseUnit, true);
                 }
             }
-
         } catch(\Exception $e){
             Log::channel('courses_sync')->error('There was an error syncing. -------- ' . $e->getMessage());
             return false;

@@ -127,6 +127,7 @@ const RouterList = (isLoggedIn) => {
                     ]
                 },
                 {
+                    //TODO - only gop can access this page
                     path: "/agrupamento-unidade-curricular",
                     element: (isAuthorized.VIEW_UC_GROUPS) ? <MultiPageBase /> : <Navigate to="/calendario" />,
                     children: [

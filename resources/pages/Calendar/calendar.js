@@ -221,6 +221,7 @@ const Calendar = () => {
             });
         }
     }
+
     const removeInterruptionFromList = (interruptionId) => {
         setInterruptions((current) => current.filter((item) => item.id !== interruptionId));
     }

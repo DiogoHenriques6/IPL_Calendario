@@ -4,7 +4,24 @@ import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router';
 import { useParams} from "react-router-dom";
 import { useTranslation} from "react-i18next";
-import {Card, Button, Sticky, Grid, Header, List, GridColumn, Icon, Popup, Label, Placeholder, Table, Input, Modal, Confirm} from 'semantic-ui-react';
+import {
+    Card,
+    Button,
+    Sticky,
+    Grid,
+    Header,
+    List,
+    GridColumn,
+    Icon,
+    Popup,
+    Label,
+    Placeholder,
+    Table,
+    Input,
+    Modal,
+    Confirm,
+    ModalContent, ModalActions, ListContent, ListItem
+} from 'semantic-ui-react';
 import { toast} from 'react-toastify';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -20,7 +37,7 @@ import PopupRevisionDetail from "./popup-revision";
 const SweetAlertComponent = withReactContent(Swal);
 
 const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updatePhase, warnings, isPublished, isTemporary, epochsViewHandler, hasCurrentWeek = false}) => {
-    const { t } = useTranslation();
+    const { t,i18n } = useTranslation();
     const navigate = useNavigate();
     // get URL params
     let { id } = useParams();
@@ -58,6 +75,8 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
     const [filteredData, setFilteredData] = useState([]);
     const [data, setData] = useState([]);
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [showLegendModal, setShowLegendModal] = useState(false);
+    const [evaluationTypes, setEvaluationTypes] = useState([]);
 
 
     const handleUCFilterChange = (event) => {
@@ -193,6 +212,7 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                 );
             }
         });
+        fetchEvaluationTypes();
     }, []);
 
     const openRevisionModalHandler = () => {
@@ -284,6 +304,14 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
         return phaseFound?.phases.includes(calendarPhase);
     }
 
+    const fetchEvaluationTypes = () => {
+        axios.get('/evaluation-types').then((res) => {
+            if (res.status === 200) {
+                setEvaluationTypes(res.data.data);
+            }
+        });
+    }
+
     return (
         <>
             <div className='main-content-title-section'>
@@ -344,10 +372,11 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                                         <List divided relaxed>
                                             {epochs.map((epoch, index) => (
                                                 <div className='legend-list-item' key={index}>
-                                                    <div className={'legend-list-item-square calendar-day-' + epoch.code}></div>
+                                                    <div
+                                                        className={'legend-list-item-square calendar-day-' + epoch.code}></div>
                                                     <Popup trigger={
                                                         <div className='legend-list-item-content'>
-                                                            <Icon name="calendar alternate outline" />
+                                                            <Icon name="calendar alternate outline"/>
                                                             <span className={"padding-left-xs"}>{epoch.name}</span>
                                                         </div>
                                                     } position='bottom center'>
@@ -359,15 +388,32 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                                                     </Popup>
                                                     <div className="legend-list-item-actions">
                                                         <Button icon size='mini'
-                                                            onClick={() => showingEpochsHandle(epoch.id)}
-                                                            title={ (activeEpochs.includes(epoch.id) ? t("Ocultar época") : t("Mostrar época") ) }>
-                                                            <Icon name={(activeEpochs.includes(epoch.id) ? "eye slash" : "eye")} />
+                                                                onClick={() => showingEpochsHandle(epoch.id)}
+                                                                title={(activeEpochs.includes(epoch.id) ? t("Ocultar época") : t("Mostrar época"))}>
+                                                            <Icon
+                                                                name={(activeEpochs.includes(epoch.id) ? "eye slash" : "eye")}/>
                                                         </Button>
                                                     </div>
                                                 </div>
                                             ))}
+                                            <div className='legend-list-item'>
+                                                <Popup trigger={
+                                                    <div className='legend-list-item-content'>
+                                                        <span className={"padding-left-xxl"}>{t("Tipos Avaliações")}</span>
+                                                    </div>
+                                                } position='bottom center'>
+                                                </Popup>
+                                                <div className="legend-list-item-actions">
+                                                    <Button icon size='mini'
+                                                            onClick={() => setShowLegendModal(true)}
+                                                            title={t("Mostrar Legenda")}>
+                                                        <Icon
+                                                           name={("eye")}/>
+                                                    </Button>
+                                                </div>
+                                            </div>
                                         </List>
-                                    )}
+                                        )}
                                 </GridColumn>
                                 <ShowComponentIfAuthorized permission={[SCOPES.VIEW_CALENDAR_INFO]}>
                                     <GridColumn>
@@ -527,6 +573,30 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                     </Card>
                 </Sticky>
             </div>
+            <Modal
+                open={showLegendModal}
+                onClose={()=> setShowLegendModal(false)}
+                size='small'
+            >
+                <Header icon>
+                    {/*<Icon name='archive' />*/}
+                    {t("Tipos Avaliações")}
+                </Header>
+                <ModalContent className={"center"}>
+                    <List divided relaxed>
+                        {evaluationTypes.map((evaluationType, index) => (
+                            <div key={index}>
+                                <ListItem  className={"center"}>
+                                    <span
+                                        className={"center"}>{i18n.language == 'en' ? evaluationType.initials_en + " - " + evaluationType.name :
+                                            evaluationType.initials_pt + " - " + evaluationType.name}
+                                    </span>
+                                </ListItem>
+                            </div>
+                        ))}
+                    </List>
+                </ModalContent>
+            </Modal>
             <ShowComponentIfAuthorized permission={[SCOPES.SEE_LOGS]}>
                 <Modal open={showModal} onClose={handleCloseModal} size="fullscreen">
                     <Modal.Header>
