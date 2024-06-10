@@ -3,11 +3,12 @@ import {Form} from 'semantic-ui-react';
 import axios from 'axios';
 import {useTranslation} from "react-i18next";
 
-const FilterOptionSchool = ({widthSize, eventHandler}) => {
+const FilterOptionSchool = ({ widthSize, eventHandler, disabled, selectedSchool}) => {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [schoolsOptions, setSchoolsOptions] = useState([]);
     const [school, setSchool] = useState();
+    const isDisabled = disabled ? disabled : false;
 
     useEffect(() => {
         setLoading(true);
@@ -18,8 +19,11 @@ const FilterOptionSchool = ({widthSize, eventHandler}) => {
                 setLoading(false);
             }
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        setSchool(selectedSchool);
+    }, [selectedSchool]);
 
     const filterBySchool = (e, {value}) => {
         setSchool(value);
@@ -27,7 +31,7 @@ const FilterOptionSchool = ({widthSize, eventHandler}) => {
     };
 
     return (
-        <Form.Dropdown selectOnBlur={false} width={widthSize} selection value={school} options={schoolsOptions} label={t("Escolas")} placeholder={t("Todas as Escolas")} loading={loading} onChange={filterBySchool}/>
+        <Form.Dropdown selectOnBlur={false} disabled = {isDisabled} width={widthSize} selection value={school} options={schoolsOptions} label={t("Escolas")} placeholder={t("Todas as Escolas")} loading={loading} onChange={filterBySchool}/>
     );
 };
 

@@ -29,6 +29,8 @@ import FilterOptionPerCourse from "../../components/Filters/Courses";
 import PaginationDetail from "../../components/Pagination";
 import FilterOptionBySemester from "../../components/Filters/Semesters";
 import FilterOptionPerSchool from "../../components/Filters/Schools";
+import ShowComponentIfAuthorized from "../../components/ShowComponentIfAuthorized";
+import SCOPES from "../../utils/scopesConstants";
 
 const New = () => {
     const { t } = useTranslation();
@@ -57,26 +59,8 @@ const New = () => {
     const [paginationInfo, setPaginationInfo] = useState({});
     const [allCourseUnits, setAllCourseUnits] = useState(false);
     const [showModal, setShowModal] = useState(false);
-
-    // const loadCourseUnits = (includingIdsString) => {
-    //     let link = '/course-units/search';
-    //     link += '?all=true';
-    //     link += '&withoutGroup=true';
-    //     link += (includingIdsString ? '&including=[' + includingIdsString + ']' : '');
-    //
-    //     axios.get(link).then((res) => {
-    //         if (res.status === 200) {
-    //             //setCourseUnitsList(res?.data?.data);
-    //             setCourseUnitsList(res?.data?.data?.map((x) => ({
-    //                 key: x.key,
-    //                 value: x.value,
-    //                 text: x.text,
-    //                 disabled: x.has_methods,
-    //                 description: (x.has_methods ? t("Métodos já definidos") + " - " : "") + x.year + " " + t("Ano")
-    //             })));
-    //         }
-    //     });
-    // };
+    const [isManager, setIsManager] = useState(false);
+    const [isDisable, setIsDisable] = useState(false);
 
     const handleCloseModal = () => {
         setShowModal(false);
@@ -91,6 +75,16 @@ const New = () => {
     }, [currentPage]);
 
     useEffect(() => {
+        const selectedGroup = localStorage.getItem("selectedGroup");
+        if(selectedGroup.includes("admin") || selectedGroup.includes("super_admin")){
+            setIsManager(true);
+        }
+        else{
+            setIsManager(false);
+        }
+    }, []);
+
+    useEffect(() => {
         if(currentPage === 1){
             fetchCourseUnits();
         } else {
@@ -100,10 +94,16 @@ const New = () => {
 
     const clearAllCourseUnits = () => {
         setSelectedCourseUnits([]);
+        setSchool(null);
+        setIsDisable(false);
     }
 
     const removeCourseUnit = (id) => {
         setSelectedCourseUnits([...selectedCourseUnits.filter((courseUnit) => courseUnit.id !== id)]);
+        if(selectedCourseUnits.length === 1){
+            setSchool(null);
+            setIsDisable(false);
+        }
     };
 
     const changedPage = (activePage) => {
@@ -171,6 +171,10 @@ const New = () => {
             setCurrentCourseUnit(courseUnit);
         }
         else {
+            if(selectedCourseUnits.length === 0){
+                setSchool(courseUnit.school_id);
+                setIsDisable(true);
+            }
             setSelectedCourseUnits([...selectedCourseUnits, {...courseUnit}]);
         }
     };
@@ -198,6 +202,7 @@ const New = () => {
         const {id, description_pt, description_en, course_units} = courseUnitGroupDetail;
         return {id, description_pt, description_en, courseUnits: (course_units ? course_units.map((x) => x.id) : [])};
     }, [courseUnitGroupDetail]);
+
 
     const onSubmit = ({id, description_pt, description_en}) => {
         setIsSaving(true);
@@ -235,7 +240,12 @@ const New = () => {
     function handleAddCourseUnit() {
         setShowModal(false);
         setSelectedCourseUnits([...selectedCourseUnits, {...currentCourseUnit}]);
+        if(selectedCourseUnits.length === 0){
+            setSchool(currentCourseUnit.school_id);
+            setIsDisable(true);
+        }
     }
+
 
     return (
         <Container>
@@ -314,8 +324,6 @@ const New = () => {
                                         {courseUnitGroupDetail?.course_units.map((courseUnit, index) => (
                                             <Label key={index} size={"large"} className={"margin-bottom-s"}>
                                                 {courseUnit.code + ' - ' + courseUnit.name}
-                                                {/*<Icon name='delete' color={"red"}*/}
-                                                {/*      onClick={() => removeCourseUnit(courseUnit.id)}/>*/}
                                             </Label>
                                         ))}
                                     </Grid.Row>
@@ -338,7 +346,10 @@ const New = () => {
                                     <FilterOptionPerCourse heightSize={10} widthSize={5} showAllDegrees={true} school={school}
                                                            eventHandler={(value) => setCourse(value)}/>
                                     <FilterOptionBySemester  widthSize={5} eventHandler={(value) => setSemester(value)}/>
-                                    <FilterOptionPerSchool widthSize={3} eventHandler={(value) => setSchool(value)}/>
+
+                                        {isManager && (
+                                            <FilterOptionPerSchool disabled={isDisable} widthSize={3} selectedSchool={school} eventHandler={(value) => setSchool(value)}/>)
+                                        }
                                     <FilterOptionPerPage  widthSize={2} eventHandler={(value) => setPerPage(value)}/>
                                 </Form.Group>
 
@@ -346,8 +357,10 @@ const New = () => {
                                     <>
                                         {paginationInfo.total > 0 && (
                                             <Segment clearing basic>
+                                                {school && (
                                                 <Button floated='right' onClick={() => setAllResults(true)}
                                                         color="blue">{t("Adicionar todas as unidades curriculares") + " (" + paginationInfo.total + ")"}</Button>
+                                                    )}
                                             </Segment>
                                         )}
                                         <Grid.Row>
@@ -412,22 +425,23 @@ const New = () => {
                 </Form>
             )}/>
             <Modal
-                basic
                 open={showModal}
                 onClose={handleCloseModal}
                 size='small'
             >
                 <Header icon>
-                    <Icon name='archive' />
-                    {t("Unidades Curriculares")}
+                    {t("Agrupar Unidade Curricular")}
                 </Header>
                 <ModalContent >
+                    <p className={"padding-left-l"}>
+                        <strong>{currentCourseUnit?.code} - {currentCourseUnit?.name}</strong>
+                    </p>
                     <p style={{textAlign: "center"}}>
                         {t("A unidade curricular possui métodos já estabelecidos. Confirma que deseja agrupar esta unidade curricular mesmo assim?")}
                     </p>
                 </ModalContent>
                 <ModalActions>
-                    <Button basic color='red' inverted onClick={handleCloseModal}>
+                    <Button color='red' inverted onClick={handleCloseModal}>
                         <Icon name='remove' /> {t("Cancelar")}
                     </Button>
                     <Button color='green' inverted onClick={handleAddCourseUnit}>

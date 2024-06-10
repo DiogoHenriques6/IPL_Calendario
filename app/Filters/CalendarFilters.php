@@ -38,11 +38,8 @@ class CalendarFilters extends QueryFilters
         $courseId = null;
         $isWatcher = false;
         switch ($currentGroup->code) {
-            case InitialGroups::ADMIN :
-                $isManagement = true;
-
-                break;
             case InitialGroups::SUPER_ADMIN:
+            case InitialGroups::ADMIN :
                 $isManagement = true;
                 break;
             case str_contains($currentGroup->code, InitialGroups::GOP):

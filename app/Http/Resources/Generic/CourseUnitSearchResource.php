@@ -22,7 +22,8 @@ class CourseUnitSearchResource extends JsonResource
                 'group_id'              => $this->group ? $this->group->id : null,
                 'has_methods'           => $this->methods()->exists(),
                 'has_responsable'       => !empty($this->responsible_user_id),
-                'year'  => $this->curricular_year
+                'year'                  => $this->curricular_year,
+                'school_id'             => $this->course->school_id,
             ];
     }
 }
