@@ -6,6 +6,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import moment from 'moment';
+import 'moment/locale/pt';
 import Step1 from './new/Step1';
 import Step2 from './new/Step2';
 import Step3 from './new/Step3';

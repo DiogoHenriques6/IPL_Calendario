@@ -5,6 +5,7 @@ import {Button, Card, Form, Header} from 'semantic-ui-react';
 import axios from "axios";
 import {useTranslation} from "react-i18next";
 import moment from "moment";
+import 'moment/locale/pt';
 
 const Step1 = ({setActiveSemester, activeSemester}) => {
     const { t } = useTranslation();

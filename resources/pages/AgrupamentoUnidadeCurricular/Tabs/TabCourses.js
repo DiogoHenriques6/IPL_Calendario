@@ -2,7 +2,6 @@ import axios from 'axios';
 import React, {useEffect, useState} from 'react';
 import {Table, Dimmer, Loader, Button, Icon} from 'semantic-ui-react';
 import {useTranslation} from "react-i18next";
-import moment from 'moment';
 import ShowComponentIfAuthorized from "../../../components/ShowComponentIfAuthorized";
 import SCOPES from "../../../utils/scopesConstants";
 import {Link} from "react-router-dom";

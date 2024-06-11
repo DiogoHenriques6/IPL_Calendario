@@ -1,6 +1,7 @@
 import axios from 'axios';
 import _ from 'lodash';
 import moment from 'moment';
+import 'moment/locale/pt';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Link, useParams, useNavigate} from "react-router-dom";
 import {useTranslation} from "react-i18next";

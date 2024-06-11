@@ -1,5 +1,6 @@
 import React from 'react';
 import moment from 'moment';
+import 'moment/locale/pt';
 import {useTranslation} from "react-i18next";
 import {Button, Modal, List, Icon, Table, Header, Message} from 'semantic-ui-react';
 
