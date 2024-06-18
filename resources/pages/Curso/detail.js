@@ -146,20 +146,22 @@ const Detail = () => {
                 <Link to="/curso"> <Icon name="angle left" /> {t('Voltar à lista')}</Link>
             </div>
             { !loading && initialValues && ((!initialValues?.coordinator && !hasCoordinator)) && (
-                <Message warning>
-                    <Message.Header>{ t('Os seguintes detalhes do Curso precisam da sua atenção:') }</Message.Header>
-                    <Message.List>
-                        { (!initialValues?.coordinator || !hasCoordinator) && (
-                            <Message.Item>{ t('É necessário configurar o docente Coordenador de Curso') }</Message.Item>
-                        )}
-                       {/* { !initialValues.initials && (
-                            <Message.Item>{ t('É necessário configurar a Sigla do Curso') }</Message.Item>
-                        )}
-                        { !initialValues.degree_id && (
-                            <Message.Item>{ t('É necessário configurar o Tipo de Curso') }</Message.Item>
-                        )}*/}
-                    </Message.List>
-                </Message>
+                <ShowComponentIfAuthorized permission={[SCOPES.EDIT_COURSES]}>
+                    <Message warning>
+                        <Message.Header>{ t('Os seguintes detalhes do Curso precisam da sua atenção:') }</Message.Header>
+                        <Message.List>
+                            { (!initialValues?.coordinator || !hasCoordinator) && (
+                                <Message.Item>{ t('É necessário configurar o docente Coordenador de Curso') }</Message.Item>
+                            )}
+                           {/* { !initialValues.initials && (
+                                <Message.Item>{ t('É necessário configurar a Sigla do Curso') }</Message.Item>
+                            )}
+                            { !initialValues.degree_id && (
+                                <Message.Item>{ t('É necessário configurar o Tipo de Curso') }</Message.Item>
+                            )}*/}
+                        </Message.List>
+                    </Message>
+                </ShowComponentIfAuthorized>
             )}
             <FinalForm initialValues={initialValues} onSubmit={onSaveCourse} render={({handleSubmit}) => (
                 <Card fluid>

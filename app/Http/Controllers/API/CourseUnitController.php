@@ -87,6 +87,16 @@ class CourseUnitController extends Controller
 //                Log::channel('sync_test')->info($currentGroup->code);
                         $courseUnits = CourseUnit::where('responsible_user_id', Auth::user()->id);
                         break;
+                    case str_contains($currentGroup->code, InitialGroups::TEACHER):
+                        $courseUnits = CourseUnit::whereHas('teachers', function ($query) use ($userId) {
+                            $query->where('users.id', $userId);
+                        });
+                        break;
+                    case str_contains($currentGroup->code, InitialGroups::STUDENT):
+                        if($request->hasCookie('courseUnits')){
+                            $courseUnitsId = explode(",", $request->cookie('courseUnits'));
+                            $courseUnits = CourseUnit::whereIn('id',$courseUnitsId);
+                        }
                 }
 
                 if ($schoolId != null) {
@@ -290,21 +300,7 @@ class CourseUnitController extends Controller
         //TODO CHAHGE LDAP TO WEBSERVICE
         $teacherUser = User::where('email', $request->teacher)->first();
 
-        if (is_null($teacherUser)) {
-            $ldap = new LdapController();
-            $ldapResults = $ldap->getUserInfoByEmail($request->teacher);
-            if( empty($ldapResults) ) {
-                return response()->json("user not found locally or in the LDAP tables", Response::HTTP_BAD_REQUEST);
-            }
-            $newUser = new User([
-                "email" => $ldapResults['email'],
-                "name" => $ldapResults['name'],
-                "password" => ""
-            ]);
-            $newUser->save();
-        }
-
-        $user = is_null($teacherUser) ? $newUser : $teacherUser;
+        $user = $teacherUser;
 
         if (!$user->groups()->isTeacher()->exists()) {
             $user->groups()->syncWithoutDetaching(Group::isTeacher()->get());

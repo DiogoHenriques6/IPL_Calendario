@@ -77,12 +77,12 @@ const Calendar = () => {
     useEffect(() => {
         // check if URL params are just numbers or else redirects to previous page
         if(!/\d+/.test(calendarId)){
-            history(-1);
+            // history(-1);
             toast(t('Ocorreu um erro ao carregar a informacao pretendida'), errorConfig);
         }
         // validate if calendar Permissions already exists on the local storage
         const permissionsLocal = localStorage.getItem('calendarPermissions');
-        if(!permissionsLocal) {
+        if( !permissionsLocal) {
             axios.get('/permissions/calendar').then((res) => {
                 if (res.status === 200) {
                     let localPermissions = res.data.data;
@@ -242,8 +242,10 @@ const Calendar = () => {
     useEffect(() => {
         if (typeof calendarPhase === 'number') {
             setCalendarPermissions(getCalendarPhasePermissions(calendarPhase));
+            // console.log(getCalendarPhasePermissions(calendarPhase))
             if( getCalendarPhasePermissions(calendarPhase).filter((x) => x.name === SCOPES.VIEW_CALENDAR).length === 0){
-                history('/calendario');
+                console.log('no permissions');
+                history(-1);
             }
         }
     }, [calendarPhase]);
@@ -307,7 +309,7 @@ const Calendar = () => {
 
                     setIsCalendarInfoLoading(false);
                 } else {
-                    history('/calendario');
+                    history(-1);
                 }
             }).catch((r) => alert(r));
     };
@@ -581,7 +583,6 @@ const Calendar = () => {
             if (existingExamsAtThisDate?.length) {
                 // show a button per exam in this day
                 examsComponents = existingExamsAtThisDate.map((exam) => {
-                    console.log(exam.method);
                     return (
                         // <Button key={exam.id} onClick={() => openExamDetailHandler(year, exam)} isModified={differences?.includes(exam.id)} >
                         // For the Future (drag and drop

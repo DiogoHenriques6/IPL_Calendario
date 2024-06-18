@@ -35,14 +35,14 @@ class PermissionController extends Controller
     public function calendar()
     {
         $calendarPhaseId = CalendarPhase::phaseSystem();
-        $userGroupsId = Auth::user()->groups->pluck('id');
+        $userGroupsId = Group::where('id',request()->cookie('selectedGroup'))->pluck('id');
 
         $permissions = Permission::select("code")->addSelect([
             'phases' => GroupPermission::select(DB::raw('group_concat(phase_id)'))->where('phase_id', '!=', $calendarPhaseId)
                         ->whereColumn('permission_id', 'permissions.id')
                         ->where('group_permissions.enabled', true)
                         ->whereIn('group_id', $userGroupsId)
-                        //->pluck('phases')
+
             ])->leftJoin('group_permissions', 'permissions.id', '=', 'group_permissions.permission_id')
                 ->where("category_id", 2)
                 ->where("enabled", true)

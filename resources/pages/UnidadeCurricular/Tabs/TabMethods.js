@@ -8,6 +8,9 @@ import Slider from "../../../components/Slider";
 import EmptyTable from "../../../components/EmptyTable";
 import {useTranslation,} from "react-i18next";
 import AcademicYears from "../../../components/Filters/AcademicYears";
+import GroupedMethods from "../../../components/GroupedMethods";
+import ShowComponentIfAuthorized, {useComponentIfAuthorized} from "../../../components/ShowComponentIfAuthorized";
+import SCOPES from "../../../utils/scopesConstants";
 
 const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
     const { t, i18n } = useTranslation();
@@ -33,10 +36,13 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
     const [selectedEpochTo, setSelectedEpochTo] = useState([]);
 
     const [openCopy, setOpenCopy] = useState(false);
+    const [openGroupMethods, setOpenGroupMethods] = useState(false);
     const [loadingUCs, setLoadingUCs] = useState(false);
     const [curricularUnitsOptions, setCurricularUnitsOptions] = useState([]);
     const [curricularUnitSelected, setCurricularUnitSelected] = useState(-1);
     const [academicYearSelected, setAcademicYearSelected] = useState(-1);
+
+    const isManagingMethods = useComponentIfAuthorized(SCOPES.MANAGE_EVALUATION_METHODS);
 
 
     const isFormValid = (methodList) => {
@@ -116,7 +122,6 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
 
     useEffect(() => {
         isFormValid(epochs);
-        console.log(epochs);
     }, [epochs]);
 
     const loadMethods = () => {
@@ -276,6 +281,10 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
         setOpenClone(false);
     }
 
+    const closeGroupMethods = () => {
+        setOpenGroupMethods(false);
+    };
+
     const closeModalCopy = () => {
         setOpenCopy(false);
     }
@@ -284,7 +293,12 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
         setAcademicYearSelected(yearId);
         axios.get('/method/copy?year=' + yearId).then((res) => {
             if (res.status === 200) {
-                setCurricularUnitsOptions(res?.data?.data?.map(({key, value, text}) => ({key, value, text})));
+                // setCurricularUnitsOptions(res?.data?.data?.map(({key, value, text}) => ({key, value, text})));
+                setCurricularUnitsOptions(res?.data?.data?.map(({ id, name }) => ({
+                    key: id,
+                    value: id,
+                    text: name
+                })));
                 setLoadingUCs(false);
             }
         });
@@ -309,272 +323,349 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                 <EmptyTable isLoading={isLoading} label={t("Ohh! Não foi possível encontrar metodos para esta Unidade Curricular!")}/>
             ) : (
                 <div>
-                    { hasWarnings && (
-                        <Message warning>
-                            <Message.Header>{ t('Os seguintes detalhes do Curso precisam da sua atenção:') }</Message.Header>
-                            <Message.List>
-                                { hasOverWeight && (
-                                    <Message.Item>{ t('Existem métodos com mais de 100% na avaliacao') }</Message.Item>
-                                )}
-                                { isUncomplete && (
-                                    <Message.Item>{ t('É necessário configurar os métodos para todas as épocas') }</Message.Item>
-                                )}
-                                { hasNoMethods && (
-                                    <Message.Item>{ t('É necessário no minimo configurar algum dos métodos.') }</Message.Item>
-                                )}
-                                { missingTypes && (
-                                    <Message.Item>{ t('É necessário configurar o todos os tipos de avaliação nos métodos') }</Message.Item>
-                                )}
-                                { emptyWeight && (
-                                    <Message.Item>{ t('É necessário ter o peso de avaliação em todos os métodos') }</Message.Item>
-                                )}
-                                { underWeight && (
-                                    <Message.Item>{ t('É necessário ter no minimo 100% nos métodos') }</Message.Item>
-                                )}
-                            </Message.List>
-                        </Message>
-                    )}
-                    { !hasGroup && (
-                        <Sticky offset={50} context={contextRef}>
-                            <div className='sticky-methods-header'>
-                                <Button onClick={() => setOpenCopy(true)} icon labelPosition="left" color="blue" disabled={!hasNoMethods}>
-                                    <Icon name={"clone outline"}/>{ t("Copiar metodos") }
-                                </Button>
-                                <Button onClick={() => setOpenClone(true)} icon labelPosition="left" color="yellow" disabled={hasNoMethods}>
-                                    <Icon name={"clone outline"}/>{ t("Duplicar metodos") }
-                                </Button>
-                                <Button onClick={onSubmit} color="green" icon labelPosition="left" loading={isSaving} disabled={!formValid}>
-                                    <Icon name="save"/>{ t("Guardar") }
-                                </Button>
-                            </div>
-                        </Sticky>
-                    )}
-                    { hasGroup && (
-                        <div className={"margin-bottom-base"}>
-                            <Message info>
-                                <Message.Header>{ t('Unidade curricular associada a um grupo') }</Message.Header>
-                                <Message.Content>{ t("Os métodos desta unidade curricular são definidos no grupo á qual pertence.")}</Message.Content>
+                    <ShowComponentIfAuthorized permission={SCOPES.MANAGE_EVALUATION_METHODS}>
+                        {hasWarnings && (
+                            <Message warning>
+                                <Message.Header>{t('Os seguintes detalhes do Curso precisam da sua atenção:')}</Message.Header>
+                                <Message.List>
+                                    {hasOverWeight && (
+                                        <Message.Item>{t('Existem métodos com mais de 100% na avaliacao')}</Message.Item>
+                                    )}
+                                    {isUncomplete && (
+                                        <Message.Item>{t('É necessário configurar os métodos para todas as épocas')}</Message.Item>
+                                    )}
+                                    {hasNoMethods && (
+                                        <Message.Item>{t('É necessário no minimo configurar algum dos métodos.')}</Message.Item>
+                                    )}
+                                    {missingTypes && (
+                                        <Message.Item>{t('É necessário configurar o todos os tipos de avaliação nos métodos')}</Message.Item>
+                                    )}
+                                    {emptyWeight && (
+                                        <Message.Item>{t('É necessário ter o peso de avaliação em todos os métodos')}</Message.Item>
+                                    )}
+                                    {underWeight && (
+                                        <Message.Item>{t('É necessário ter no minimo 100% nos métodos')}</Message.Item>
+                                    )}
+                                </Message.List>
                             </Message>
-                        </div>
-                    )}
-                    {epochs?.map((item, index) => (
-                        <div className={ index > 0 ? "margin-top-m" : ""} key={index}>
-                            <Header as="span">{i18n.language == 'en' ? item.name_en: item.name_pt}</Header>
-                            <Table compact celled className={"definition-last"}>
-                                <Table.Header>
-                                    <Table.Row>
-                                        <Table.HeaderCell>{ t("Tipo de avaliação") }</Table.HeaderCell>
-                                        <Table.HeaderCell>{ t("Descrição") }</Table.HeaderCell>
-                                        <Table.HeaderCell>{ t("Nota mínima") }</Table.HeaderCell>
-                                        <Table.HeaderCell>{ t("Peso da avaliação") } (%)</Table.HeaderCell>
-                                        <Table.HeaderCell/>
-                                    </Table.Row>
-                                </Table.Header>
-                                <Table.Body>
-                                    {item.methods?.map((method, methodIndex) => (
-                                        <Table.Row key={methodIndex} error={!epochs[index].methods[methodIndex].evaluation_type_id}>
-                                            <Table.Cell width={3}>
-                                                <Form.Dropdown placeholder={t("Selecionar Tipo de avaliação")} disabled={method.is_blocked || hasGroup} fluid value={method.evaluation_type_id} selection search
-                                                    options={evaluationTypes.map(({id, name, enabled}) => (enabled ? ({
-                                                        key: id,
-                                                        value: id,
-                                                        text: name,
-                                                    }) : undefined))}
-                                                    onChange={
-                                                        (ev, {value}) => setEpochs((current) => {
-                                                            const copy = [...current];
-                                                            // set number for descricion. Needs to be before the next line because its
-                                                            // when we set the current adding of the item
-                                                            const nextExamIndex = copy[index].methods.filter((item) => item.evaluation_type_id === value).length + 1;
-                                                            copy[index].methods[methodIndex].evaluation_type_id = value;
-                                                            if(value == "" || !value) {
-                                                                copy[index].methods[methodIndex].description_pt = "";
-                                                                copy[index].methods[methodIndex].description_en = "";
-                                                                copy[index].methods[methodIndex].name = "";
-                                                                copy[index].methods[methodIndex].code = "";
-                                                                copy[index].methods[methodIndex].grouped_id = Math.floor(Math.random() * 1000);
-                                                            } else {
-                                                                copy[index].methods[methodIndex].description_pt = evaluationTypes.filter((x) => x.id === value)[0].name_pt + " " + nextExamIndex;
-                                                                copy[index].methods[methodIndex].description_en = evaluationTypes.filter((x) => x.id === value)[0].name_en + " " + nextExamIndex;
-                                                                copy[index].methods[methodIndex].initials_pt = evaluationTypes.filter((x) => x.id === value)[0].initials_pt + " " + nextExamIndex;
-                                                                copy[index].methods[methodIndex].initials_en = evaluationTypes.filter((x) => x.id === value)[0].initials_en + " " + nextExamIndex;
-                                                                copy[index].methods[methodIndex].name = evaluationTypes.filter((x) => x.id === value)[0].name_pt;
-                                                                copy[index].methods[methodIndex].code = evaluationTypes.filter((x) => x.id === value)[0].code;
-                                                                copy[index].methods[methodIndex].grouped_id = Math.floor(Math.random() * 1000);
-                                                            }
-                                                            // TODO hardcode: add statement release and oral presentation métodos for projects and reports on profs request
-                                                            if(copy[index].methods[methodIndex].code.toLowerCase() === "project" || copy[index].methods[methodIndex].code.toLowerCase() === "report") {
-                                                                const hasOralPresentation = copy[index].methods.filter((item) => item.evaluation_type_id === 5).length > 0;
-                                                                if (!hasOralPresentation) {
-                                                                    copy[index].methods.push({
-                                                                        weight: 0,
-                                                                        minimum: 9.5,
-                                                                        evaluation_type_id: 11,
-                                                                        name: "Lançamento do enunciado",
-                                                                        description: "",
-                                                                        description_en: "Statement release",
-                                                                        description_pt: "Lançamento do enunciado",
-                                                                        initials_pt: "LE",
-                                                                        initials_en: "SR",
-                                                                        is_blocked: true,
-                                                                        grouped_id: copy[index].methods[methodIndex].grouped_id
-                                                                    });
-                                                                    copy[index].methods.push({
-                                                                        weight: 0,
-                                                                        minimum: 9.5,
-                                                                        evaluation_type_id: 5,
-                                                                        name: "Apresentação oral pública",
-                                                                        description: "",
-                                                                        description_en: "Public oral presentation",
-                                                                        description_pt: "Apresentação oral pública",
-                                                                        initials_pt: "AOP",
-                                                                        initials_en: "POP",
-                                                                        is_blocked: true,
-                                                                        grouped_id: copy[index].methods[methodIndex].grouped_id
-                                                                    });
+                        )}
+                        {!hasGroup && (
+                            <Sticky offset={50} context={contextRef}>
+                                <div className='sticky-methods-header'>
+                                    <Button onClick={() => setOpenGroupMethods(true)} icon labelPosition="left"
+                                            color="green" disabled={hasNoMethods}>
+                                        <Icon name={"object group outline"}/>{t("Agrupar metodos")}
+                                    </Button>
+                                    <Button onClick={() => setOpenCopy(true)} icon labelPosition="left"
+                                            color="blue" disabled={!hasNoMethods}>
+                                        <Icon name={"clone outline"}/>{t("Copiar metodos")}
+                                    </Button>
+                                    <Button onClick={() => setOpenClone(true)} icon labelPosition="left"
+                                            color="yellow" disabled={hasNoMethods}>
+                                        <Icon name={"clone outline"}/>{t("Duplicar metodos")}
+                                    </Button>
+                                    <Button onClick={onSubmit} color="green" icon labelPosition="left"
+                                            loading={isSaving} disabled={!formValid}>
+                                        <Icon name="save"/>{t("Guardar")}
+                                    </Button>
+                                </div>
+                            </Sticky>
+                        )}
+                        {hasGroup && (
+                            <div className={"margin-bottom-base"}>
+                                <Message info>
+                                    <Message.Header>{t('Unidade curricular associada a um grupo')}</Message.Header>
+                                    <Message.Content>{t("Os métodos desta unidade curricular são definidos no grupo á qual pertence.")}</Message.Content>
+                                </Message>
+                            </div>
+                        )}
+                    </ShowComponentIfAuthorized>
+                                {epochs?.map((item, index) => (
+                                    <div className={index > 0 ? "margin-top-m" : ""} key={index}>
+                                        <Header as="span">{i18n.language == 'en' ? item.name_en : item.name_pt}</Header>
+                                        <Table compact celled className={"definition-last"}>
+                                            <Table.Header>
+                                                <Table.Row>
+                                                    <Table.HeaderCell>{t("Tipo de avaliação")}</Table.HeaderCell>
+                                                    <Table.HeaderCell>{t("Descrição")}</Table.HeaderCell>
+                                                    <Table.HeaderCell>{t("Nota mínima")}</Table.HeaderCell>
+                                                    <Table.HeaderCell>{t("Peso da avaliação")} (%)</Table.HeaderCell>
+                                                    <Table.HeaderCell/>
+                                                </Table.Row>
+                                            </Table.Header>
+                                            <Table.Body>
+                                                {item.methods?.map((method, methodIndex) => (
+                                                    <Table.Row key={methodIndex}
+                                                               error={!epochs[index].methods[methodIndex].evaluation_type_id}>
+                                                        <Table.Cell width={3}>
+                                                            <Form.Dropdown
+                                                                placeholder={t("Selecionar Tipo de avaliação")}
+                                                                disabled={method.is_blocked || hasGroup || !isManagingMethods} fluid
+                                                                value={method.evaluation_type_id} selection search
+                                                                options={evaluationTypes.map(({
+                                                                                                  id,
+                                                                                                  name,
+                                                                                                  enabled
+                                                                                              }) => (enabled ? ({
+                                                                    key: id,
+                                                                    value: id,
+                                                                    text: name,
+                                                                }) : undefined))}
+                                                                onChange={
+                                                                    (ev, {value}) => setEpochs((current) => {
+                                                                        const copy = [...current];
+                                                                        // set number for descricion. Needs to be before the next line because its
+                                                                        // when we set the current adding of the item
+                                                                        const nextExamIndex = copy[index].methods.filter((item) => item.evaluation_type_id === value).length + 1;
+                                                                        copy[index].methods[methodIndex].evaluation_type_id = value;
+                                                                        if (value == "" || !value) {
+                                                                            copy[index].methods[methodIndex].description_pt = "";
+                                                                            copy[index].methods[methodIndex].description_en = "";
+                                                                            copy[index].methods[methodIndex].name = "";
+                                                                            copy[index].methods[methodIndex].code = "";
+                                                                            copy[index].methods[methodIndex].grouped_id = Math.floor(Math.random() * 1000);
+                                                                        } else {
+                                                                            copy[index].methods[methodIndex].description_pt = evaluationTypes.filter((x) => x.id === value)[0].name_pt + " " + nextExamIndex;
+                                                                            copy[index].methods[methodIndex].description_en = evaluationTypes.filter((x) => x.id === value)[0].name_en + " " + nextExamIndex;
+                                                                            copy[index].methods[methodIndex].initials_pt = evaluationTypes.filter((x) => x.id === value)[0].initials_pt + " " + nextExamIndex;
+                                                                            copy[index].methods[methodIndex].initials_en = evaluationTypes.filter((x) => x.id === value)[0].initials_en + " " + nextExamIndex;
+                                                                            copy[index].methods[methodIndex].name = evaluationTypes.filter((x) => x.id === value)[0].name_pt;
+                                                                            copy[index].methods[methodIndex].code = evaluationTypes.filter((x) => x.id === value)[0].code;
+                                                                            copy[index].methods[methodIndex].grouped_id = Math.floor(Math.random() * 1000);
+                                                                        }
+                                                                        // TODO hardcode: add statement release and oral presentation métodos for projects and reports on profs request
+                                                                        if (copy[index].methods[methodIndex].code.toLowerCase() === "project" || copy[index].methods[methodIndex].code.toLowerCase() === "report") {
+                                                                            const hasOralPresentation = copy[index].methods.filter((item) => item.evaluation_type_id === 5).length > 0;
+                                                                            if (!hasOralPresentation) {
+                                                                                copy[index].methods.push({
+                                                                                    weight: 0,
+                                                                                    minimum: 9.5,
+                                                                                    evaluation_type_id: 11,
+                                                                                    name: "Lançamento do enunciado",
+                                                                                    description: "",
+                                                                                    description_en: "Statement release",
+                                                                                    description_pt: "Lançamento do enunciado",
+                                                                                    initials_pt: "LE",
+                                                                                    initials_en: "SR",
+                                                                                    is_blocked: true,
+                                                                                    grouped_id: copy[index].methods[methodIndex].grouped_id
+                                                                                });
+                                                                                copy[index].methods.push({
+                                                                                    weight: 0,
+                                                                                    minimum: 9.5,
+                                                                                    evaluation_type_id: 5,
+                                                                                    name: "Apresentação oral pública",
+                                                                                    description: "",
+                                                                                    description_en: "Public oral presentation",
+                                                                                    description_pt: "Apresentação oral pública",
+                                                                                    initials_pt: "AOP",
+                                                                                    initials_en: "POP",
+                                                                                    is_blocked: true,
+                                                                                    grouped_id: copy[index].methods[methodIndex].grouped_id
+                                                                                });
+                                                                            }
+                                                                        }
+                                                                        return copy;
+                                                                    })
                                                                 }
-                                                            }
-                                                            return copy;
-                                                        })
-                                                    }
-                                                />
-                                                {!epochs[index].methods[methodIndex].evaluation_type_id && (
-                                                    <div>
-                                                        <Icon color='orange' name="warning sign" />
-                                                        { t("Falta selecionar o tipo de avaliacao") }
-                                                    </div>
-                                                )}
-                                            </Table.Cell>
-                                            <Table.Cell width={3} colSpan={method.is_blocked ? 3 : 0}>
-                                                <Form.Input placeholder={t("Descrição PT")} fluid value={method.description_pt} disabled
-                                                            onChange={
-                                                        (ev, {value}) => setEpochs((current) => {
-                                                            const copy = [...current];
-                                                            copy[index].methods[methodIndex].description_pt = value;
-                                                            return copy;
-                                                        })
-                                                    } />
+                                                            />
+                                                            {!epochs[index].methods[methodIndex].evaluation_type_id && (
+                                                                <div>
+                                                                    <Icon color='orange' name="warning sign"/>
+                                                                    {t("Falta selecionar o tipo de avaliacao")}
+                                                                </div>
+                                                            )}
+                                                        </Table.Cell>
+                                                        <Table.Cell width={3} colSpan={method.is_blocked ? 3 : 0}>
+                                                            { isManagingMethods || !isManagingMethods && i18n.language == 'pt' &&(
+                                                                <Form.Input placeholder={t("Descrição PT")} fluid
+                                                                            value={method.description_pt} readOnly
+                                                                            onChange={
+                                                                                (ev, {value}) => setEpochs((current) => {
+                                                                                    const copy = [...current];
+                                                                                    copy[index].methods[methodIndex].description_pt = value;
+                                                                                    return copy;
+                                                                                })
+                                                                            }/>
+                                                            )}
+                                                            {isManagingMethods || !isManagingMethods && i18n.language == 'en' &&(
+                                                                <Form.Input placeholder={t("Descrição EN")} fluid
+                                                                            value={method.description_en} readOnly
+                                                                            className="margin-top-base"
+                                                                            onChange={
+                                                                                (ev, {value}) => setEpochs((current) => {
+                                                                                    const copy = [...current];
+                                                                                    copy[index].methods[methodIndex].description_en = value;
+                                                                                    return copy;
+                                                                                })
+                                                                            }/>
+                                                            )}
+                                                        </Table.Cell>
+                                                        {!method.is_blocked && (
+                                                            <Table.Cell width={5}>
+                                                                {isManagingMethods ? (
+                                                                    <Slider step="0.5" min="0" max="20"
+                                                                            value={method.minimum} inputSide={"left"}
+                                                                            disabled={hasGroup}
+                                                                            eventHandler={(value) => updateMethodMinimum(index, methodIndex, value)}/>
+                                                                ) : (
+                                                                    <Form.Input placeholder={t("Nota Mínima")} fluid
+                                                                                value={method.minimum} readOnly
+                                                                                className="margin-top-base"
+                                                                    />
+                                                                )}
+                                                            </Table.Cell>
+                                                        )}
+                                                        {!method.is_blocked && (
+                                                            <Table.Cell width={5}>
+                                                                {isManagingMethods ? (
+                                                                    <Slider step="5" min="0" max="100" value={method.weight}
+                                                                            inputSide={"left"} disabled={hasGroup}
+                                                                            valuePrefix={"%"}
+                                                                            eventHandler={(value) => updateMethodWeight(index, methodIndex, value)}/>
+                                                                ) : (
+                                                                    <Form.Input placeholder={t("Peso da Avaliação (%)")} fluid
+                                                                        value={method.weight} readOnly
+                                                                        className="margin-top-base"
+                                                                        />
+                                                                )}
+                                                            </Table.Cell>
+                                                        )}
+                                                        <ShowComponentIfAuthorized permission={SCOPES.MANAGE_EVALUATION_METHODS}>
+                                                            <Table.Cell collapsing width={1}>
+                                                                {!hasGroup && (<Icon disabled={hasGroup} name={"trash"}
+                                                                                     onClick={() => removeMethod(index, methodIndex)}/>)}
+                                                            </Table.Cell>
+                                                        </ShowComponentIfAuthorized>
+                                                    </Table.Row>
+                                                ))}
+                                            </Table.Body>
+                                            <ShowComponentIfAuthorized permission={SCOPES.MANAGE_EVALUATION_METHODS}>
+                                                <Table.Footer fullWidth>
+                                                    <Table.Row>
+                                                        <Table.HeaderCell colSpan='8'>
+                                                            {t("Total pesos avaliacao:")} <Label
+                                                            color={(getEpochValue(index) > 100 ? "red" : (getEpochValue(index) === 100 ? "green" : "yellow"))}>{(epochs[index].methods || [])?.reduce((a, b) => a + (b?.weight || 0), 0)}%</Label>
+                                                            {!hasGroup && (
+                                                                    <Button floated='right' icon labelPosition='left'
+                                                                            color={"green"} size='small' onClick={() => {
+                                                                        addNewMethod(index, item.id);
+                                                                    }}>
 
-                                                <Form.Input placeholder={t("Descrição EN")} fluid value={method.description_en} disabled className="margin-top-base"
-                                                    onChange={
-                                                        (ev, {value}) => setEpochs((current) => {
-                                                            const copy = [...current];
-                                                            copy[index].methods[methodIndex].description_en = value;
-                                                            return copy;
-                                                        })
-                                                    } />
-                                            </Table.Cell>
-                                            { !method.is_blocked && (
-                                                <Table.Cell width={5}>
-                                                    <Slider step="0.5" min="0" max="20" value={method.minimum} inputSide={"left"} disabled={hasGroup} eventHandler={(value) => updateMethodMinimum(index, methodIndex, value)} />
-                                                </Table.Cell>
-                                            )}
-                                            { !method.is_blocked && (
-                                                <Table.Cell width={5}>
-                                                    <Slider step="5" min="0" max="100" value={method.weight} inputSide={"left"} disabled={hasGroup} valuePrefix={"%"} eventHandler={(value) => updateMethodWeight(index, methodIndex, value)}/>
-                                                </Table.Cell>
-                                            )}
-                                            <Table.Cell collapsing width={1}>
-                                                { !hasGroup && ( <Icon disabled={hasGroup} name={"trash"} onClick={() => removeMethod(index, methodIndex)}/> )}
-                                            </Table.Cell>
-                                        </Table.Row>
-                                    ))}
-                                </Table.Body>
+                                                                        <Icon name='plus'/> {t("Adicionar novo método")}
+                                                                    </Button>
+                                                            )}
+                                                        </Table.HeaderCell>
+                                                    </Table.Row>
+                                                </Table.Footer>
+                                            </ShowComponentIfAuthorized>
+                                        </Table>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
-                                <Table.Footer fullWidth>
-                                    <Table.Row>
-                                        <Table.HeaderCell colSpan='8'>
-                                            { t("Total pesos avaliacao:") } <Label color={(getEpochValue(index) > 100 ? "red" : (getEpochValue(index) === 100 ? "green" : "yellow"))}>{ (epochs[index].methods || [])?.reduce((a, b) => a + (b?.weight || 0), 0)  }%</Label>
-                                            { !hasGroup && (
-                                                <Button floated='right' icon labelPosition='left' color={"green"} size='small' onClick={() => {addNewMethod(index, item.id);}}>
-                                                    <Icon name='plus' /> { t("Adicionar novo método") }
-                                                </Button>
+                        <FinalForm onSubmit={cloneMethods}
+                            // initialValues={{
+                            //     epochFromInput: -1,
+                            //     epochToInput: -1,
+                            // }}
+                                   render={({handleSubmit}) => (
+                                       <Modal onClose={closeModal} onOpen={() => setOpenClone(true)} open={openClone}>
+                                           <Modal.Header>{t("Duplicar Métodos")}</Modal.Header>
+                                           <Modal.Content>
+                                               <Form>
+                                                   <Header
+                                                       as="h4">{t("Seleciona que épocas pretendes duplicar")}</Header>
+                                                   <Grid columns={2}>
+                                                       <GridColumn>
+                                                           <Field name="epoch">
+                                                               {({input: epochFromInput}) => (
+                                                                   <Form.Dropdown
+                                                                       options={epochs.map((epoch) => ({
+                                                                           key: epoch.id,
+                                                                           value: epoch.id,
+                                                                           text: i18n.language == 'en' ? epoch.name_en : epoch.name_pt,
+                                                                           disabled: selectedEpochTo.includes(epoch.id) || epoch.methods.length === 0
+                                                                       }))}
+                                                                       value={selectedEpochFrom || -1}
+                                                                       placeholder={t("Época a copiar")}
+                                                                       selectOnBlur={false} selection search
+                                                                       label={t("Época de origem")}
+                                                                       onChange={(e, {value}) => epochFromDropdownOnChange(e, value)}
+                                                                   />
+                                                               )}
+                                                           </Field>
+                                                       </GridColumn>
+                                                       <GridColumn>
+                                                           <label
+                                                               className={"display-block text-bold margin-bottom-s"}>{t("Época de destino")}</label>
+                                                           {epochs.filter((epoch) => epoch.id != selectedEpochFrom).map((epoch, index) => (
+                                                                   <Field name="epoch" key={index}>
+                                                                       {({input: epochToInput}) => (
+                                                                           <Form.Checkbox
+                                                                               checked={selectedEpochTo.includes(epoch.id)}
+                                                                               label={i18n.language == 'en' ? epoch.name_en : epoch.name_pt}
+                                                                               disabled={selectedEpochFrom == -1}
+                                                                               onChange={(e, {checked}) => epochToDropdownOnChange(epoch.id, checked)}
+                                                                           />
+                                                                       )}
+                                                                   </Field>
+                                                               )
+                                                           )}
+                                                       </GridColumn>
+                                                   </Grid>
+                                               </Form>
+                                           </Modal.Content>
+                                           <Modal.Actions>
+                                               <Button negative onClick={closeModal}>{t("Cancel")}</Button>
+                                               <Button positive onClick={handleSubmit}>{t("Duplicar")}</Button>
+                                           </Modal.Actions>
+                                       </Modal>
+                                   )}
+                        />
+
+                        <Modal onClose={closeModalCopy} onOpen={() => setOpenCopy(true)} open={openCopy}>
+                            <Modal.Header>{t("Copiar Métodos de outra UC")}</Modal.Header>
+                            <Modal.Content>
+                                <Form>
+                                    <Header as="h4">{t("Selecione o ano curricular")}</Header>
+                                    <Grid columns={2}>
+                                        <GridColumn width={6}>
+                                            <AcademicYears eventHandler={selectAcademicYear} isSearch={false}/>
+                                        </GridColumn>
+                                        <GridColumn width={10}>
+                                            <Form.Dropdown selectOnBlur={false} selection search={true}
+                                                           value={curricularUnitSelected}
+                                                           disabled={(academicYearSelected === -1) || curricularUnitsOptions.length === 0}
+                                                           options={curricularUnitsOptions}
+                                                           label={t("Unidade Curricular")}
+                                                           placeholder={t("Unidade Curricular")}
+                                                           loading={loadingUCs}
+                                                           onChange={(e, {value}) => setCurricularUnitSelected(value)}/>
+                                            {academicYearSelected !== -1 && curricularUnitsOptions.length === 0 && !loadingUCs && (
+                                                <Message warning>
+                                                    <p>{t("Não existe nenhuma unidade curricular com métodos definidos para o ano letivo selecionado!")}</p>
+                                                </Message>
                                             )}
-                                        </Table.HeaderCell>
-                                    </Table.Row>
-                                </Table.Footer>
-                            </Table>
-                        </div>
-                    ))}
+                                        </GridColumn>
+                                    </Grid>
+                                </Form>
+                            </Modal.Content>
+                            <Modal.Actions>
+                                <Button negative onClick={closeModalCopy}>{t("Cancel")}</Button>
+                                <Button positive onClick={handleSubmitCopy}>{t("Copiar")}</Button>
+                            </Modal.Actions>
+                        </Modal>
+                        <GroupedMethods
+                            isOpen={openGroupMethods}
+                            onClose={closeGroupMethods}
+                            courseUnit={unitId}
+                            epochs={epochs}
+                            unitId={unitId}
+                        />
                 </div>
-            )}
-
-            <FinalForm onSubmit={cloneMethods}
-                // initialValues={{
-                //     epochFromInput: -1,
-                //     epochToInput: -1,
-                // }}
-                render={({handleSubmit}) => (
-                    <Modal onClose={closeModal} onOpen={() => setOpenClone(true)} open={openClone}>
-                        <Modal.Header>{t("Duplicar Métodos")}</Modal.Header>
-                        <Modal.Content>
-                            <Form>
-                                <Header as="h4">{t("Seleciona que épocas pretendes duplicar")}</Header>
-                                <Grid columns={2}>
-                                    <GridColumn>
-                                        <Field name="epoch">
-                                            {({input: epochFromInput}) => (
-                                                <Form.Dropdown
-                                                    options={epochs.map((epoch) => ({ key: epoch.id, value: epoch.id, text: i18n.language == 'en' ? epoch.name_en: epoch.name_pt, disabled: selectedEpochTo.includes(epoch.id) || epoch.methods.length === 0 }))}
-                                                    value={selectedEpochFrom || -1} placeholder={t("Época a copiar")} selectOnBlur={false} selection search label={ t("Época de origem") }
-                                                    onChange={(e, {value}) => epochFromDropdownOnChange(e, value)}
-                                                />
-                                            )}
-                                        </Field>
-                                    </GridColumn>
-                                    <GridColumn>
-                                        <label className={"display-block text-bold margin-bottom-s"}>{ t("Época de destino") }</label>
-                                        { epochs.filter((epoch) => epoch.id != selectedEpochFrom).map((epoch, index) => (
-                                            <Field name="epoch" key={index}>
-                                                {({input: epochToInput}) => (
-                                                    <Form.Checkbox checked={selectedEpochTo.includes(epoch.id)} label={ i18n.language == 'en' ? epoch.name_en: epoch.name_pt } disabled={selectedEpochFrom == -1}
-                                                                   onChange={(e, {checked}) => epochToDropdownOnChange(epoch.id, checked)}
-                                                    />
-                                                )}
-                                            </Field>
-                                        )
-                                        )}
-                                    </GridColumn>
-                                </Grid>
-                            </Form>
-                        </Modal.Content>
-                        <Modal.Actions>
-                            <Button negative onClick={closeModal}>{ t("Cancel") }</Button>
-                            <Button positive onClick={handleSubmit}>{ t("Duplicar") }</Button>
-                        </Modal.Actions>
-                    </Modal>
-                )}
-            />
-
-            <Modal onClose={closeModalCopy} onOpen={() => setOpenCopy(true)} open={openCopy}>
-                <Modal.Header>{t("Copiar Métodos de outra UC")}</Modal.Header>
-                <Modal.Content>
-                    <Form>
-                        <Header as="h4">{t("Selecione o ano curricular")}</Header>
-                        <Grid columns={2}>
-                            <GridColumn width={6}>
-                                <AcademicYears eventHandler={selectAcademicYear} isSearch={false} />
-                            </GridColumn>
-                            <GridColumn width={10}>
-                                <Form.Dropdown selectOnBlur={false} selection search={true} value={curricularUnitSelected} disabled={ (academicYearSelected === -1) || curricularUnitsOptions.length === 0 }
-                                               options={curricularUnitsOptions} label={t("Unidade Curricular")} placeholder={ t("Unidade Curricular") }
-                                               loading={loadingUCs} onChange={(e, {value}) => setCurricularUnitSelected(value)}/>
-                                { academicYearSelected !== -1 && curricularUnitsOptions.length === 0 && !loadingUCs && (
-                                    <Message warning>
-                                        <p>{ t("Não existe nenhuma unidade curricular com métodos definidos para o ano letivo selecionado!") }</p>
-                                    </Message>
-                                )}
-                            </GridColumn>
-                        </Grid>
-                    </Form>
-                </Modal.Content>
-                <Modal.Actions>
-                    <Button negative onClick={closeModalCopy}>{ t("Cancel") }</Button>
-                    <Button positive onClick={handleSubmitCopy}>{ t("Copiar") }</Button>
-                </Modal.Actions>
-            </Modal>
-        </div>
-    )
-};
-//<!-- disabled={!((methods[index] || [])?.reduce((a, b) => a + (b?.weight || 0), 0) < 100)} -->
+                )
+            };
+            //<!-- disabled={!((methods[index] || [])?.reduce((a, b) => a + (b?.weight || 0), 0) < 100)} -->
 export default UnitTabMethods;

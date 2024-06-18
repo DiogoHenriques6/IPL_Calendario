@@ -5,7 +5,7 @@ import {useTranslation} from "react-i18next";
 import _ from "lodash";
 import {useSearchParams} from "react-router-dom";
 
-const FilterOptionCourseUnits = ({widthSize, eventHandler}) => {
+const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup}) => {
     const [searchParams] = useSearchParams();
     const searchCourseUnit = searchParams.get('curso-unit');
 
@@ -20,12 +20,14 @@ const FilterOptionCourseUnits = ({widthSize, eventHandler}) => {
         }
     }, [searchCourseUnit]);
 
+
+
     const loadCourses = (search = '', includeCourseUnit) => {
         setLoading(true);
         let link = '/course-units/search';
         link += (search ? '?search=' + search : '');
         link += (includeCourseUnit ? (search ? '&' : '?') + 'include=' + includeCourseUnit : '');
-        link += ( (search || includeCourseUnit ? '&' : '?')+ 'has_groups=true');
+        link += (hasGroup ? (search || includeCourseUnit ? '&' : '?')+ 'has_groups=' + hasGroup: '');
         axios.get(link).then((res) => {
             if (res.status === 200) {
                 res.data.data.unshift({id: '', name: t("Todas as Unidades curriculares")});

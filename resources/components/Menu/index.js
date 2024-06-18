@@ -36,7 +36,6 @@ const HeaderMenu = () => {
     useEffect(() => {
         //TODO join both api calls into one (less time loading)
             axios.get('user-group/menu').then((response) => {
-                // console.log(response?.data?.data);
                 if (response.status >= 200 && response.status < 300) {
                     setUserGroups(response?.data?.data);
                     if(!localStorage.getItem('selectedGroup')){
@@ -104,6 +103,7 @@ const HeaderMenu = () => {
                 setSelectedGroup(group);
                 localStorage.setItem('selectedGroup', [group.key, group.text, group.value])
                 localStorage.setItem('scopes', JSON.stringify(res.data));
+                localStorage.removeItem('calendarPermissions');
                 dispatch(setCurrentGroup(group));
                 window.location.reload();
             })

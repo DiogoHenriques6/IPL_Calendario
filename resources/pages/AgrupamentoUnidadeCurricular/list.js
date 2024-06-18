@@ -141,7 +141,7 @@ const ListGroupedUC = () => {
                     <Form>
                         <Form.Group>
                             <Form.Input icon='search' iconPosition='left' width={5} onChange={_.debounce(handleSearchCourseUnits, 400)} placeholder={t("Pesquisar por nome")} label={t("Pesquisar por nome")} />
-                            <FilterOptionCourseUnits widthSize={5} eventHandler={filterByCourseUnit} />
+                            <FilterOptionCourseUnits widthSize={5} eventHandler={filterByCourseUnit} hasGroup={true} />
                             <div className={"four wide field"}></div>
                             <FilterOptionPerPage widthSize={2} eventHandler={(value) => setPerPage(value)} />
                         </Form.Group>

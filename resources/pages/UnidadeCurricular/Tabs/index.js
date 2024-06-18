@@ -15,7 +15,8 @@ const CourseTabs = ({ unitId, hasGroup }) => {
 
     let panes = [];
 
-    if(useComponentIfAuthorized(SCOPES.MANAGE_EVALUATION_METHODS)){
+    //TODO users cant see but only with permissions can they edit !?
+    // if(useComponentIfAuthorized(SCOPES.MANAGE_EVALUATION_METHODS)){
         panes.push({
             menuItem: (
                 <Menu.Item key='tab_header_methods'>
@@ -27,7 +28,7 @@ const CourseTabs = ({ unitId, hasGroup }) => {
             ),
             pane: { key: 'tab_methods',     content: <Methods hasGroup={hasGroup} unitId={unitId} warningsHandler={setHasWarningsMethods} /> }
         });
-    }
+    // }
     panes.push({
         menuItem: (
             <Menu.Item key='tab_header_teachers'>

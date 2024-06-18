@@ -28,11 +28,9 @@ const FilterOptionCourse = ({widthSize, eventHandler, school}) => {
         setLoading(true);
         let link = '/courses-search';
         link += (school ? '?school=' + school : '');
-        console.log("School",school);
         link += (search ? '?search=' + search : '');
         link += (includeCourse ? (search ? '&' : '?') + 'include=' + includeCourse : '');
         axios.get(link).then((res) => {
-            console.log("Response", res.data.data)
             if (res.status === 200) {
                 res.data.data.unshift({value: '', text: t("Todos os Cursos")});
                 setCoursesOptions(res.data.data);

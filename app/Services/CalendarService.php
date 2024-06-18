@@ -19,6 +19,7 @@ use App\Models\CourseUnit;
 use App\Models\Epoch;
 use App\Models\EpochType;
 use App\Models\Group;
+use App\Models\InitialGroups;
 use App\Models\Interruption;
 use App\Models\InterruptionType;
 use App\Models\InterruptionTypesEnum;
@@ -187,20 +188,31 @@ class CalendarService
             ->where('semester_id', $calendar->semester_id)
             ->delete();
 
+        $currentGroup = Group::where('id', request()->cookie('selectedGroup'))->first();
         if (!$calendar->is_published) {
             $calendar->calendar_phase_id = CalendarPhase::phasePublished();
-
-            if(Auth::user()->groups()->coordinator()->exists()) {
-                // add 0.1 to version because is a coordinator
-                $calendar->version = floatval($calendar->version) + 0.1;
-                $calendar->is_temporary = true;
-                $calendar->is_published = false;
-            } else if(Auth::user()->groups()->Gop()->exists() || Auth::user()->groups()->board()->exists()){
-                // add 1.0 to version because is the gop
-                $calendar->version = intval($calendar->version) + 1;
-                $calendar->is_temporary = false;
-                $calendar->is_published = true;
+            switch ($currentGroup->code) {
+                case str_contains($currentGroup->code, InitialGroups::GOP):
+                case str_contains($currentGroup->code, InitialGroups::BOARD):
+                    $calendar->is_temporary = false;
+                    $calendar->is_published = true;
+                    break;
+                case str_contains($currentGroup->code, InitialGroups::COORDINATOR):
+                    $calendar->is_temporary = true;
+                    $calendar->is_published = false;
+                    break;
             }
+//            if(Auth::user()->groups()->coordinator()->exists()) {
+//                // add 0.1 to version because is a coordinator
+//                $calendar->version = floatval($calendar->version) + 0.1;
+//                $calendar->is_temporary = true;
+//                $calendar->is_published = false;
+//            } else if(Auth::user()->groups()->Gop()->exists() || Auth::user()->groups()->board()->exists()){
+//                // add 1.0 to version because is the gop
+//                $calendar->version = intval($calendar->version) + 1;
+//                $calendar->is_temporary = false;
+//                $calendar->is_published = true;
+//            }
             $calendar->save();
 
             self::updateCalendarViewers($calendar->id, $calendar->calendar_phase_id, true);

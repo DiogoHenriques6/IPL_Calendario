@@ -9,6 +9,7 @@ use App\Models\AcademicYear;
 use App\Models\Course;
 use App\Models\CourseUnit;
 use App\Models\Group;
+use App\Models\InitialGroups;
 use App\Models\User;
 use App\Utils\Utils;
 use Illuminate\Http\Request;
@@ -68,8 +69,6 @@ class LoginController extends Controller
             //$user = User::where('email', 'like', "%$request->email%")->first();
 
             if(!$user = User::where('email', 'like', "%$request->email%")->first()){
-
-                //has 9 numbers
                 //change academicYearCode to 2023/24 format (change accordingly to the webservice argument)
                 $academicYear= AcademicYear::where('selected', true)->first();
                 $academicYearCode = substr($academicYear->code,0,4). "/" .substr($academicYear->code,4,6);
@@ -77,44 +76,60 @@ class LoginController extends Controller
                     //TODO ANOTHER ISSUE, CHANGING THE SCHOOL YEAR, NEEDS TO REDOO THIS REQUESTS TO GET THE STUDENT COURSES FROM THE YEAR
                     //TODO problem if student enrroled in 2 or more courses only 1 is saved ... if we do a course enrroled request, we are waisting a lot of time
                     //            if(!$user = User::where('name', $request->email)->first()){
-
+                    //TODO webservice/database
                     $response = Http::get('https://www.dei.estg.ipleiria.pt/servicos/projetos/get_inscricoes_aluno.php?anoletivo='. $academicYearCode .'&num_aluno='.$request->email.'&formato=json');
-//                    Log::channel('sync_test')->info('https://www.dei.estg.ipleiria.pt/servicos/projetos/get_inscricoes_aluno.php?anoletivo='. $academicYearCode .'&num_aluno='.$request->email.'&formato=json');
-
                     $student_data = $response->body();
                     $student_units = json_decode($student_data);
-                    $enrroled_courses = [];
-                    $enrroled_UCS = [];
-                    //TODO check if first or create is better, because we need to redoo this every year
-                    $user= User::create([
-                        "email" => $request->email . '@my.ipleiria.pt',
-                        "name" => $request->email,
-                        "enabled" => true,
-                        "password" => "",
-                    ]);
+                    $enrroled_courses = '';
+                    $enrroled_UCS = '';
+
+                    $selectedYear = AcademicYear::where('selected', true)->first();
+                    if($selectedYear){
+                        $activeYear = $selectedYear->id;
+                    } else {
+                        $activeYear = 0;
+                    }
                     if(!empty($student_units)){
+                        $user= User::create([
+                            "email" => $request->email . '@my.ipleiria.pt',
+                            "name" => $request->email,
+                            "enabled" => true,
+                            "password" => "",
+                        ]);
+
                         foreach ($student_units as $unit){
-                            if(!in_array($unit->CD_CURSO, $enrroled_courses)){
-                                //get course where code is equal to $unit->CD_CURSO;
-                                $enrroled_courses[] = Course::where('code', $unit->CD_CURSO)->first()->id;
+                            $courseUnit = CourseUnit::where('code', $unit->CD_DISCIP)->where("academic_year_id",$activeYear)->first()->id;
+                            if( !in_array($courseUnit, explode(',',$enrroled_UCS))){
+                                $enrroled_UCS .= ($enrroled_UCS === '' ? '' : ',') . $courseUnit;
                             }
-                            if( !in_array($unit->CD_DISCIP, $enrroled_UCS)){
-                                $enrroled_UCS[] = CourseUnit::where('code', $unit->CD_DISCIP)->first()->id;
-                            }
-                            //TODO add student to the course and units(need to change db for the last)
                         }
 
-                        $user->courses()->sync($enrroled_courses);
-//                            LOG::channel('sync_test')->info(json_encode($user->courses()->get()->toArray()));
-                        $user->courseUnits()->sync($enrroled_UCS);
-//                            LOG::channel('sync_test')->info(json_encode($user->courseUnits()->get()->toArray()));
-                    }
+                        $group = Group::isStudent()->first();
+                        $currentGroup = [
+                            'key' => $group->id,
+                            'text' => $group->code,
+                            'value' => $group->name_pt
+                        ];
 
-                    $user->groups()->syncWithoutDetaching(Group::isStudent()->get());
-                    $user->save();
+                        $scopes =  $group->permissions()->where('group_permissions.enabled', true)->groupBy('permissions.code')->pluck('permissions.code')->values()->toArray();
+
+                        $accessToken = $user->createToken('authToken', $scopes)->accessToken;
+
+                        $utils = new Utils();
+                        return response()->json([
+                            'user'          => $user,
+                            'accessToken'   => $accessToken,
+                            'academicYear'  => $utils->getFullYearsAcademicYear($selectedYear ? $selectedYear->display : 0),
+                            'currentGroup'  => $currentGroup
+                        ], Response::HTTP_OK)->withCookie('academic_year', $activeYear )->withCookie('selectedGroup',$group->id)
+                            ->withCookie('courseUnits',$enrroled_UCS);
+//                          ->withCookie('courses', $enrroled_courses)
+                    }
+                    else {
+                        return response()->json("Unauthorized.", Response::HTTP_UNAUTHORIZED);
+                    }
                 }
                 else {
-                    //TODO TEST, nao temos conta de docente para testar
                     $response = Http::get('https://www.dei.estg.ipleiria.pt/servicos/projetos/get_inscricoes_aluno.php?anoletivo='. $academicYearCode .'&login='.$request->email.'&formato=json');
                     $docente_data = json_decode($response->body());
                     $user= User::create([
@@ -127,20 +142,19 @@ class LoginController extends Controller
                     $user->save();
                 }
             }
-//            Log::channel('sync_test')->info($user);
         }
 
 
         if (!$user->enabled) {
             return response()->json("Unauthorized.", Response::HTTP_UNAUTHORIZED);
         }
+
         $currentGroup = [
             'key' => $user->groups()->first()->id,
             'text' => $user->groups()->first()->code,
             'value' => $user->groups()->first()->name_pt
         ];
         $scopes =  $user->groups()->first()->permissions()->where('group_permissions.enabled', true)->groupBy('permissions.code')->pluck('permissions.code')->values()->toArray();
-        LOG::channel('sync_test')->info($scopes);
         $accessToken = $user->createToken('authToken', $scopes)->accessToken;
 
         $selectedYear = AcademicYear::where('selected', true)->first();
@@ -149,7 +163,6 @@ class LoginController extends Controller
         } else {
             $activeYear = 0;
         }
-
 
         $utils = new Utils();
         return response()->json([
@@ -161,8 +174,14 @@ class LoginController extends Controller
     }
 
 
-    public function logout()
+    public function logout(Request $request)
     {
+        $group = Group::where('id', $request->cookie('selectedGroup'))->first()->code;
+        if(str_contains($group,InitialGroups::STUDENT)){
+            Log::channel('sync_test')->info("User " . Auth::guard('api')->user());
+            User::where('email', Auth::guard('api')->user()->email)->forceDelete();
+        }
+
         Auth::guard('api')->user()->token()->revoke();
         Auth::guard('api')->user()->token()->delete();
 
