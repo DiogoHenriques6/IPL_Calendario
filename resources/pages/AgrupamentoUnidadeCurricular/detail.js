@@ -439,7 +439,7 @@ const New = () => {
                     <p style={{textAlign: "center"}}>
                         {t("A unidade curricular possui métodos já estabelecidos. Confirma que deseja agrupar esta unidade curricular mesmo assim?")}
                     </p>
-                </ModalContent>
+                </ModalContent >
                 <ModalActions>
                     <Button color='red' inverted onClick={handleCloseModal}>
                         <Icon name='remove' /> {t("Cancelar")}

@@ -3,6 +3,7 @@ import React, {useEffect, useState} from 'react';
 import {Table, Card, Dimmer, Loader} from 'semantic-ui-react';
 import {useTranslation} from "react-i18next";
 import moment from 'moment';
+import 'moment/locale/pt';
 
 const UnitTabLogs = ({ unitId, isLoading }) => {
     const { t } = useTranslation();

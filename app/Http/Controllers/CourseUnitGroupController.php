@@ -29,6 +29,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CourseUnitGroupController extends Controller
 {
@@ -250,14 +251,13 @@ class CourseUnitGroupController extends Controller
     public function methodsForCourseUnitGroup(CourseUnitGroup $courseUnitGroup, Request $request)
     {
         $epochTypesList = EpochType::all();
-        $list = EpochMethodResource::collection($epochTypesList);
+        $newCollection = collect($epochTypesList);
         $yearId = $request->cookie('academic_year');
 
         $courseUnit = $courseUnitGroup->courseUnits->first();
         $courseUnitId = $courseUnit->id;
 
-        $newCollection = collect($list);
-
+        $newCollection = collect($newCollection);
         $finalList = $newCollection->map(function ($item, $key) use ($yearId, $courseUnitId){
             $methods = Method::ofAcademicYear($yearId)
                 ->join('epoch_type_method', 'epoch_type_method.method_id', '=', 'methods.id')
@@ -266,7 +266,6 @@ class CourseUnitGroupController extends Controller
                 ->where('course_unit_method.course_unit_id', $courseUnitId)
                 ->get();
             //byCourseUnit($courseUnit->id)->byEpochType($epochType->id)->ofAcademicYear($yearId)->get();
-
             $updatedItem = [
                 'id' => $item['id'],
                 'name_pt' => $item['name_pt'],

@@ -10,7 +10,8 @@ import SCOPES from '../../utils/scopesConstants';
 import {successConfig, errorConfig, infoConfig} from '../../utils/toastConfig';
 import EmptyTable from "../../components/EmptyTable";
 import YearSelector from "./yearSelector";
-import moment from "moment";
+import moment from 'moment';
+import 'moment/locale/pt';
 
 const SweetAlertComponent = withReactContent(Swal);
 
@@ -41,16 +42,27 @@ const AnoLetivo = () => {
         });
     }
 
-    useEffect(() => {
-        getAcademicYearsList();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
     const remove = (id, code) => {
         setModalInfo({id, code});
         setModalOpen(true);
     };
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const isSyncActive = academicYearsList.some(year => year.s1_sync_active || year.s2_sync_active);
+            console.log(isSyncActive);
+            if (isSyncActive) {
+                window.location.reload()
+            }else{
+                clearInterval(interval) // Se não houver sincronização ativa, limpa o intervalo
+            }
+        }, 30000);
+        return () => clearInterval(interval); // Se o componente for desmontado, limpa o intervalo
+    }, [academicYearsList]);
+
+    useEffect(() => {
+        getAcademicYearsList();
+    }, []);
 
     const handleModalClose = () => setModalOpen(false);
 
@@ -158,7 +170,7 @@ const AnoLetivo = () => {
         });
         axios.get('/academic-year/' + id + "/sync/" + semester).then((res) => {
             if (res.status === 200) {
-                toast(() => <div>{t('ano_letivo.Irá começar brevemente a sincronização do ano letivo')} <b>{year}</b>!</div>, successConfig);
+                toast(() => `Sincronização feita com sucesso do ${semester}º semestre do ano letivo ${year}`, successConfig);
             } else {
                 if (res.status === 409){ // conflict?
                     toast(() => <div>{t(res.data)}</div>, errorConfig);
@@ -288,23 +300,26 @@ const AnoLetivo = () => {
             </Card>
             <Message info>
                 <Message.Header>{t('ano_letivo.Não consigo ativar um ano letivo.. Porquê?')}</Message.Header>
-                <p>{ t('ano_letivo.Para ativar um Ano Letivo é necessário correr 1º a sincronização de um semestre.') }</p>
+                <p>{t('ano_letivo.Para ativar um Ano Letivo é necessário correr 1º a sincronização de um semestre.')}</p>
                 <br/>
                 <Message.Header>{t('ano_letivo.A sincronização vai sempre acontecer quando clicarmos no botão?')}</Message.Header>
-                <p>{ t('ano_letivo.Não. Irá ser iniciada a sincronização quando não houver trabalho para o servidor.') }</p>
+                <p>{t('ano_letivo.Não. Irá ser iniciada a sincronização quando não houver trabalho para o servidor.')}</p>
                 <br/>
 
-                    <Message.Header>{t('ano_letivo.O que vai sincronizar?')}</Message.Header>
-                    <p>
-                        { t('ano_letivo.Irá sincronizar as escolas que já tenham os dados preenchidos. Para ver a lista das escolas que irão ser sincronizadas.') }
-                        <ShowComponentIfAuthorized permission={[SCOPES.EDIT_SCHOOLS]}>
-                            { t('Para mais informações, pode ver através deste')} <a className="margin-left-xs" href="/escola" target={"_blank"}><Icon name={"external"}/>link</a>
-                        </ShowComponentIfAuthorized>
-                    </p>
-                    <br/>
+                <Message.Header>{t('ano_letivo.O que vai sincronizar?')}</Message.Header>
+                <p>
+                    {t('ano_letivo.Irá sincronizar as escolas que já tenham os dados preenchidos. Para ver a lista das escolas que irão ser sincronizadas.')}
+                    <ShowComponentIfAuthorized permission={[SCOPES.EDIT_SCHOOLS]}>
+                        {t('Para mais informações, pode ver através deste')} <a className="margin-left-xs"
+                                                                                href="/escola" target={"_blank"}><Icon
+                        name={"external"}/>link</a>
+                    </ShowComponentIfAuthorized>
+                </p>
+                <br/>
 
-                <Message.Header>{ t('ano_letivo.Outras informações') }</Message.Header>
-                <p>{ t('ano_letivo.Apenas 1 sincronização pode acontecer de cada vez, para prevenir duplicações ou bloqueio do servidor.') }</p>
+                <Message.Header>{t('ano_letivo.Outras informações')}</Message.Header>
+                <p>{t('ano_letivo.Apenas 1 sincronização pode acontecer de cada vez, para prevenir duplicações ou bloqueio do servidor.')}</p>
+                <p>{t('Quando a sincronização acabar a página irá ser atualizada automáticamente.')}</p>
             </Message>
             <Modal dimmer="blurring" open={modalOpen} onClose={handleModalClose}>
                 <Modal.Header>{t('ano_letivo.Remover Ano letivo')}</Modal.Header>

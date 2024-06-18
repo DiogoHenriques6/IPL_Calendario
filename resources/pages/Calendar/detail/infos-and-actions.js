@@ -1,5 +1,6 @@
 import axios from 'axios';
 import moment from 'moment';
+import 'moment/locale/pt';
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router';
 import { useParams} from "react-router-dom";

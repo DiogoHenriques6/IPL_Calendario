@@ -6,6 +6,7 @@ import axios from "axios";
 import {useTranslation} from "react-i18next";
 import EmptyTable from "../../../components/EmptyTable";
 import moment from "moment";
+import 'moment/locale/pt';
 import {toast} from "react-toastify";
 import {successConfig} from "../../../utils/toastConfig";
 

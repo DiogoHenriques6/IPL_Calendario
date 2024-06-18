@@ -116,52 +116,60 @@ class ExamController extends Controller
         $courseUnitGroup = $courseUnitGroup ? $courseUnitGroup->id : null;
 
         if ($courseUnitGroup) {
-            $cal = Calendar::find($calendarId);
+            $examsWithMethod = Exam::withTrashed()->where('method_id', $request->method_id)->get();
+            if ($examsWithMethod->isEmpty()) {
+                $courseUnitsInGroup = CourseUnit::where('course_unit_group_id', $courseUnitGroup)->get();
 
-            $courses = CourseUnitGroup::find($courseUnitGroup)->courseUnits->pluck('course_id');
-            $specialCourses = false;
-            if($courses->unique()->count() == 1){
-                $courseCheck = Course::find($courses->unique()->first());
-                if($courseCheck->degree == 0){
-                    $specialCourses = true;
-                    $courses[] = $request->course_id;
+                foreach ($courseUnitsInGroup as $courseUnit) {
+                    $calendarIDByCourseId = Calendar::where('course_id', $courseUnit->course_id)->first()->id;
+                    $epochTypeByMethod = Method::find($request->method_id)->epochType;
+                    $epochByType = Epoch::where('epoch_type_id', $epochTypeByMethod[0]['id'])->where('calendar_id', $calendarIDByCourseId)->first();
+
+                    $newExam = new Exam($request->all());
+                    $newExam->course_unit_id = $courseUnit->id;
+                    $newExam->epoch_id = $epochByType->id;
+                    $newExam->save();
+
+                    $newLog = new CalendarLog();
+                    $newLog->calendar_id = $epochByType->calendar->id;
+                    $newLog->course_unit_id = $courseUnit->id;
+                    $newLog->exam_id = $newExam->id;
+                    $newLog->user_id = auth()->user()->id;
+                    $newLog->is_create = "1";
+                    $newLog->new_date = $request->date_start;
+                    $newLog->save();
+
                 }
-            }
+            }else{
+                foreach ($examsWithMethod as $relatedExam) {
+                    //verifica se existe algum exame com o mesmo metodo o mesmo epoch e a mesma UC apagado
+                    $exam = Exam::onlyTrashed()->where('method_id', $request->method_id)->where('epoch_id', $epochId)->where('course_unit_id', $request->course_unit_id)->first();
+                    if ($exam) {
+                        $exam->restore();
+                        $exam->room = $request->room;
+                        $exam->date_start = $request->date_start;
+                        $exam->date_end = $request->date_end;
+                        $exam->in_class = $request->in_class;
+                        $exam->hour = $request->hour;
+                        $exam->duration_minutes = $request->duration_minutes;
+                        $exam->observations_pt = $request->observations_pt;
+                        $exam->observations_en = $request->observations_en;
+                        $exam->description_pt = $request->description_pt;
+                        $exam->description_en = $request->description_en;
+                        $exam->save();
+                        $newExam = $exam;
 
-            $calendars = Calendar::whereIn('course_id', $courses)
-                ->where('semester_id', $cal->semester_id)
-                ->ofAcademicYear($cal->academic_year_id)
-                ->where('is_temporary', false)
-                ->where('is_published', false)
-                ->get();
-
-            foreach ($calendars as $calendar) {
-                foreach (Method::find($request->method_id)->epochType as $epochType) {
-                    $epoch = Epoch::where('epoch_type_id', $epochType->id)->where('calendar_id', $calendar->id)->first();
-                    $hasEpoch = $epoch->calendar()->where('calendars.is_published', false)->exists();
-
-                    // This would prevent multiple exams
-                    // $hasExams = Exam::where('method_id', $request->method_id)->where('epoch_id', $epoch->id)->exists();
-
-                    // This will let the users create multiple times an exam for the method
-                    if ($hasEpoch){// && !$hasExams) {
-                        if($specialCourses){
-                            $courseUnit = CourseUnit::find($request->course_unit_id);
-                        } else {
-                            $courseUnit = CourseUnit::where('course_id', $calendar->course_id)->where('course_unit_group_id', $courseUnitGroup)->first();
-                        }
-
-                        if($courseUnit) {
-                            $newGroupedExam = new Exam($request->all());
-                            // dynamic fields
-                            $newGroupedExam->epoch_id = $epoch->id;
-                            $newGroupedExam->course_unit_id = $courseUnit->id;
-
-                            $newGroupedExam->save();
-                            if($courseUnit->id === $request->course_unit_id){
-                                $newExam = $newGroupedExam;
-                            }
-                        }
+                        $newLog = new CalendarLog();
+                        $newLog->calendar_id = $relatedExam->epoch->calendar->id;
+                        $newLog->course_unit_id = $relatedExam->course_unit_id;
+                        $newLog->exam_id = $relatedExam->id;
+                        $newLog->user_id = auth()->user()->id;
+                        $newLog->is_create = "1";
+                        $newLog->new_date = $request->date_start;
+                        $newLog->save();
+                    } else {
+                        $newExam = new Exam($request->all());
+                        $newExam->save();
                     }
                 }
             }
@@ -187,102 +195,64 @@ class ExamController extends Controller
                 $newExam->save();
             }
             $newLog = new CalendarLog();
-            $newLog->calendar_id = $calendarId;
-            $newLog->course_unit_id = $request->course_unit_id;
+            $newLog->calendar_id = $newExam->epoch->calendar->id;
+            $newLog->course_unit_id = $newExam->course_unit_id;
             $newLog->exam_id = $newExam->id;
             $newLog->user_id = auth()->user()->id;
             $newLog->is_create = "1";
             $newLog->new_date = $request->date_start;
             $newLog->save();
         }
-        if($newExam){
-            return response()->json(new ExamResource($newExam), Response::HTTP_CREATED);
-        }
-        return response()->json('no exams to create', Response::HTTP_CONFLICT);
+        return response()->json(new ExamResource($newExam), Response::HTTP_CREATED);
     }
 
     public function update(NewExamRequest $request, Exam $exam)
     {
-        /*
-            $allHaveSameGroup = null;
-            $aux = null;
-            $courseUnits = $exam->method->courseUnits;
-            foreach ($courseUnits as $courseUnit) {
-                if (is_null($aux)) {
-                    $aux = $courseUnit->group;
-                }
-                $allHaveSameGroup = !is_null($courseUnit->group) ? $courseUnit->group->id == $aux->id : false;
-
-                if (!$allHaveSameGroup) {
-                    break;
-                }
-            }
-            $courseUnits = $exam->method->courseUnits;
-            foreach ($courseUnits as $courseUnit) {
-                $epochId = Epoch::where('epoch_type_id', $exam->epoch->epoch_type_id)
-                   ->where('calendar_id', Calendar::where('course_id', $courseUnit->course_id)->where('is_published', false)->latest('id')->first()->id)
-                   ->first()->id;
-               $examToUpdate = $courseUnit->exams->where('epoch_id', $epochId)->last();
-
-               if (($allHaveSameGroup && $courseUnit->group !== null) || $examToUpdate->id === $exam->id) {
-                   $examToUpdate->room = $request->room;
-                   $examToUpdate->date_start = $request->date_start;
-                   $examToUpdate->date_end = $request->date_end;
-                   $examToUpdate->hour = $request->hour;
-                   $examToUpdate->duration_minutes = $request->duration_minutes;
-                   $examToUpdate->observations_pt = $request->observations_pt;
-                   $examToUpdate->observations_en = $request->observations_en;
-
-                   $examToUpdate->save();
-               }
-            }
-        */
-
         $validation = $this->checkIfCanEditExam($request->calendar_id, $request->epoch_id, $request->course_id, $request->method_id, $request->course_unit_id, $exam->id);
         if($validation){
             return $validation;
         }
 
-        // check if CUs of exam belongs to any group
-        /* TODO check if we want to update all exams related to a Grouped UC/exam
-        $courseUnitGroup =  $exam->courseUnit->group;
+        // Check if CUs of exam belongs to any group
+        $courseUnitGroup = $exam->courseUnit->group;
         $courseUnitGroup = $courseUnitGroup ? $courseUnitGroup->id : null;
         if ($courseUnitGroup) {
-            $cal = Calendar::find($request->calendar_id);
-            $courses = CourseUnitGroup::find($courseUnitGroup)->courseUnits->pluck('course_id');
-            $calendars = Calendar::whereIn('course_id', $courses)
-                ->where('semester_id', $cal->semester_id)
-                ->where('is_temporary', false)
-                ->where('is_published', false)
-                ->get();
+            $examsWithMethod = $exam->courseUnit->exams->where('method_id', $exam->method_id);
 
-            foreach ($calendars as $calendar) {
-                foreach (Method::find($request->method_id)->epochType as $epochType) {
-                    $epoch = Epoch::where('epoch_type_id', $epochType->id)->where('calendar_id', $calendar->id)->first();
-                    $hasEpoch = $epoch->calendar()->where('calendars.is_published', false)->exists();
+            foreach ($examsWithMethod as $relatedExam) {
+                // Verifica se a data do exame foi alterada, se sim, cria um log a dizer que a data foi alterada
+                $examDataBeforeUpdate = Exam::find($relatedExam->id);
 
-                    // This would prevent multiple exams
-                    $hasExams = Exam::where('method_id', $request->method_id)
-                        ->where('epoch_id', $epoch->id)->exists();
-                    if ($hasEpoch && !$hasExams) {
-                        $courseUnit = CourseUnit::where('course_id', $calendar->course_id)->where('course_unit_group_id', $courseUnitGroup)->first();
-                        if($courseUnit) {
-                            $newGroupedExam = new Exam($request->all());
-                            // dynamic fields
-                            $newGroupedExam->epoch_id = $epoch->id;
-                            $newGroupedExam->course_unit_id = $courseUnit->id;
-
-                            $newGroupedExam->save();
-                            if($courseUnit->id === $request->course_unit_id){
-                                $newExam = $newGroupedExam;
-                            }
-                        }
-                    }
+                $date1 = new DateTime($examDataBeforeUpdate->date_start);
+                $date2 = new DateTime($request->date_start);
+                if ($date1->format('Y-m-d') != $date2->format('Y-m-d')){
+                    $newLog = new CalendarLog();
+                    $newLog->calendar_id = $relatedExam->epoch->calendar->id;
+                    $newLog->course_unit_id = $request->course_unit_id;
+                    $newLog->exam_id = $relatedExam->id;
+                    $newLog->user_id = auth()->user()->id;
+                    $newLog->is_update = "1";
+                    // Vai buscar a data do exame antes de ser alterada
+                    $newLog->old_date = $examDataBeforeUpdate->date_start;
+                    $newLog->new_date = $request->date_start;
+                    $newLog->save();
                 }
+
+                // Atualiza as informações do exame relacionado
+                $relatedExam->room            = $request->room;
+                $relatedExam->group_id        = $request->group_id;
+                $relatedExam->date_start      = $request->date_start;
+                $relatedExam->date_end        = $request->date_end;
+                $relatedExam->hour            = $request->hour;
+                $relatedExam->in_class        = $request->in_class;
+                $relatedExam->duration_minutes = $request->duration_minutes;
+                $relatedExam->observations_pt = $request->observations_pt;
+                $relatedExam->observations_en = $request->observations_en;
+                $relatedExam->save();
             }
+
         } else {
-        */
-            //Verifica se a data do exame foi alterada, se sim, cria um log a dizer que a data foi alterada
+            // Verifica se a data do exame foi alterada, se sim, cria um log a dizer que a data foi alterada
             $examDataBeforeUpdate = Exam::find($exam->id);
 
             $date1 = new DateTime($examDataBeforeUpdate->date_start);
@@ -294,29 +264,26 @@ class ExamController extends Controller
                 $newLog->exam_id = $exam->id;
                 $newLog->user_id = auth()->user()->id;
                 $newLog->is_update = "1";
-                //Vai buscar a data do exame antes de ser alterada
+                // Vai buscar a data do exame antes de ser alterada
                 $newLog->old_date = $examDataBeforeUpdate->date_start;
                 $newLog->new_date = $request->date_start;
                 $newLog->save();
             }
 
-
-            //$exam->calendar_id     = $request->calendar_id;
-            //$exam->course_id       = $request->course_id;
+            // Atualiza as informações do exame
             $exam->epoch_id        = $request->epoch_id;
             $exam->method_id       = $request->method_id;
-
-            $exam->room         = $request->room;
-            $exam->group_id     = $request->group_id;
-            $exam->date_start   = $request->date_start;
-            $exam->date_end     = $request->date_end;
-            $exam->hour         = $request->hour;
-            $exam->in_class     = $request->in_class;
+            $exam->room            = $request->room;
+            $exam->group_id        = $request->group_id;
+            $exam->date_start      = $request->date_start;
+            $exam->date_end        = $request->date_end;
+            $exam->hour            = $request->hour;
+            $exam->in_class        = $request->in_class;
             $exam->duration_minutes = $request->duration_minutes;
             $exam->observations_pt = $request->observations_pt;
             $exam->observations_en = $request->observations_en;
             $exam->save();
-        //}
+        }
         return response()->json(new ExamResource($exam), Response::HTTP_OK);
     }
 
@@ -380,36 +347,37 @@ class ExamController extends Controller
 
     public function destroy(Exam $exam)
     {
-        if($exam->epoch->calendar->is_published){
+        // Verifica se o calendário está publicado
+        if ($exam->epoch->calendar->is_published) {
             return response()->json("Not allowed to delete exams on Published Calendars!", Response::HTTP_FORBIDDEN);
         }
+
         $belongsToGroup = $exam->courseUnit->group;
+        $belongsToGroup = $belongsToGroup ? $belongsToGroup->id : null;
 
-        if($belongsToGroup) {
-            // TODO validate how the grouped exams will work
-            /*foreach ($exam->method->courseUnits as $courseUnit) {
-                $epochId = Epoch::where('epoch_type_id', $exam->epoch->epoch_type_id)
-                    ->where('calendar_id', Calendar::where('course_id', $courseUnit->course_id)->where('is_published', false)->latest('id')->first()->id)
-                    ->first()->id;
-                $examToDelete = $courseUnit->exams->where('epoch_id', $epochId)->last();
+        if ($belongsToGroup) {
+            $examsWithMethod = $exam->courseUnit->exams->where('method_id', $exam->method_id);
 
-                if ($courseUnit->group !== null || $examToDelete->id === $exam->id) {
-                    $examToDelete->delete();
-                    $examToDelete->epoch->calendar()->touch();
-                }
-            }*/
+            foreach ($examsWithMethod as $relatedExam) {
+                $newLog = new CalendarLog();
+                $newLog->calendar_id = $relatedExam->epoch->calendar->id;
+                $newLog->course_unit_id = $relatedExam->course_unit_id;
+                $newLog->exam_id = $relatedExam->id;
+                $newLog->user_id = auth()->user()->id;
+                $newLog->new_date = $exam->date_start;
+                $newLog->save();
+                $relatedExam->delete();
+            }
+        } else {
+            $newLog = new CalendarLog();
+            $newLog->calendar_id = $exam->epoch->calendar->id;
+            $newLog->course_unit_id = $exam->course_unit_id;
+            $newLog->exam_id = $exam->id;
+            $newLog->user_id = auth()->user()->id;
+            $newLog->new_date = $exam->date_start;
+            $newLog->save();
+            $exam->delete();
         }
-        $newLog = new CalendarLog();
-        $newLog->calendar_id = $exam->epoch->calendar->id;
-        $newLog->course_unit_id = $exam->course_unit_id;
-        $newLog->exam_id = $exam->id;
-        $newLog->user_id = auth()->user()->id;
-        $lastLog = CalendarLog::where('exam_id', $exam->id)->orderBy('id', 'desc')->first();
-        $newLog->new_date = $lastLog->new_date;
-        $newLog->save();
-
-        $exam->delete();
-
         return response()->json("Removed!");
     }
 }
