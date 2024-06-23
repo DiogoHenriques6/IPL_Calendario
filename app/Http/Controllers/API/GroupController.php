@@ -12,6 +12,7 @@ use App\Models\Group;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GroupRequest;
 use App\Http\Resources\GroupsResource;
+use App\Models\InitialGroups;
 use App\Models\Permission;
 use App\Models\PermissionSection;
 use Illuminate\Http\Response;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use function Laravel\Prompts\select;
 
 class GroupController extends Controller
 {
@@ -92,6 +94,10 @@ class GroupController extends Controller
 
     public function getUserGroup()
     {
+        $selectedGroup = Group::where('id', request()->cookie('selectedGroup'))->first();
+        if($selectedGroup->code == InitialGroups::STUDENT){
+            return new MyGroupsResource($selectedGroup);
+        }
         return MyGroupsResource::collection(Auth::user()->groups);
     }
 

@@ -21,7 +21,7 @@ class CalendarDetailResource extends JsonResource
             'published'     => $this->is_published,
             'temporary'     => $this->is_temporary,
 
-            'epochs'        => EpochCalendarResource::collection($this->whenLoaded('epochs', $this->epochs()->with(['exams', 'exams.comments'])->get())),
+            'epochs'        => EpochCalendarResource::collection($this->epochs),
             'interruptions' => InterruptionResource::collection($this->whenLoaded('interruptions')),
             'general_info'  => new CalendarGeneralInfoResource([
                 "calendar"          => $this,

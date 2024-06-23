@@ -5,7 +5,7 @@ import 'moment/locale/pt';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Link, useParams, useNavigate} from "react-router-dom";
 import {useTranslation} from "react-i18next";
-import {Button, Card, Container, Divider, Grid, Header, Icon, Placeholder, Table} from 'semantic-ui-react';
+import {Button, Card, CardContent, Container, Divider, Grid, Header, Icon, Placeholder, Table} from 'semantic-ui-react';
 import {AnimatePresence} from 'framer-motion';
 import {toast} from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
@@ -65,6 +65,8 @@ const Calendar = () => {
     const [showingEpochs, setShowingEpochs] = useState([]);
 
     const componentRef = useRef();
+    const [myUCsOnly, setMyUCsOnly] = useState(true);
+
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
         bodyClass: 'printing',
@@ -251,13 +253,14 @@ const Calendar = () => {
         }
     }, [calendarPhase]);
 
-
+    //TODO show only users course Units
     const loadCalendar = (calId) => {
         setIsLoading(true);
         setIsCalendarInfoLoading(true);
         setExamList([]);
+        let link = `/calendar/${calId}` + (myUCsOnly ? '?myUCsOnly' : '');
 
-        axios.get(`/calendar/${calId}`)
+        axios.get(link)
             .then((response) => {
                 if (response?.status >= 200 && response?.status < 300) {
                     const {
@@ -416,7 +419,7 @@ const Calendar = () => {
     useEffect(() => {
         loadCalendar(calendarId);
         getWarnings();
-    }, [calendarId]);
+    }, [calendarId, myUCsOnly]);
 
     const getWarnings = () => {
         axios.get(`/calendar/${calendarId}/warnings`).then((response) => {
@@ -645,13 +648,24 @@ const Calendar = () => {
                 <div className="margin-bottom-base breadcrumbs-back-link">
                     <Link to="/"> <Icon name="angle left" /> {t('Voltar à lista')}</Link>
                 </div>
+                <Button.Group floated={"right"}>
+                    <Button floated="right" toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)}>
+                        { t('Minhas Avaliações') }
+                    </Button>
+                    <Button floated="right" toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)}>
+                        { t('Todos') }
+                    </Button>
+                </Button.Group>
                 <InfosAndActions epochs={epochsList} calendarInfo={generalInfo} course={courseInfo} phase={phaseInfo} updatePhase={setCalendarPhase} warnings={calendarWarnings} isLoading={isLoading}
                                 isPublished={isPublished} isTemporary={isTemporary} showingEpochs={showingEpochs} epochsViewHandler={setShowingEpochs}
                                 hasCurrentWeek={ (moment(calendarStartDate, "DD-MM-YYYY").isSameOrBefore(moment()) && moment(calendarEndDate, "DD-MM-YYYY").isSameOrAfter(moment()))  } />
+
                 <AnimatePresence>
                     {isLoading && (<PageLoader animate={pageLoaderAnimate} exit={pageLoaderExit}/>)}
                 </AnimatePresence>
+
                 <div className='margin-top-l'>
+
                     { isLoading ? (
                         <div className={"calendar-loader"}>
                             <Card fluid>

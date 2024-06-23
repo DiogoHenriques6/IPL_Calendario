@@ -39,11 +39,22 @@ const HeaderMenu = () => {
                 if (response.status >= 200 && response.status < 300) {
                     setUserGroups(response?.data?.data);
                     if(!localStorage.getItem('selectedGroup')){
-                        setSelectedGroup(response?.data?.data[0])
-                        localStorage.setItem('selectedGroup',
-                            [response?.data?.data[0].key,
-                            response?.data?.data[0].text,
-                            response?.data?.data[0].value]);
+                        if(response?.data?.data?.value){
+                            // console.log(response.data.data)
+                            setSelectedGroup(response?.data )
+                            localStorage.setItem('selectedGroup',
+                                [response?.data?.data?.key,
+                                    response?.data?.data?.text,
+                                    response?.data?.data?.value]);
+                        }
+                        else{
+                            setSelectedGroup(response?.data?.data[0])
+                            localStorage.setItem('selectedGroup',
+                                [response?.data?.data[0].key,
+                                    response?.data?.data[0].text,
+                                    response?.data?.data[0].value]);
+                        }
+
                     }
                     else{
                         var selectedGroupString = localStorage.getItem('selectedGroup').split(',');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Events\CalendarDeleted;
+use App\Filters\CalendarDetailsFilters;
 use App\Filters\CalendarFilters;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\NewCalendarRequest;
@@ -12,8 +13,12 @@ use App\Http\Resources\Generic\CalendarListResource;
 use App\Http\Resources\Generic\Calendar_SemesterResource;
 use App\Http\Resources\Generic\SemestersSearchResource;
 use App\Models\Calendar;
+use App\Models\Exam;
+use App\Models\Group;
+use App\Models\InitialGroups;
 use App\Models\Semester;
 use App\Services\CalendarService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -41,9 +46,27 @@ class CalendarController extends Controller
         return response()->json($response, Response::HTTP_CREATED);
     }
 
-    public function show(Calendar $calendar)
+    public function show(Calendar $calendar, CalendarDetailsFilters $filters)
     {
-        return new CalendarDetailResource($calendar->load(['epochs', 'interruptions']));
+        $filters->setCalendar($calendar);
+        $calendar->load(['epochs', 'interruptions']);
+
+        $exams = Exam::filter($filters)->get();
+        Log::channel('sync_test')->info("Exams: ", ['exams' => $exams]);
+
+
+        $epochs = $calendar->epochs->map(function ($epoch) use ($exams) {
+            $epoch->setRelation('exams', $exams->where('epoch_id', $epoch->id));
+
+            return $epoch;
+        });
+        $calendar->setRelation('epochs', $epochs);
+
+
+        Log::channel('sync_test')->info("Epochs: ". $calendar->epochs);
+        return new CalendarDetailResource($calendar);
+
+//        return new CalendarDetailResource($calendar->load(['epochs', 'interruptions'])->filter($filters));
     }
 
     public function update(UpdateCalendarRequest $request, Calendar $calendar)

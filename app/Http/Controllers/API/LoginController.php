@@ -178,7 +178,6 @@ class LoginController extends Controller
     {
         $group = Group::where('id', $request->cookie('selectedGroup'))->first()->code;
         if(str_contains($group,InitialGroups::STUDENT)){
-            Log::channel('sync_test')->info("User " . Auth::guard('api')->user());
             User::where('email', Auth::guard('api')->user()->email)->forceDelete();
         }
 
