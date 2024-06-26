@@ -477,7 +477,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                             )}
                                                         </Table.Cell>
                                                         <Table.Cell width={3} colSpan={method.is_blocked ? 3 : 0}>
-                                                            { isManagingMethods || !isManagingMethods && i18n.language == 'pt' &&(
+fiex                                                            {!isManagingMethods || isManagingMethods && i18n.language == 'pt' &&(
                                                                 <Form.Input placeholder={t("Descrição PT")} fluid
                                                                             value={method.description_pt} readOnly
                                                                             onChange={
@@ -488,10 +488,9 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                                                 })
                                                                             }/>
                                                             )}
-                                                            {isManagingMethods || !isManagingMethods && i18n.language == 'en' &&(
+                                                            {!isManagingMethods || isManagingMethods && i18n.language == 'en' &&(
                                                                 <Form.Input placeholder={t("Descrição EN")} fluid
                                                                             value={method.description_en} readOnly
-                                                                            className="margin-top-base"
                                                                             onChange={
                                                                                 (ev, {value}) => setEpochs((current) => {
                                                                                     const copy = [...current];

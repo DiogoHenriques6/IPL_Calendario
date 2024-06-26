@@ -85,6 +85,7 @@ const New = () => {
     }, []);
 
     useEffect(() => {
+        console.log(semester);
         if(currentPage === 1){
             fetchCourseUnits();
         } else {
@@ -102,6 +103,7 @@ const New = () => {
         setSelectedCourseUnits([...selectedCourseUnits.filter((courseUnit) => courseUnit.id !== id)]);
         if(selectedCourseUnits.length === 1){
             setSchool(null);
+            setSemester(null);
             setIsDisable(false);
         }
     };
@@ -173,6 +175,7 @@ const New = () => {
         else {
             if(selectedCourseUnits.length === 0){
                 setSchool(courseUnit.school_id);
+                setSemester(courseUnit.semester);
                 setIsDisable(true);
             }
             setSelectedCourseUnits([...selectedCourseUnits, {...courseUnit}]);
@@ -242,6 +245,7 @@ const New = () => {
         setSelectedCourseUnits([...selectedCourseUnits, {...currentCourseUnit}]);
         if(selectedCourseUnits.length === 0){
             setSchool(currentCourseUnit.school_id);
+            setSemester(currentCourseUnit.semester);
             setIsDisable(true);
         }
     }
@@ -345,7 +349,7 @@ const New = () => {
                                                 onChange={_.debounce(searchCourseUnit, 900)}/>
                                     <FilterOptionPerCourse heightSize={10} widthSize={5} showAllDegrees={true} school={school}
                                                            eventHandler={(value) => setCourse(value)}/>
-                                    <FilterOptionBySemester  widthSize={5} eventHandler={(value) => setSemester(value)}/>
+                                    <FilterOptionBySemester disabled={isDisable} widthSize={5} value={semester} eventHandler={(value) => setSemester(value)}/>
 
                                         {isManager && (
                                             <FilterOptionPerSchool disabled={isDisable} widthSize={3} selectedSchool={school} eventHandler={(value) => setSchool(value)}/>)
@@ -357,7 +361,7 @@ const New = () => {
                                     <>
                                         {paginationInfo.total > 0 && (
                                             <Segment clearing basic>
-                                                {school && (
+                                                {school && semester && (
                                                 <Button floated='right' onClick={() => setAllResults(true)}
                                                         color="blue">{t("Adicionar todas as unidades curriculares") + " (" + paginationInfo.total + ")"}</Button>
                                                     )}
