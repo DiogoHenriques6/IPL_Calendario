@@ -5,6 +5,30 @@ import {Link} from "react-router-dom";
 const About = () => {
     return (
         <Container>
+            <Segment raised placeholder textAlign="center" color='blue'>
+                <Header as="h2" content="Créditos V4 - 2023/2024:"/>
+                <p>
+                    <a href='https://github.com/DiogoHenriques6' target="_blank">
+                        <Icon name="github"/>
+                    </a>
+                    <a href='https://www.linkedin.com/in/diogo-h/' target="_blank">
+                        <Icon name="linkedin"/>
+                    </a>
+                    {' '}
+                    Diogo Henriques - 2212546
+                </p>
+                <p>
+                    <a href='https://github.com/andrecosta206' target="_blank">
+                        <Icon name="github"/>
+                    </a>
+                    <a href='www.linkedin.com/in/andrecosta206' target="_blank">
+                        <Icon name="linkedin"/>
+                    </a>
+
+                    {' '}
+                    Andre Costa - 2211061
+                </p>
+            </Segment>
             <Segment raised placeholder textAlign="center" color='green'>
                 <Header as="h2" content="Créditos V3 - 2021/2022:"/>
                 <p>
