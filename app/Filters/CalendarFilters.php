@@ -37,8 +37,9 @@ class CalendarFilters extends QueryFilters
                 LOG::channel('sync_test')->info($schoolId);
                 break;
             case str_contains($currentGroup->code,InitialGroups::BOARD):
-//                Log::channel('sync_test')->info($currentGroup->code);
+                Log::channel('sync_test')->info($currentGroup->code);
                 $schoolId = $currentGroup->boardSchool()->pluck('id');
+                Log::channel('sync_test')->info($schoolId);
                 break;
             case str_contains($currentGroup->code,InitialGroups::PEDAGOGIC):
 //                Log::channel('sync_test')->info($currentGroup->code);
@@ -76,7 +77,12 @@ class CalendarFilters extends QueryFilters
 
         if($schoolId != null){
             if(count($schoolId) > 0){
-                $this->builder->whereIn('course_id', Course::where('school_id', $schoolId)->pluck('id'));
+                $this->builder->whereIn('course_id', Course::whereIn('school_id', $schoolId)->pluck('id'))
+                    ->where(function ($query) use ($currentGroup, $search) {
+                    $query->whereHas('viewers', function (Builder $queryIn) use($currentGroup) {
+                        $queryIn->where('group_id', $currentGroup->id);
+                    });
+                });
                 return $this;
             }
         }

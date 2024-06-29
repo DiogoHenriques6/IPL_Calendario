@@ -119,6 +119,26 @@ body {
     justify-content: flex-end;
 }
 
+.button-group-container {
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    align-items: flex-end;  /* Align to the right */
+    width: auto; /* Ensure it takes full width */
+}
+
+.approval-buttons,
+.copy-button{
+    display: flex;
+    justify-content: flex-end;
+    width: auto;
+}
+
+.ui.buttons.evaluation-buttons {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: 5px; /* Apply margin only to evaluation buttons */
+}
 .ui.dropdown .menu > .disabled.item > .description {
     color: rgba(0,0,0,.65);
 }

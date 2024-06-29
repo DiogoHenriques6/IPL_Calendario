@@ -325,42 +325,58 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                 <div className='main-content-actions'>
                     { !isLoading && (
                         (!isPublished && !isTemporary) ? (
-                            <>
-                                { checkPermissionByPhase(SCOPES.CHANGE_CALENDAR_PHASE) && (
+                                checkPermissionByPhase(SCOPES.CHANGE_CALENDAR_PHASE) && (
                                     <>
-                                        { localStorage.getItem('groups')?.indexOf('board') >= 0 || localStorage.getItem('groups')?.indexOf('pedagogic') >= 0 ? (
-                                            <>
-                                                <Button color="red" onClick={rejectCalendarHandler}>{ t('Necessário reformulação') }</Button>
-                                                <Button color="green" onClick={acceptCalendarHandler}>{ t('Aprovar') }</Button>
-                                            </>
-                                        ) : (
-                                            <Button color="teal" onClick={openSubmitModalHandler}>{ t('Submeter') }</Button>
-                                        ) }
-                                        <ButtonGroup className={"margin-right-s"}>
-                                            <Button  toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)} >
-                                                { t('Minhas Avaliações') }
-                                            </Button>
-                                            <Button  toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)} >
-                                                { t('Todos') }
-                                            </Button>
-                                        </ButtonGroup>
+                                        {localStorage.getItem('groups')?.indexOf('board') >= 0 || localStorage.getItem('groups')?.indexOf('pedagogic') >= 0 ? (
+                                                <div className="button-group-container">
+                                                    <ButtonGroup className={"evaluation-buttons"}>
+                                                        <Button color="red"
+                                                                onClick={rejectCalendarHandler}>{t('Necessário reformulação')}</Button>
+                                                        <Button color="green"
+                                                                onClick={acceptCalendarHandler}>{t('Aprovar')}</Button>
+                                                    </ButtonGroup>
+                                                    <ButtonGroup className={"evaluation-buttons"}>
+                                                        <Button toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)}>
+                                                            {t('Minhas Avaliações')}
+                                                        </Button>
+                                                        <Button toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)}>
+                                                            {t('Todos')}
+                                                        </Button>
+                                                    </ButtonGroup>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                <Button color="teal"
+                                                        onClick={openSubmitModalHandler}>{t('Submeter')}</Button>
+                                                <ButtonGroup>
+                                                    <Button toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)}>
+                                                        {t('Minhas Avaliações')}
+                                                    </Button>
+                                                    <Button toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)}>
+                                                        {t('Todos')}
+                                                    </Button>
+                                                </ButtonGroup>
+                                                </>
+                                            )
+                                        }
                                     </>
-                                )}
-                            </>
+                                )
                         ) : (
-                            <>
-                            <ShowComponentIfAuthorized permission={[SCOPES.CREATE_COPY]}>
-                                <Button color="orange" loading={creatingCopy} onClick={createCopy} labelPosition={"right"} icon>{ t('Criar um cópia desta versão') } <Icon name={"copy outline"} /></Button>
-                            </ShowComponentIfAuthorized>
-                            <ButtonGroup className={"margin-right-s"}>
-                                <Button  toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)} >
-                                    { t('Minhas Avaliações') }
-                                </Button>
-                                <Button  toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)} >
-                                    { t('Todos') }
-                                </Button>
-                            </ButtonGroup>
-                            </>
+                            <div className="button-group-container">
+                                <ShowComponentIfAuthorized permission={[SCOPES.CREATE_COPY]}>
+                                    <Button color="orange" loading={creatingCopy} onClick={createCopy} className={"copy-button"}
+                                            labelPosition={"right"} icon>{t('Criar um cópia desta versão')} <Icon
+                                        name={"copy outline"}/></Button>
+                                </ShowComponentIfAuthorized>
+                                <ButtonGroup className={"evaluation-buttons"}>
+                                    <Button toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)}>
+                                        {t('Minhas Avaliações')}
+                                    </Button>
+                                    <Button toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)}>
+                                        {t('Todos')}
+                                    </Button>
+                                </ButtonGroup>
+                            </div>
                         )
                     )}
                 </div>
