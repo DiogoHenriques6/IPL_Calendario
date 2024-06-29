@@ -29,6 +29,7 @@ const SCOPES = {
 
     EDIT_USERS: 'edit_users',
     LOCK_USERS: 'lock_users',
+    CREATE_STUDENTS: 'create_students',
 
     CREATE_EVALUATION_TYPES: 'create_evaluation_types',
     EDIT_EVALUATION_TYPES: 'edit_evaluation_types',
@@ -143,6 +144,7 @@ export const EVALUATION_TYPE_SCOPES = [
 export const USER_SCOPES = [
     SCOPES.EDIT_USERS,
     SCOPES.LOCK_USERS,
+    SCOPES.CREATE_STUDENTS
 ];
 
 export const CONFIG_SCOPES = [

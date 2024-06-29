@@ -5,7 +5,7 @@ import {useTranslation} from "react-i18next";
 import _ from "lodash";
 import {useSearchParams} from "react-router-dom";
 
-const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup}) => {
+const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, school, hasMethods, currentCourseUnit}) => {
     const [searchParams] = useSearchParams();
     const searchCourseUnit = searchParams.get('curso-unit');
 
@@ -20,17 +20,40 @@ const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup}) => {
         }
     }, [searchCourseUnit]);
 
-
-
     const loadCourses = (search = '', includeCourseUnit) => {
         setLoading(true);
         let link = '/course-units/search';
-        link += (search ? '?search=' + search : '');
-        link += (includeCourseUnit ? (search ? '&' : '?') + 'include=' + includeCourseUnit : '');
-        link += (hasGroup ? (search || includeCourseUnit ? '&' : '?')+ 'has_groups=' + hasGroup: '');
+        const params = new URLSearchParams();
+        if(search){
+            params.append('search', search);
+        }
+        if(includeCourseUnit){
+            params.append('include', includeCourseUnit);
+        }
+        if(school){
+            params.append('school', school);
+        }
+        if(semester){
+            params.append('semester', semester);
+        }
+        if(hasGroup){
+            params.append('has_groups', hasGroup);
+        }
+        if(hasMethods){
+            params.append('has_methods', hasMethods);
+        }
+        const queryString = params.toString();
+        if (queryString) {
+            link += `?${queryString}`;
+        }
         axios.get(link).then((res) => {
             if (res.status === 200) {
-                res.data.data.unshift({id: '', name: t("Todas as Unidades curriculares")});
+                if(currentCourseUnit){
+                    res.data.data = res.data.data.filter(item => item.id != currentCourseUnit);
+                }
+                else{
+                    res.data.data.unshift({id: '', name: t("Todas as Unidades curriculares")});
+                }
                 setCourseUnitsOptions(res?.data?.data?.map(({ id, name }) => ({
                     key: id,
                     value: id,
@@ -43,6 +66,12 @@ const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup}) => {
                 }
             }
         });
+
+        if(currentCourseUnit){
+            setCourseUnitsOptions(prevOptions =>
+                prevOptions.filter(option => option.id !== currentCourseUnit)
+            );
+        }
     };
 
     useEffect(() => {

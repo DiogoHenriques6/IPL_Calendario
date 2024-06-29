@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, {useCallback, useEffect, useState} from 'react';
 import {Link} from 'react-router-dom';
 import _ from 'lodash';
-import {Card, Container, Form, Icon, Input, Table, Button, Popup, Dimmer, Loader} from 'semantic-ui-react';
+import {Card, Container, Form, Icon, Input, Table, Button, Popup, Dimmer, Loader, Header} from 'semantic-ui-react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import ShowComponentIfAuthorized from '../../components/ShowComponentIfAuthorized';
@@ -98,7 +98,19 @@ const List = () => {
     return (
         <Container>
             <Card fluid>
-                <Card.Content header={t("Utilizadores")} />
+                <Card.Content>
+                    <div className='card-header-alignment'>
+                        <Header as="span">{t("Utilizadores")} </Header>
+                        <ShowComponentIfAuthorized permission={[SCOPES.CREATE_STUDENTS]}>
+                            <Link to="/utilizador/novo" >
+                                <Button primary icon >
+                                    <Icon name="add"/>
+                                    { t("Adicionar Estudante") }
+                                </Button>
+                            </Link>
+                        </ShowComponentIfAuthorized>
+                    </div>
+                </Card.Content>
                 <Card.Content>
                     <Form>
                         <Form.Group>

@@ -35,7 +35,7 @@ const New = () => {
     const handleTabChange = (e, { activeIndex }) => {
         setTabActiveIndex(activeIndex);
     }
-
+    //TODO GETWEBSERVICES DATA even on new
     const getUserGroups = () => {
         setLoadingGroups(true);
         axios.get('/user-group').then((res) => {
@@ -76,6 +76,7 @@ const New = () => {
             setLoading(false);
         });
     }
+
     useEffect(() => {
         getUserGroups();
     }, []);

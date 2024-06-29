@@ -22,12 +22,13 @@ import PopupEvaluationDetail from './detail/popup-evaluation-detail';
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
 import {getCalendarPhasePermissions} from "../../utils/auth";
+import Cookies from 'js-cookie';
 
 const SweetAlertComponent = withReactContent(Swal);
 
 const Calendar = () => {
     const history = useNavigate();
-    const { t } = useTranslation();
+    const { t,i18n } = useTranslation();
     // get URL params
     let { id } = useParams();
     let calendarId = id;
@@ -67,6 +68,8 @@ const Calendar = () => {
     const componentRef = useRef();
     const [myUCsOnly, setMyUCsOnly] = useState(true);
 
+    const myCourseUnit = localStorage.getItem('courseUnits') ? JSON.parse(localStorage.getItem('courseUnits')) : null;
+
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
         bodyClass: 'printing',
@@ -96,6 +99,7 @@ const Calendar = () => {
                     localStorage.setItem('calendarPermissions', JSON.stringify(localPermissions));
                 }
                 setCalendarPermissions(getCalendarPhasePermissions(calendarPhase));
+                console.log("Here", res.headers);
             })
         }
     }, []);
@@ -587,11 +591,12 @@ const Calendar = () => {
             if (existingExamsAtThisDate?.length) {
                 // show a button per exam in this day
                 examsComponents = existingExamsAtThisDate.map((exam) => {
+                    console.log(myCourseUnit && myCourseUnit.includes(exam.course_unit.id));
                     return (
                         // <Button key={exam.id} onClick={() => openExamDetailHandler(year, exam)} isModified={differences?.includes(exam.id)} >
                         // For the Future (drag and drop
                         // draggable="false" onDragStart={drag}
-                        <Button className={"btn-exam-details" + (exam.in_class ? " exam-in-class" : "" )}
+                        <Button className={"btn-exam-details" +  (exam.in_class ? " exam-in-class" : "" ) + ( (myCourseUnit && myCourseUnit.includes(exam.course_unit.id)) ? " my-exams": "")}
                             title={ (exam.in_class ? t('Aula') + " - " : "" ) + exam.course_unit.name_full + " - " + (exam.method?.description || exam.method?.name) }
                             color="blue" key={exam.id}
                             onClick={() => openExamDetailHandler(year, exam)}>
@@ -606,7 +611,7 @@ const Calendar = () => {
                             )}
                             <div className="btn-exam-content">
                                 <div className="btn-exam-label">{ (exam.hour ? exam.hour + ' ' : (exam.in_class ? t('Aula') + " - " : "" ) ) + (exam.course_unit.initials || exam.course_unit.name_full) }</div>
-                                <div className="btn-exam-type">{ (exam.method?.initials_pt || exam.method?.name) }</div>
+                                <div className="btn-exam-type">{ (i18n.language == 'en' ? exam.method?.initials_en : exam.method?.initials_pt  || exam.method?.name) }</div>
                             </div>
                         </Button>
                     );

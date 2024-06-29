@@ -27,9 +27,26 @@ const FilterOptionCourse = ({widthSize, eventHandler, school}) => {
     const loadCourses = (search = '', includeCourse) => {
         setLoading(true);
         let link = '/courses-search';
-        link += (school ? '?school=' + school : '');
-        link += (search ? '?search=' + search : '');
-        link += (includeCourse ? (search ? '&' : '?') + 'include=' + includeCourse : '');
+        const params = new URLSearchParams();
+
+        if (school) {
+            params.append('school', school);
+        }
+
+        if (search) {
+            params.append('search', search);
+        }
+
+        if (includeCourse) {
+            params.append('include', includeCourse);
+        }
+
+        const queryString = params.toString();
+        if (queryString) {
+            link += `?${queryString}`;
+        }
+
+
         axios.get(link).then((res) => {
             if (res.status === 200) {
                 res.data.data.unshift({value: '', text: t("Todos os Cursos")});

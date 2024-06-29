@@ -87,6 +87,7 @@ const HeaderMenu = () => {
             localStorage.removeItem('calendarPermissions');
             localStorage.removeItem('academicYear');
             localStorage.removeItem('selectedGroup');
+            localStorage.removeItem('courseUnits');
             dispatch(logout());
             navigate('/login');
         });

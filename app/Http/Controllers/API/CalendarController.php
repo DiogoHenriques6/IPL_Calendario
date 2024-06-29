@@ -46,24 +46,19 @@ class CalendarController extends Controller
         return response()->json($response, Response::HTTP_CREATED);
     }
 
-    public function show(Calendar $calendar, CalendarDetailsFilters $filters)
+    public function show(Calendar $calendar, CalendarDetailsFilters $filters, Request $request)
     {
         $filters->setCalendar($calendar);
         $calendar->load(['epochs', 'interruptions']);
 
         $exams = Exam::filter($filters)->get();
-        Log::channel('sync_test')->info("Exams: ", ['exams' => $exams]);
-
 
         $epochs = $calendar->epochs->map(function ($epoch) use ($exams) {
             $epoch->setRelation('exams', $exams->where('epoch_id', $epoch->id));
-
             return $epoch;
         });
         $calendar->setRelation('epochs', $epochs);
 
-
-        Log::channel('sync_test')->info("Epochs: ". $calendar->epochs);
         return new CalendarDetailResource($calendar);
 
 //        return new CalendarDetailResource($calendar->load(['epochs', 'interruptions'])->filter($filters));

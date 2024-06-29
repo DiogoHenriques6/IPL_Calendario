@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Filters\UserFilters;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateStudentRequest;
 use App\Http\Requests\UserPasswordRequest;
 use App\Http\Requests\UserRequest;
 use App\Http\Resources\Admin\Edit\UserEditResource;
@@ -26,9 +27,25 @@ class UserController extends Controller
         return UserListResource::collection(User::filter($filters)->paginate($perPage));
     }
 
-    public function store(Request $request)
+    public function store(CreateStudentRequest $request)
     {
-        //
+        $email= $request->name . "@my.ipleiria.pt";
+        $user = User::firstorcreate(
+            [
+                'email' => $email,
+                'name' => $request->name,
+                'password' => '',
+                'enabled' => true
+            ]
+        );
+
+        if($request->groups){
+            $groups =Group::whereIn('id',$request->groups)->get();
+        }
+        else{
+            $groups = Group::isStudent()->get();
+        }
+        $user->groups()->sync($groups);
     }
 
     public function show($id)

@@ -17,6 +17,7 @@ const CursoList = lazy(() => import('./pages/Curso/list'));
 const CursoDetail = lazy(() => import('./pages/Curso/detail'));
     //Utilizador Pages
 const UtilizadorDetail = lazy(() => import('./pages/Utilizador/detail'));
+const UtilizadorNew = lazy(() => import('./pages/Utilizador/new'));
 const UtilizadorList = lazy(() => import('./pages/Utilizador/list'));
     //Interrupacao Pages
 const InterrupcaoNew = lazy(() => import('./pages/TipoInterrupcao/new'));
@@ -204,6 +205,7 @@ const RouterList = (isLoggedIn) => {
                     element: (isAuthorized.EDIT_USERS || isAuthorized.LOCK_USERS) ? <MultiPageBase /> : <Navigate to="/no-permissions" />,
                     children: [
                         { path: 'edit/:id', exact: true, element: <UtilizadorDetail />},
+                        { path: 'novo', exact: true, element: (isAuthorized.CREATE_STUDENTS) ? <UtilizadorNew /> : <Navigate to="/no-permissions" /> },
                         { path: '', exact: true, element: <UtilizadorList />},
                         { path: '*', element: <NotFoundPage />}
                     ],

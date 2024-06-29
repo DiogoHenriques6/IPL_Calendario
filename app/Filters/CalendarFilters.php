@@ -50,21 +50,24 @@ class CalendarFilters extends QueryFilters
                 break;
             case str_contains($currentGroup->code,InitialGroups::COMISSION_CCP):
 //                Log::channel('sync_test')->info($currentGroup->code);
-                $courseId = Auth::user()->courses->pluck('id');
+                $courseId = $user->courses->pluck('id');
                 break;
             case str_contains($currentGroup->code,InitialGroups::COORDINATOR):
 //                Log::channel('sync_test')->info($currentGroup->code);
-                $courseId = Course::where('coordinator_user_id', Auth::user()->id)->pluck('id');
+                $courseId = Course::where('coordinator_user_id', $user->id)->pluck('id');
                 break;
             case str_contains($currentGroup->code,InitialGroups::RESPONSIBLE):
 //                Log::channel('sync_test')->info($currentGroup->code);
-                $courseId = CourseUnit::where('responsible_user_id',Auth::user()->id)->pluck('course_id');
+                $courseId = CourseUnit::where('responsible_user_id',$user->id)->pluck('course_id');
                 break;
             case str_contains($currentGroup->code,InitialGroups::STUDENT):
                 $courseUnits = request()->cookie('courseUnits');
                 $courseId = CourseUnit::whereIn('id', explode(',', $courseUnits))->pluck('course_id');
-            default:
-                $isWatcher = true;
+                break;
+            case str_contains($currentGroup->code,InitialGroups::TEACHER):
+                $courseId = Auth::user()->courseUnits->pluck('course_id');
+                Log::channel('sync_test')->info($courseId);
+                break;
         }
 
         if($isManagement){
@@ -87,48 +90,8 @@ class CalendarFilters extends QueryFilters
                 });
             if(!$search)
                 $this->builder->orWhere('is_published', true)->orWhere('is_temporary', true);
-            return $this;
         }
-
-
-
-        if($isWatcher){
-            $this->builder->where(function ($query) use ($currentGroup, $search) {
-                    $query->whereHas('viewers', function (Builder $queryIn) use($currentGroup) {
-                        $queryIn->where('group_id', $currentGroup->id);
-                    });
-                });
-            if(!$search)
-                $this->builder->orWhere('is_published', true)->orWhere('is_temporary', true);
-            return $this;
-        }
-
-
-        if ($user->groups->contains('code', InitialGroups::COORDINATOR)) {
-            if($search === "true")
-                return $this->builder->whereIn('course_id', Course::where('coordinator_user_id', Auth::user()->id)->pluck('id'));
-            else
-                return $this->builder->whereIn('course_id', Course::where('coordinator_user_id', Auth::user()->id)->pluck('id'))
-                            ->orWhere('is_published', true)->orWhere('is_temporary', true);
-        }
-
-        if ($user->groups->contains('code', InitialGroups::RESPONSIBLE)) {
-            if($search === "true")
-                return $this->builder->whereIn('course_id', CourseUnit::where('responsible_user_id',Auth::user()->id)->pluck('course_id'));
-            else
-                return $this->builder->whereIn('course_id', CourseUnit::where('responsible_user_id',Auth::user()->id)->pluck('course_id'))
-                    ->orWhere('is_published', true)->orWhere('is_temporary', true);
-        }
-
-        if ($user->groups->contains('code', InitialGroups::COMISSION_CCP)) {
-            if ($search === "true") {
-                $this->builder->whereIn('course_id', Auth::user()->courses->pluck('id'));
-            }
-            else{
-                $this->builder->whereIn('course_id', Auth::user()->courses->pluck('id'))
-                    ->orWhere('is_published', true)->orWhere('is_temporary', true);
-            }
-        }
+        return $this;
     }
 
 

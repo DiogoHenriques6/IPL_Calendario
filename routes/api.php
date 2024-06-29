@@ -125,7 +125,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::controller(GroupController::class)->group(function () {
         Route::get('/user-group/menu',                          'getUserGroup'            );
-        Route::post('/user-group/switch',                            'switch'                  );
+        Route::post('/user-group/switch',                       'switch'                  );
         Route::get('/user-group',                               'index'                   );
         Route::get('/user-group/{group}',                       'show'                    );
         Route::post('/user-group',                              'store'                   );
@@ -152,6 +152,7 @@ Route::middleware('auth:api')->group(function () {
     Route::controller(UserController::class)->group(function () {
         Route::get('/users/{user}',             'show'      );
         Route::get('/users',                    'index'     );
+        Route::post('/users',                   'store'     );
         Route::patch('/user/{user}',            'update'    );
         Route::post('/user/{user}/password',    'password'  );
     });

@@ -51,6 +51,10 @@ class CourseUnitFilters extends QueryFilters
         return $this->builder->whereNotNull('course_unit_group_id');
     }
 
+    public function has_methods($hasMethods) {
+        return $this->builder->whereHas('methods');
+    }
+
     public function including($ids) {
         return $this->builder->orWhereIn('id', json_decode($ids));
     }

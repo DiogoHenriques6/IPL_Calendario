@@ -127,7 +127,7 @@ const UserDetail = () => {
                                 </Field>
                             </Card.Content>
                             <Card.Content>
-                                { userDetail.is_protected && (
+                                { !!userDetail.is_protected && (
                                     <Button floated={"left"} onClick={() => setModalOpen(true)} color={"blue"} icon labelPosition="left" ><Icon name={"lock"}/> { t('Mudar Password')}</Button>
                                 )}
                                 <Button onClick={handleSubmit} color="green" icon labelPosition="left" floated="right" loading={isSaving}>

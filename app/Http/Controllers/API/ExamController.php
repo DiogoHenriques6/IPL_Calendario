@@ -214,9 +214,10 @@ class ExamController extends Controller
         }
 
         // Check if CUs of exam belongs to any group
-        $courseUnitGroup = $exam->courseUnit->group;
+        $courseUnitGroup = $exam->courseUnit->group ;
+        Log::channel('sync_test')->info($courseUnitGroup);
         $courseUnitGroup = $courseUnitGroup ? $courseUnitGroup->id : null;
-        if ($courseUnitGroup) {
+        if ($courseUnitGroup != null) {
             $examsWithMethod = $exam->courseUnit->exams->where('method_id', $exam->method_id);
 
             foreach ($examsWithMethod as $relatedExam) {

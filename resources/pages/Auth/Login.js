@@ -32,6 +32,9 @@ const LoginPage = () => {
                     localStorage.setItem('groups', data.user.groups);
                     localStorage.setItem('authToken', data.accessToken);
                     localStorage.setItem('academicYear', data.academicYear);
+                    if(data.courseUnits) {
+                        localStorage.setItem('courseUnits', JSON.stringify(data.courseUnits));
+                    }
                     const {scopes} = jwtDecode(data.accessToken);
                     // also set in app.js but is rendered in time there
                     localStorage.setItem('scopes', JSON.stringify(scopes));

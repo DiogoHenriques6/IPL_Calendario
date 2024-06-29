@@ -267,6 +267,8 @@ class PermissionsAndGroupsSeeder extends Seeder
 
             ["code" => "edit_users",                        "section_code" => "users",              "name_pt" => "Editar utilizadores",                             "name_en" => "Edit users",                      "is_general" => true  ],
             ["code" => "lock_users",                        "section_code" => "users",              "name_pt" => "Bloquear utilizadores",                           "name_en" => "Block users",                     "is_general" => true  ],
+            ["code" => "create_users",                      "section_code" => "users",              "name_pt" => "Criar Estudantes",                                "name_en" => "Create Students",                 "is_general" => true  ],
+
 
             ["code" => "create_evaluation_types",           "section_code" => "evaluation",         "name_pt" => "Criar tipos de avaliações",                       "name_en" => "Create types of evaluations",     "is_general" => true  ],
             ["code" => "edit_evaluation_types",             "section_code" => "evaluation",         "name_pt" => "Editar tipos de avaliações",                      "name_en" => "Edit types of evaluations",       "is_general" => true  ],

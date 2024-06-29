@@ -43,7 +43,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
     const [academicYearSelected, setAcademicYearSelected] = useState(-1);
 
     const isManagingMethods = useComponentIfAuthorized(SCOPES.MANAGE_EVALUATION_METHODS);
-
+    console.log(isManagingMethods)
 
     const isFormValid = (methodList) => {
         let isValid = true;
@@ -255,7 +255,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
 
         setEpochs(copyEpochs);
 
-        toast(t('Success!'), successConfig);
+        // toast(t('Success!'), successConfig);
         isFormValid(epochs);
         closeModal();
     }
@@ -380,8 +380,9 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                             </div>
                         )}
                     </ShowComponentIfAuthorized>
-                                {epochs?.map((item, index) => (
+                                {epochs?.map((item, index)  => (
                                     <div className={index > 0 ? "margin-top-m" : ""} key={index}>
+
                                         <Header as="span">{i18n.language == 'en' ? item.name_en : item.name_pt}</Header>
                                         <Table compact celled className={"definition-last"}>
                                             <Table.Header>
@@ -477,7 +478,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                             )}
                                                         </Table.Cell>
                                                         <Table.Cell width={3} colSpan={method.is_blocked ? 3 : 0}>
-fiex                                                            {!isManagingMethods || isManagingMethods && i18n.language == 'pt' &&(
+                                                            {i18n.language == 'pt' &&(
                                                                 <Form.Input placeholder={t("Descrição PT")} fluid
                                                                             value={method.description_pt} readOnly
                                                                             onChange={
@@ -488,7 +489,7 @@ fiex                                                            {!isManagingMeth
                                                                                 })
                                                                             }/>
                                                             )}
-                                                            {!isManagingMethods || isManagingMethods && i18n.language == 'en' &&(
+                                                            {i18n.language == 'en' &&(
                                                                 <Form.Input placeholder={t("Descrição EN")} fluid
                                                                             value={method.description_en} readOnly
                                                                             onChange={
