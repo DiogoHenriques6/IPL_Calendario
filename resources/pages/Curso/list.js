@@ -33,7 +33,7 @@ const CoursesList = () => {
     const [school, setSchool] = useState();
     const [degree, setDegree] = useState();
     const [withoutDegree, setWithoutDegree] = useState(false);
-
+    const [isManager, setIsManager] = useState(false);
     // Table columns
     const columns = [
         {name: t('Unidade de Ensino'), style: {width: '15%'} },
@@ -44,6 +44,16 @@ const CoursesList = () => {
         //{name: 'Numero de Anos'},
         {name: t('Ações'),  align: 'center', style: {width: '10%'} },
     ];
+
+    useEffect(() => {
+        const selectedGroup = localStorage.getItem("selectedGroup");
+        if(selectedGroup.includes("admin") || selectedGroup.includes("super_admin")){
+            setIsManager(true);
+        }
+        else{
+            setIsManager(false);
+        }
+    }, []);
 
     useEffect(() => {
         fetchCourses();
@@ -123,7 +133,9 @@ const CoursesList = () => {
                             <Form.Group>
 
                                     <Form.Input icon='search' iconPosition='left' width={5} label={ t("Pesquisar curso...") } placeholder={ t("Pesquisar curso...") } onChange={_.debounce(handleSearchCourses, 500)} />
+                                { isManager  && (
                                     <FilterOptionSchool widthSize={5} eventHandler={(value) => setSchool(value)} />
+                                )}
                                     <FilterOptionDegree widthSize={5} eventHandler={(value) => setDegree(value)} />
                                     <FilterOptionPerPage widthSize={2} eventHandler={(value) => setPerPage(value)} />
 

@@ -50,12 +50,7 @@ class CourseUnitController extends Controller
 
         $courseUnits = CourseUnit::with('methods')->filter($filters, $lang)->ofAcademicYear($request->cookie('academic_year'));
 
-        if ($request->has('all') && $request->all === "true") {
-            $courseUnits = $courseUnits->orderBy('name_' . $lang)->get();
-        } else {
             $userId = Auth::user()->id;
-            $userGroups = Auth::user()->groups()->get();
-//            return json_encode($userGroups);
             if(!$allUCs) {
                 $currentUserId = $request->cookie('selectedGroup');
                 $currentGroup = Group::where('id', $currentUserId)->first();
@@ -114,7 +109,6 @@ class CourseUnitController extends Controller
                 $courseUnits->where('semester_id', Semester::where('number', request('semester'))->first()->id);
             }
             $courseUnits = $courseUnits->orderBy('name_' . $lang)->paginate($perPage);
-        }
         return CourseUnitListResource::collection($courseUnits);
     }
 

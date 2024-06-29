@@ -53,7 +53,6 @@ const CourseUnitsList = () => {
         link += (curricularYearFilter   ? '&year='          + curricularYearFilter  : '');
         link += (groupUnitFilter        ? '&group_unit='    + groupUnitFilter       : '');
         link += (searchFilter           ? '&search='        + searchFilter          : '');
-        link += (courseUnitAllFilter    ? '&show_all='      + courseUnitAllFilter   : '');
         link += '&per_page=' + perPage;
 
         axios.get(link).then((response) => {
@@ -181,15 +180,15 @@ const CourseUnitsList = () => {
                                 <GroupUnits widthSize={3} eventHandler={filterByGroupUnit} />
                                 <Semesters widthSize={3} eventHandler={filterBySemester} withSpecial={false} />
                                 <CurricularYears widthSize={2} eventHandler={filterByCurricularYear}/>
-                                <ShowComponentIfAuthorized permission={SCOPES.CREATE_COURSES}>
-                                    <Form.Field width={4}>
-                                        <label>{t("UCs visíveis")}</label>
-                                        <Button.Group fluid>
-                                            <Button positive={!courseUnitAllFilter} onClick={(e) => filterByAllCourseUnits(false)}>{ t("Apenas as minhas") }</Button>
-                                            <Button positive={courseUnitAllFilter} onClick={(e) => filterByAllCourseUnits(true)}>{ t("Todas") }</Button>
-                                        </Button.Group>
-                                    </Form.Field>
-                                </ShowComponentIfAuthorized>
+                                {/*<ShowComponentIfAuthorized permission={SCOPES.CREATE_COURSES}>*/}
+                                {/*    <Form.Field width={4}>*/}
+                                {/*        <label>{t("UCs visíveis")}</label>*/}
+                                {/*        <Button.Group fluid>*/}
+                                {/*            <Button positive={!courseUnitAllFilter} onClick={(e) => filterByAllCourseUnits(false)}>{ t("Apenas as minhas") }</Button>*/}
+                                {/*            <Button positive={courseUnitAllFilter} onClick={(e) => filterByAllCourseUnits(true)}>{ t("Todas") }</Button>*/}
+                                {/*        </Button.Group>*/}
+                                {/*    </Form.Field>*/}
+                                {/*</ShowComponentIfAuthorized>*/}
                             </Form.Group>
                         )}
                     </Form>

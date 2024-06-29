@@ -43,7 +43,6 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
     const [academicYearSelected, setAcademicYearSelected] = useState(-1);
 
     const isManagingMethods = useComponentIfAuthorized(SCOPES.MANAGE_EVALUATION_METHODS);
-    console.log(isManagingMethods)
 
     const isFormValid = (methodList) => {
         let isValid = true;

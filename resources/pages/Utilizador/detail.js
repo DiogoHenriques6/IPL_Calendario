@@ -26,12 +26,14 @@ const UserDetail = () => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [errorMessages, setErrorMessages] = useState([]);
+    const [is_protected, setIsProtected] = useState(true);
 
     useEffect(() => {
         axios.get(`/users/${paramsId}`).then((res) => {
             if (res.status === 200) {
                 setLoading(false);
                 setUserDetail(res?.data?.data);
+                setIsProtected(res?.data?.data?.is_protected);
             }
         });
     }, [paramsId]);
@@ -114,7 +116,7 @@ const UserDetail = () => {
                                 </Form.Group>
                                 <Field name="groups">
                                     {({input: groupsInput}) => (
-                                        <FilterOptionUserGroups widthSize={8} values={groupsInput.value} eventHandler={(value) => groupsInput.onChange(value)} />
+                                        <FilterOptionUserGroups widthSize={8} values={groupsInput.value} isProtected={is_protected} eventHandler={(value) => groupsInput.onChange(value)} />
                                     )}
                                 </Field>
                                 <Field name="enabled" type="checkbox">

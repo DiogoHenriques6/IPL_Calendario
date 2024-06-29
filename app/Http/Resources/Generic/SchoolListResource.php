@@ -11,7 +11,7 @@ class SchoolListResource extends JsonResource
     {
         return [
             'value'     => $this->id,
-            'text'      => ($request->header("lang") == "en" ? $this->name_en : $this->name_pt)
+            'text'      => $this->code
         ];
     }
 }

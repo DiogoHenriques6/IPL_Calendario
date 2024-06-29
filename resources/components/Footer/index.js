@@ -37,7 +37,7 @@ const Footer = ({languageChanger}) => {
                             <List.Item as='a' href='/about'>
                                 {t('footer.Sobre')}
                             </List.Item>
-                            <List.Item as='a' href='http://www.dei.estg.ipleiria.pt/' target="_blank" className='margin-top-xs'>
+                            <List.Item as='a' href='https://www.ipleiria.pt/estg-dei/' target="_blank" className='margin-top-xs'>
                                 {t('footer.DEI')}
                             </List.Item>
                             <List.Item as='a' href='https://portaldoestudante.ipleiria.pt/' target="_blank" className='margin-top-xs'>
