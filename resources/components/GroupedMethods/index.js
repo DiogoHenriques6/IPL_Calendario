@@ -1,24 +1,15 @@
 import {
     Button,
     Card,
-    CardContent, CardGroup, Dropdown,
+    CardContent, CardGroup, Container,
     Form,
-    Grid,
-    GridColumn,
     Header,
-    Icon, Input,
-    Label,
-    Message,
-    Modal,
-    Table
+    Icon,
+    Modal
 } from "semantic-ui-react";
-import AcademicYears from "../Filters/AcademicYears";
 import React, {useEffect, useState} from "react";
-import Courses from "../Filters/Courses";
-import Slider from "../Slider";
 import {useTranslation} from "react-i18next";
 import CourseUnits from "../Filters/CourseUnits";
-import _ from "lodash";
 import axios from "axios";
 
 
@@ -27,11 +18,13 @@ const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
     const [courseUnits, setCourseUnits] = useState([]);
     const [columns, setColumns] = useState(2);
     const [selectedCourseUnits, setSelectedCourseUnits] = useState([]);
+    const [selectedEpochs, setSelectedEpochs] = useState([]);
     const [courseUnit, setCourseUnit] = useState();
+    const [school, setSchool] = useState();
+    const [semester, setSemester] = useState();
 
     useEffect(() => {
-        setSelectedCourseUnits(epochs)
-        // console.log(epochs)
+        setSelectedEpochs([epochs]);
     }, [epochs]);
 
     const addColumn = () => {
@@ -44,19 +37,14 @@ const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
     }
 
     useEffect(() => {
-        console.log("here")
+        setCourseUnits([parseInt(unitId)]);
         if(unitId){
-            console.log("here")
             axios.get(`/course-units/${unitId}`).then((res) => {
                 if (res.status === 200) {
-                    console.log(res?.data?.data);
-                    setCourseUnits(res.data.data.map(({ id, name }) => ({
-                        key: id,
-                        value: name,
-                        // text: i18n.language === "en" ? name_en : name_pt,
-                    })));
+                    setCourseUnit(res.data.data);
 
-                    console.log( i18n.language ="en" ? res.data.data.name_en: res.data.data.name_pt)
+                    setSemester(res.data.data.semester)
+                    setSchool(res.data.data.school)
                 }
             });
         }
@@ -66,48 +54,138 @@ const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
 
     }
 
+    const handleCourseUnitChange = (index, courseUnit) => {
+        setCourseUnits((prevSelectedCourseUnits) => {
+            const newSelectedCourseUnits = [...prevSelectedCourseUnits];
+            if (newSelectedCourseUnits[index] !== courseUnit) {
+                newSelectedCourseUnits[index] = courseUnit ? courseUnit : null;
+                console.log("Course Units", newSelectedCourseUnits);
+            }
+            return newSelectedCourseUnits;
+        });
+        console.log(courseUnit)
+        if (courseUnit) {
+            console.log("here")
+            axios.get(`/course-units/${courseUnit}/methods`).then((res) => {
+                if (res.status === 200) {
+                    console.log(res?.data);
+                    // setEpochs(res.data);
+                    setSelectedEpochs((prevSelectedEpochs) => {
+                        const newSelectedEpochs = [...prevSelectedEpochs];
+                        newSelectedEpochs[index] = res.data;
+                        console.log("SelectedEpochs" ,newSelectedEpochs);
+                        return newSelectedEpochs;
+                    });
+                }
+            });
+        }
+    };
 
-    return <Modal closeOnEscape closeOnDimmerClick open={isOpen} onClose={closeModal}>
-        <Modal.Header>{t("Agrupar Métodos")}</Modal.Header>
-        <Modal.Content>
-            <Form>
-                <Header as="h4">{t("Selecione Unidades Curriculares")}</Header>
-                    <CardGroup>
-                    {/*TODO have a max of 3/4 selectedCourses?*/}
-                        {Array.from({length: columns}, (_, index) => (
-                                <Card key={index}>
-                                    <CardContent>
-                                        {index == 0 ?(
-                                                <Form.Input width={6} label={t("Unidade Curricular")}
-                                                            readOnly />
-                                        ):(
-                                            <CourseUnits eventHandler={courseUnits} isSearch={false}/>
-                                            )
-                                        }
-                                    </CardContent>
-                                    <CardContent>
-                                        {selectedCourseUnits?.map((item, epochIndex) => (
-                                            <div className={ epochIndex > 0 ? "margin-top-m" : ""} key={epochIndex}>
-                                                <Header as="span">{i18n.language == 'en' ? item.name_en: item.name_pt}</Header>
-                                                <Form.Dropdown disabled={item.methods?.length == 0} selectOnBlur={false} width={6}
-                                                               search clearable selection
-                                                       options={item.methods} label={t("Métodos")} placeholder={ t(("Método de avaliação")) }
-                                                        />
-                                            </div>
-                                        ))}
+    const evaluationSelectionHandler = (index, epochIndex, value) => {
+        // Assuming you have a state to hold the evaluations
+        /*setEvaluations(prevEvaluations => {
+            const newEvaluations = [...prevEvaluations];
+            if (!newEvaluations[index]) {
+                newEvaluations[index] = {};
+            }
+            if (!newEvaluations[index][epochIndex]) {
+                newEvaluations[index][epochIndex] = {};
+            }
+            newEvaluations[index][epochIndex].selectedMethodId = value;
+            return newEvaluations;
+        });*/
+    };
+    const groupEvaluations = (index) => {
 
-                                    </CardContent>
-                                </Card>
+    }
+
+    return (
+        <Modal size={'fullscreen'} closeOnEscape closeOnDimmerClick open={isOpen} onClose={closeModal}>
+            <Modal.Header>{t("Agrupar Métodos")}</Modal.Header>
+            <Modal.Content>
+                <Form>
+                    {/*<Header as="h4">{t("Selecione Unidades Curriculares")}</Header>*/}
+                    {/*<Container>*/}
+                    <CardGroup >
+                        {Array.from({ length: columns }, (_, index) => (
+                            <Card key={index}>
+                                <CardContent style={{height: '95px'}} >
+                                    {index === 0 ? (
+                                            <Form.Input
+                                                fluid
+                                                label={t("Unidade Curricular")}
+                                                readOnly
+                                                value={i18n.language === "en" ? courseUnit?.name_en : courseUnit?.name_pt}
+                                            />
+                                    ) : (
+                                        <CourseUnits school={school} semester={semester} hasMethods currentCourseUnit={unitId}
+                                            eventHandler={(selectedUnit) =>
+                                                handleCourseUnitChange(index, selectedUnit)
+                                            }
+                                            isSearch={false}
+                                        />
+                                    )}
+                                </CardContent>
+                                <CardContent style={{minHeight: '600px'}}>
+                                    { courseUnits[index] && selectedEpochs[index]?.map((item, epochIndex) => (
+                                        <div
+                                            className={epochIndex > 0 ? "margin-top-m" : ""}
+                                            key={epochIndex}
+                                        >
+                                            <Header as="span">
+                                                {i18n.language === "en" ? item.name_en : item.name_pt}
+                                            </Header>
+                                            <Form.Dropdown
+                                                disabled={item.methods?.length === 0}
+                                                fluid
+                                                clearable
+                                                selection
+                                                options={item.methods.map(method => ({
+                                                    key: method.id,
+                                                    value: method.id,
+                                                    text: method.name,
+                                                }))}
+                                                label={t("Métodos")}
+                                                placeholder={t("Método de avaliação")}
+                                                onChange={
+                                                    (e, {value}) => evaluationSelectionHandler(index, epochIndex, value)
+                                                }
+                                            />
+                                        </div>
+                                    ))
+                                    // )
+                                    }
+                                </CardContent>
+                            </Card>
                         ))}
+                        {columns < 4 && (
+                                <Button style={{ marginTop : '1rem', width: "30px",height:"30px"}}  color={"blue"} floated={"left"} onClick={addColumn} >
+                                    <Icon name="add"/>
+                                </Button>
+                                )}
+                            {/*{  epochs && epochs?.map((item, index) => (*/}
+
+                            {/*            <Button className={'btn-add-interruption'} color={"green"} floated={"right"} onClick={groupEvaluations(index)} width={2}>*/}
+                            {/*                Agrupar Avaliações*/}
+                            {/*            </Button>*/}
+                            {/*        ))*/}
+                            {/*    }*/}
+
                     </CardGroup>
-                {columns < 4 &&(<Button onClick={addColumn} width={2}><Icon name={"add"}></Icon></Button>)}
-            </Form>
-        </Modal.Content>
-        <Modal.Actions>
-            <Button negative onClick={closeModal}>{ t("Cancel") }</Button>
-            <Button positive onClick={handleSubmit}>{ t("Confirmar") }</Button>
-        </Modal.Actions>
-    </Modal>
+                    {/*</Container>*/}
+                </Form>
+            </Modal.Content>
+            <Modal.Actions>
+                <Button negative onClick={closeModal}>
+                    {t("Cancel")}
+                </Button>
+                <Button positive onClick={handleSubmit}>
+                    {t("Confirmar")}
+                </Button>
+            </Modal.Actions>
+        </Modal>
+    );
 }
 
 export default GroupedMethods;
+

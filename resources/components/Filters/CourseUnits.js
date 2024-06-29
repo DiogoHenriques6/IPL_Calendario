@@ -54,10 +54,10 @@ const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, s
                 else{
                     res.data.data.unshift({id: '', name: t("Todas as Unidades curriculares")});
                 }
-                setCourseUnitsOptions(res?.data?.data?.map(({ id, name }) => ({
+                setCourseUnitsOptions(res?.data?.data?.map(({ id, name, course_description }) => ({
                     key: id,
                     value: id,
-                    text: name
+                    text: name + (hasGroup && id != ''? ` - ${course_description}` : "")
                 })));
                 setLoading(false);
                 if(searchCourseUnit && search === ""){

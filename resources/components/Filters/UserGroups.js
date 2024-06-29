@@ -3,7 +3,7 @@ import {Form} from 'semantic-ui-react';
 import axios from 'axios';
 import {useTranslation} from "react-i18next";
 
-const FilterOptionUserGroups = ({widthSize, values, eventHandler, forStudent}) => {
+const FilterOptionUserGroups = ({widthSize, values, eventHandler, forStudent, isProtected = true}) => {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [userGroupsOptions, setUserGroupsOptions] = useState([]);
@@ -15,14 +15,24 @@ const FilterOptionUserGroups = ({widthSize, values, eventHandler, forStudent}) =
         axios.get('/user-group').then((response) => {
             if (response.status === 200) {
                 setLoading(false);
-                if(!forStudent) {
-                    setUserGroupsOptions(response?.data?.data?.map(({id, description}) => ({
-                        key: id,
-                        value: id,
-                        text: description
-                    })));
+                setUserGroupsOptions(response?.data?.data?.map(({id, description}) => ({
+                    key: id,
+                    value: id,
+                    text: description
+                })));
+                if (!isProtected) {
+                        setUserGroupsOptions(response?.data?.data?.filter(item =>
+                            item.name !== "pedagogic" &&
+                            item.name !== "gop" &&
+                            item.name !== "board" &&
+                            item.name !== "student"
+                        ).map(({id, description}) => ({
+                            key: id,
+                            value: id,
+                            text: description
+                        })));
                 }
-                else{
+                if (forStudent) {
                     setUserGroupsOptions(
                         response?.data?.data?.filter(item =>
                             item.name.startsWith("pedagogic") ||
@@ -40,7 +50,7 @@ const FilterOptionUserGroups = ({widthSize, values, eventHandler, forStudent}) =
                 }
             }
         });
-    }, []);
+    }, [isProtected]);
 
     useEffect(() => {
         setUserGroups(studentGroup)
