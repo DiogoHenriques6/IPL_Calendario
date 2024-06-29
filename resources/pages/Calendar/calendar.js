@@ -653,16 +653,9 @@ const Calendar = () => {
                 <div className="margin-bottom-base breadcrumbs-back-link">
                     <Link to="/"> <Icon name="angle left" /> {t('Voltar à lista')}</Link>
                 </div>
-                <Button.Group floated={"right"}>
-                    <Button floated="right" toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)}>
-                        { t('Minhas Avaliações') }
-                    </Button>
-                    <Button floated="right" toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)}>
-                        { t('Todos') }
-                    </Button>
-                </Button.Group>
+
                 <InfosAndActions epochs={epochsList} calendarInfo={generalInfo} course={courseInfo} phase={phaseInfo} updatePhase={setCalendarPhase} warnings={calendarWarnings} isLoading={isLoading}
-                                isPublished={isPublished} isTemporary={isTemporary} showingEpochs={showingEpochs} epochsViewHandler={setShowingEpochs}
+                                isPublished={isPublished} isTemporary={isTemporary} showingEpochs={showingEpochs} epochsViewHandler={setShowingEpochs} myUCsOnly={myUCsOnly} setMyUCsOnly={setMyUCsOnly}
                                 hasCurrentWeek={ (moment(calendarStartDate, "DD-MM-YYYY").isSameOrBefore(moment()) && moment(calendarEndDate, "DD-MM-YYYY").isSameOrAfter(moment()))  } />
 
                 <AnimatePresence>

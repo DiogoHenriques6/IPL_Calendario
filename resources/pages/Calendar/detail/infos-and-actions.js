@@ -21,7 +21,7 @@ import {
     Input,
     Modal,
     Confirm,
-    ModalContent, ModalActions, ListContent, ListItem
+    ModalContent, ModalActions, ListContent, ListItem, ButtonGroup
 } from 'semantic-ui-react';
 import { toast} from 'react-toastify';
 import Swal from 'sweetalert2';
@@ -37,7 +37,7 @@ import PopupRevisionDetail from "./popup-revision";
 
 const SweetAlertComponent = withReactContent(Swal);
 
-const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updatePhase, warnings, isPublished, isTemporary, epochsViewHandler, hasCurrentWeek = false}) => {
+const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updatePhase, warnings, isPublished, isTemporary, epochsViewHandler, hasCurrentWeek = false, myUCsOnly, setMyUCsOnly}) => {
     const { t,i18n } = useTranslation();
     const navigate = useNavigate();
     // get URL params
@@ -336,13 +336,31 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                                         ) : (
                                             <Button color="teal" onClick={openSubmitModalHandler}>{ t('Submeter') }</Button>
                                         ) }
+                                        <ButtonGroup className={"margin-right-s"}>
+                                            <Button  toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)} >
+                                                { t('Minhas Avaliações') }
+                                            </Button>
+                                            <Button  toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)} >
+                                                { t('Todos') }
+                                            </Button>
+                                        </ButtonGroup>
                                     </>
                                 )}
                             </>
                         ) : (
+                            <>
                             <ShowComponentIfAuthorized permission={[SCOPES.CREATE_COPY]}>
                                 <Button color="orange" loading={creatingCopy} onClick={createCopy} labelPosition={"right"} icon>{ t('Criar um cópia desta versão') } <Icon name={"copy outline"} /></Button>
                             </ShowComponentIfAuthorized>
+                            <ButtonGroup className={"margin-right-s"}>
+                                <Button  toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)} >
+                                    { t('Minhas Avaliações') }
+                                </Button>
+                                <Button  toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)} >
+                                    { t('Todos') }
+                                </Button>
+                            </ButtonGroup>
+                            </>
                         )
                     )}
                 </div>
