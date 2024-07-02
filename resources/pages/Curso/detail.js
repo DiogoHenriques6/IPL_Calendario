@@ -41,7 +41,7 @@ const Detail = () => {
     useEffect(() => {
         const options = teachers.map((teacher) => ({
             key: teacher.email,
-            text: teacher.name,
+            text: teacher.name + ' (' + teacher.email.split('@')[0] + ')',
             value: teacher.email,
         }));
         setDropdownOptions(options);
