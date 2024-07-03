@@ -149,6 +149,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                         weight: method.weight,
                         description_pt: method.description_pt,
                         description_en: method.description_en,
+                        // copy[index].methods[methodIndex].description_pt = value;
                         initials_pt: method.initials_pt,
                         initials_en: method.initials_en
                     })
@@ -480,24 +481,12 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                             {i18n.language == 'pt' &&(
                                                                 <Form.Input placeholder={t("Descrição PT")} fluid
                                                                             value={method.description_pt} readOnly
-                                                                            onChange={
-                                                                                (ev, {value}) => setEpochs((current) => {
-                                                                                    const copy = [...current];
-                                                                                    copy[index].methods[methodIndex].description_pt = value;
-                                                                                    return copy;
-                                                                                })
-                                                                            }/>
+                                                                            />
                                                             )}
                                                             {i18n.language == 'en' &&(
                                                                 <Form.Input placeholder={t("Descrição EN")} fluid
                                                                             value={method.description_en} readOnly
-                                                                            onChange={
-                                                                                (ev, {value}) => setEpochs((current) => {
-                                                                                    const copy = [...current];
-                                                                                    copy[index].methods[methodIndex].description_en = value;
-                                                                                    return copy;
-                                                                                })
-                                                                            }/>
+                                                                            />
                                                             )}
                                                         </Table.Cell>
                                                         {!method.is_blocked && (

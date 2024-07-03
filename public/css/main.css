@@ -133,12 +133,33 @@ body {
     width: auto;
 }
 
-.ui.buttons.evaluation-buttons {
+.add-group-evaluations {
+    display: flex;
+    flex-direction: column;
+}
+
+.group-container-evaluation{
+    display: flex;
+    margin: .875em .5em;
+    margin-top: 107.250px;
+    float: none;
+    padding:14px;
+}
+
+.btn-group-evaluations{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 83.33px;
+}
+
+
+.ui.green.right.floated.button.btn-group-evaluations{
     display: flex;
     justify-content: flex-end;
-    width: 100%;
-    margin-top: 5px; /* Apply margin only to evaluation buttons */
+    width: auto;
 }
+
 .ui.dropdown .menu > .disabled.item > .description {
     color: rgba(0,0,0,.65);
 }

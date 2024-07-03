@@ -12,7 +12,6 @@ import {successConfig, errorConfig} from '../../utils/toastConfig';
 import CourseTabs from "./Tabs";
 import Degree from "../../components/Filters/Degree";
 import {useTranslation} from "react-i18next";
-import Teachers from "../../components/Filters/Teachers";
 
 const Detail = () => {
     const { t } = useTranslation();
@@ -28,8 +27,6 @@ const Detail = () => {
     const [searchCoordinator, setSearchCoordinator] = useState(false);
     const [hasCoordinator, setHasCoordinator] = useState(false);
     const [dropdownOptions, setDropdownOptions] = useState([]);
-
-
 
     const hasPermissionToEdit = useComponentIfAuthorized([SCOPES.EDIT_COURSES]);
 
@@ -82,16 +79,6 @@ const Detail = () => {
             document.title = "Detalhe de Curso - " + "Calendários de Avaliação - IPLeiria";
         });
     };
-
-    // useEffect(() => {
-    //     console.log(isCoordinator);
-    //     if( useComponentIfAuthorized([SCOPES.EDIT_ALL_COURSES])){
-    //         setPermissionToEdit(useComponentIfAuthorized([SCOPES.EDIT_ALL_COURSES]));
-    //     }
-    //     else{
-    //         setPermissionToEdit(useComponentIfAuthorized([SCOPES.EDIT_COURSES]) && isCoordinator);
-    //     }
-    // }, [isCoordinator]);
 
     const setCoordinator = () => {
         axios.patch(`/courses/${paramsId}/coordinator`, {
@@ -153,12 +140,6 @@ const Detail = () => {
                             { (!initialValues?.coordinator || !hasCoordinator) && (
                                 <Message.Item>{ t('É necessário configurar o docente Coordenador de Curso') }</Message.Item>
                             )}
-                           {/* { !initialValues.initials && (
-                                <Message.Item>{ t('É necessário configurar a Sigla do Curso') }</Message.Item>
-                            )}
-                            { !initialValues.degree_id && (
-                                <Message.Item>{ t('É necessário configurar o Tipo de Curso') }</Message.Item>
-                            )}*/}
                         </Message.List>
                     </Message>
                 </ShowComponentIfAuthorized>
@@ -242,7 +223,6 @@ const Detail = () => {
                                                            value={coordinatorUser?.email}
                                                            text={coordinatorUser?.name}
                                             />
-                                            // <Teachers isSearch={false} eventHandler={(value) => handleSearchTeachers(value)} isDisabled={loading}/>
                                         )}
                                     </Field>
                                     <Form.Button disabled={loading || !hasPermissionToDefineCoordinator} label={ t("Guardar") } onClick={setCoordinator} color="green" icon labelPosition="left">

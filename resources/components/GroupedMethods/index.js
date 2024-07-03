@@ -11,6 +11,8 @@ import React, {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
 import CourseUnits from "../Filters/CourseUnits";
 import axios from "axios";
+import {toast} from "react-toastify";
+import {errorConfig} from "../../utils/toastConfig";
 
 
 const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
@@ -22,6 +24,7 @@ const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
     const [courseUnit, setCourseUnit] = useState();
     const [school, setSchool] = useState();
     const [semester, setSemester] = useState();
+    const [selectedEvaluations, setSelectedEvaluations] = useState([]);
 
     useEffect(() => {
         setSelectedEpochs([epochs]);
@@ -42,7 +45,6 @@ const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
             axios.get(`/course-units/${unitId}`).then((res) => {
                 if (res.status === 200) {
                     setCourseUnit(res.data.data);
-
                     setSemester(res.data.data.semester)
                     setSchool(res.data.data.school)
                 }
@@ -63,17 +65,13 @@ const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
             }
             return newSelectedCourseUnits;
         });
-        console.log(courseUnit)
         if (courseUnit) {
-            console.log("here")
             axios.get(`/course-units/${courseUnit}/methods`).then((res) => {
                 if (res.status === 200) {
-                    console.log(res?.data);
                     // setEpochs(res.data);
                     setSelectedEpochs((prevSelectedEpochs) => {
                         const newSelectedEpochs = [...prevSelectedEpochs];
                         newSelectedEpochs[index] = res.data;
-                        console.log("SelectedEpochs" ,newSelectedEpochs);
                         return newSelectedEpochs;
                     });
                 }
@@ -81,32 +79,59 @@ const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
         }
     };
 
-    const evaluationSelectionHandler = (index, epochIndex, value) => {
-        // Assuming you have a state to hold the evaluations
-        /*setEvaluations(prevEvaluations => {
-            const newEvaluations = [...prevEvaluations];
-            if (!newEvaluations[index]) {
-                newEvaluations[index] = {};
+    const evaluationSelectionHandler = (courseIndex, epochIndex, value) => {
+        setSelectedEvaluations((prevSelectedEvaluations) => {
+            const newSelectedEvaluations = [...prevSelectedEvaluations];
+            if (!newSelectedEvaluations[epochIndex]) {
+                newSelectedEvaluations[epochIndex] = {};
             }
-            if (!newEvaluations[index][epochIndex]) {
-                newEvaluations[index][epochIndex] = {};
-            }
-            newEvaluations[index][epochIndex].selectedMethodId = value;
-            return newEvaluations;
-        });*/
+            // newSelectedEvaluations[epochIndex][courseUnits[courseIndex]] = ;
+            if(value != '')
+                newSelectedEvaluations[epochIndex][courseUnits[courseIndex]] = value;
+            else
+                delete newSelectedEvaluations[epochIndex][courseUnits[courseIndex]];
+            console.log(newSelectedEvaluations);
+            return newSelectedEvaluations;
+        })
     };
     const groupEvaluations = (index) => {
-
+        console.log(index)
+        if(hasMoreThanOneCourseUnit(index)){
+            axios.post(`/methods_groups`,{ methods: selectedEvaluations[index] }).then((res) => {
+                if (res.status === 200) {
+                    // setEpochs(res.data);
+                    /*setSelectedEpochs((prevSelectedEpochs) => {
+                        const newSelectedEpochs = [...prevSelectedEpochs];
+                        newSelectedEpochs[index] = res.data;
+                        return newSelectedEpochs;
+                    });*/
+                    toast(t('Métodos de avaliação agrupados com sucesso!'), successConfig);
+                }
+            });
+        }
+        else{
+            toast(t('Não foi possível criar os métodos de avaliação!'), errorConfig);
+        }
     }
+
+    const hasMoreThanOneCourseUnit = (index) => {
+        if (index >= selectedEvaluations.length) {
+            return false;
+        }
+        // Get the object at the specified index
+        const obj = selectedEvaluations[index];
+        // Get the keys of the object
+        const keys = Object.keys(obj);
+        // Check if there is more than 1 key
+        return keys.length > 1;
+    };
 
     return (
         <Modal size={'fullscreen'} closeOnEscape closeOnDimmerClick open={isOpen} onClose={closeModal}>
             <Modal.Header>{t("Agrupar Métodos")}</Modal.Header>
             <Modal.Content>
                 <Form>
-                    {/*<Header as="h4">{t("Selecione Unidades Curriculares")}</Header>*/}
-                    {/*<Container>*/}
-                    <CardGroup >
+                    <CardGroup>
                         {Array.from({ length: columns }, (_, index) => (
                             <Card key={index}>
                                 <CardContent style={{height: '95px'}} >
@@ -117,13 +142,13 @@ const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
                                                 readOnly
                                                 value={i18n.language === "en" ? courseUnit?.name_en : courseUnit?.name_pt}
                                             />
-                                    ) : (
-                                        <CourseUnits school={school} semester={semester} hasMethods currentCourseUnit={unitId}
-                                            eventHandler={(selectedUnit) =>
-                                                handleCourseUnitChange(index, selectedUnit)
-                                            }
-                                            isSearch={false}
-                                        />
+                                        ) : (
+                                            <CourseUnits school={school} semester={semester} hasMethods currentCourseUnit={unitId}
+                                                eventHandler={(selectedUnit) =>
+                                                    handleCourseUnitChange(index, selectedUnit)
+                                                }
+                                                isSearch={false}
+                                            />
                                     )}
                                 </CardContent>
                                 <CardContent style={{minHeight: '600px'}}>
@@ -152,8 +177,7 @@ const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
                                                 }
                                             />
                                         </div>
-                                    ))
-                                    // )
+                                        ))
                                     }
                                 </CardContent>
                             </Card>
@@ -163,16 +187,27 @@ const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
                                     <Icon name="add"/>
                                 </Button>
                                 )}
-                            {/*{  epochs && epochs?.map((item, index) => (*/}
 
-                            {/*            <Button className={'btn-add-interruption'} color={"green"} floated={"right"} onClick={groupEvaluations(index)} width={2}>*/}
-                            {/*                Agrupar Avaliações*/}
-                            {/*            </Button>*/}
-                            {/*        ))*/}
-                            {/*    }*/}
-
+                        <div className={"group-container-evaluation"}>
+                            <div className={"add-group-evaluations"}>
+                                {  epochs && epochs?.map((item, index) => (
+                                        <div
+                                            className={index > 0 ? "btn-group-evaluations margin-top-m" : "btn-group-evaluations" }
+                                            key={index}
+                                        >
+                                            <Header as="span">
+                                                {i18n.language === "en" ? item.name_en : item.name_pt}
+                                            </Header>
+                                            <Button color={"green"} floated={"right"}
+                                                    onClick={() =>groupEvaluations(index)} width={2}>
+                                                Agrupar Avaliações
+                                            </Button>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        </div>
                     </CardGroup>
-                    {/*</Container>*/}
                 </Form>
             </Modal.Content>
             <Modal.Actions>
