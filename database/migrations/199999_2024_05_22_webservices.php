@@ -30,11 +30,13 @@ return new class extends Migration
             $table->string('index_course_name_pt')->nullable();                 // 4
             $table->string('index_course_name_en')->nullable();                 // 14
             $table->string('index_course_initials')->nullable();                // docentes_course_link webservice
+            $table->string('index_course_schedule')->nullable();
 
             $table->string('index_course_unit_code')->nullable();               // 5
             $table->string('index_course_unit_name_pt')->nullable();            // 6
             $table->string('index_course_unit_name_en')->nullable();            // 13
             $table->string('index_course_unit_initials')->nullable();           // docentes_course_link webservice
+
 
             $table->string('index_course_unit_registered')->nullable();         // docentes_course_link webservice
             $table->string('index_course_unit_passed')->nullable();             // docentes_course_link webservice

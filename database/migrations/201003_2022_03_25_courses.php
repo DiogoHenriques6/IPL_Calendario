@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('name_pt');
             $table->string('name_en');
             $table->string('initials')->nullable();
+            $table->string('schedule')->nullable();
             $table->integer('degree')->nullable();
             $table->integer('num_years')->nullable();
 

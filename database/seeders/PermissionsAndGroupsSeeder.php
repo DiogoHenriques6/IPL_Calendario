@@ -125,6 +125,7 @@ class PermissionsAndGroupsSeeder extends Seeder
             "index_course_name_pt"              => "DS_CURSO",//"1",
             "index_course_name_en"              => "cursoIngles",
             "index_course_initials"             => "acronimoCurso",//"11",
+            "index_course_schedule"             => "NM_REGIME_FREQUENCIA",//"12",
 
             "index_course_unit_code"            => "COD_UC",//"2",
             "index_course_unit_name_pt"         => "DS_DISCIP",//"3",
