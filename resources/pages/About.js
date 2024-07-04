@@ -21,7 +21,7 @@ const About = () => {
                     <a href='https://github.com/andrecosta206' target="_blank">
                         <Icon name="github"/>
                     </a>
-                    <a href='www.linkedin.com/in/andrecosta206' target="_blank">
+                    <a href='https://www.linkedin.com/in/andrecosta206/' target="_blank">
                         <Icon name="linkedin"/>
                     </a>
 
