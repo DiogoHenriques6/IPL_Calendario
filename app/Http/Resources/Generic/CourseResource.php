@@ -15,6 +15,7 @@ class CourseResource extends JsonResource
             'id'            => $this->id,
             'code'          => $this->code,
             'initials'      => $this->initials,
+            'schedule'      => $this->schedule,
             'display_name'  => ($request->header("lang") == "en" ? $this->name_en : $this->name_pt) . " (" . $this->code . ")",
             'name_pt'       => $this->name_pt,
             'name_en'       => $this->name_en,

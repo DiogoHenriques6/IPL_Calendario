@@ -16,6 +16,7 @@ class Course extends Model
         "code",
         "name_pt",
         "name_en",
+        "schedule",
         "initials",
         "degree",
         "academic_year_id",

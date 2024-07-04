@@ -104,7 +104,10 @@ const Detail = () => {
         }
     }, [paramsId]);
 
-    const onSaveCourse = ({code, name_pt,name_en, initials, degree_id, duration}) => {
+    const onSaveCourse = () => {
+
+        }
+    /*const onSaveCourse = ({code, name_pt,name_en, initials, degree_id, duration}) => {
         axios.patch(`/courses/${paramsId}`, {
             code,
             name_pt,
@@ -120,11 +123,14 @@ const Detail = () => {
                 toast(t('Ocorreu um erro ao gravar o curso!'), errorConfig);
             }
         });
-    };
+    };*/
 
     const initialValues = useMemo(() => {
-        const {code, name_pt, name_en, initials, degree_id, duration, coordinator} = courseDetail || {};
-        return {code, name_pt, name_en, initials, degree_id, duration, coordinator: coordinator?.id};
+        const {code, name_pt, name_en, initials, schedule, degree_id, duration, coordinator} = courseDetail || {};
+
+        const formattedSchedule = schedule && schedule === "D" ? "Diurno" : "Pós-Laboral";
+
+        return {code, name_pt, name_en, initials, schedule : formattedSchedule , degree_id, duration, coordinator: coordinator?.id};
     }, [courseDetail]);
 
     return (
@@ -154,12 +160,6 @@ const Detail = () => {
                     <Card.Content>
                         <div className='card-header-alignment'>
                             <Header as="span">{ t('Curso') + ": " + ( courseDetail?.display_name || "") }</Header>
-                            {/*<ShowComponentIfAuthorized permission={[SCOPES.EDIT_COURSES]}>
-                                <Button onClick={handleSubmit} color="green" icon labelPosition="left" floated="right">
-                                    <Icon name={'save'}/>
-                                    { t('Guardar') }
-                                </Button>
-                            </ShowComponentIfAuthorized>*/}
                         </div>
                     </Card.Content>
                     <Card.Content>
@@ -167,34 +167,39 @@ const Detail = () => {
                             <Form.Group widths="4">
                                 <Field name="code">
                                     {({input: codeInput}) => (
-                                        <Form.Input className='input-readonly' disabled={ true || loading || !hasPermissionToEdit} label={ t("Código") } {...codeInput}/>
+                                        <Form.Input className='input-readonly' disabled={ true } label={ t("Código") } {...codeInput}/>
                                     )}
                                 </Field>
                                 <Field name="initials">
                                     {({input: initialsInput}) => (
-                                        <Form.Input className='input-readonly' disabled={ true || loading || !hasPermissionToEdit} label={ t("Sigla") } {...initialsInput}/>
+                                        <Form.Input className='input-readonly' disabled={ true } label={ t("Sigla") } {...initialsInput}/>
                                     )}
                                 </Field>
                                 <Field name="degree_id">
                                     {({input: degreeIdInput}) => (
-                                        <Degree className='input-readonly' disabled={ true || loading || !hasPermissionToEdit} widthSize={6} eventHandler={(value) => degreeIdInput.onChange(value)} value={degreeIdInput.value} isSearch={false}/>
+                                        <Degree className='input-readonly' disabled={ true } widthSize={6} eventHandler={(value) => degreeIdInput.onChange(value)} value={degreeIdInput.value} isSearch={false}/>
                                     )}
                                 </Field>
                                 <Field name="duration">
                                     {({input: durationInput}) => (
-                                        <Form.Input className='input-readonly' disabled={ true || loading || !hasPermissionToEdit  } label={ t("Número de anos") } {...durationInput}/>
+                                        <Form.Input className='input-readonly' disabled={ true  } label={ t("Número de anos") } {...durationInput}/>
                                     )}
                                 </Field>
                             </Form.Group>
                             <Form.Group widths="3">
                                 <Field name="name_pt">
                                     {({input: namePtInput}) => (
-                                        <Form.Input className='input-readonly' disabled={ true || loading || !hasPermissionToEdit } label={ t("Nome PT") } {...namePtInput}/>
+                                        <Form.Input className='input-readonly' disabled={ true } label={ t("Nome PT") } {...namePtInput}/>
                                     )}
                                 </Field>
                                 <Field name="name_en">
                                     {({input: nameEnInput}) => (
-                                        <Form.Input className='input-readonly' disabled={ true || loading || !hasPermissionToEdit } label={ t("Nome EN") } {...nameEnInput}/>
+                                        <Form.Input className='input-readonly' disabled={ true } label={ t("Nome EN") } {...nameEnInput}/>
+                                    )}
+                                </Field>
+                                <Field name="schedule">
+                                    {({input: scheduleInput}) => (
+                                        <Form.Input className='input-readonly' disabled={ true } label={ t("Regime") } {...scheduleInput}/>
                                     )}
                                 </Field>
                             </Form.Group>
