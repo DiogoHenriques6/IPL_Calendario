@@ -158,10 +158,10 @@ const New = () => {
                                                 <Icon name={"refresh"} loading={isSearchLoading}/>
                                             </Button>
                                         )}
-                                        <Button onClick={handleSubmit} color="green" icon labelPosition="left" floated="right" loading={isSaving} >
+                                        {/*<Button onClick={handleSubmit} color="green" icon labelPosition="left" floated="right" loading={isSaving} >
                                             <Icon name={isEditMode ? 'save' : 'plus'}/>
                                             {isEditMode ? t('Guardar') : t('Criar')}
-                                        </Button>
+                                        </Button>*/}
                                     </div>
                                 </ShowComponentIfAuthorized>
                             </div>

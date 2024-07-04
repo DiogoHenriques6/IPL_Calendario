@@ -194,12 +194,17 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
             if (!copy[index].methods?.length) {
                 copy[index].methods = [];
             }
-            let newWeight = 100 - copy[index].methods.reduce((a, b) => a + (b?.weight || 0), 0,);
-            newWeight = (newWeight >= 0 ? newWeight : 0);
+            let defaultWeight = copy[index].methods.length ? 100 / (copy[index].methods.length + 1) : 100;
+
+            copy[index].methods.forEach((method, index) => {
+                method.weight = defaultWeight;
+                return method;
+            });
+
             copy[index].methods.push({
                 epoch_type_id: epoch_id,
-                weight: newWeight,
-                minimum: 9.5,
+                weight: defaultWeight,
+                minimum: 0,
                 evaluation_type_id: undefined,
                 description_pt: '',
                 description_en: '',
@@ -210,6 +215,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
             return copy;
         });
     }
+
     const updateMethodMinimum = (index, methodIndex, value) => {
         setEpochs((current) => {
             const copy = [...current];
@@ -217,6 +223,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
             return copy;
         })
     }
+
     const updateMethodWeight = (index, methodIndex, value) => {
         setEpochs((current) => {
             const copy = [...current];
@@ -224,6 +231,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
             return copy;
         })
     }
+
     const cloneMethods = () => {
         if( selectedEpochFrom === -1 || selectedEpochTo.length === 0 ) {
             toast(t('Tens de selecionar as duas épocas que pretendes copiar! De onde para onde.'), errorConfig);
@@ -294,10 +302,10 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
         axios.get('/method/copy?year=' + yearId).then((res) => {
             if (res.status === 200) {
                 // setCurricularUnitsOptions(res?.data?.data?.map(({key, value, text}) => ({key, value, text})));
-                setCurricularUnitsOptions(res?.data?.data?.map(({ id, name }) => ({
+                setCurricularUnitsOptions(res?.data?.data?.map(({ id, name, course_description }) => ({
                     key: id,
                     value: id,
-                    text: name
+                    text: name + " - (" + course_description + ")"
                 })));
                 setLoadingUCs(false);
             }
@@ -313,6 +321,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                 loadMethods();
                 setOpenCopy(false);
                 setRemovedMethods([]);
+                toast(t('Métodos de avaliação criados com sucesso!'), successConfig);
             }
         });
     }
@@ -320,7 +329,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
     return (
         <div ref={contextRef}>
             { epochs?.length < 1 || isLoading ? (
-                <EmptyTable isLoading={isLoading} label={t("Ohh! Não foi possível encontrar metodos para esta Unidade Curricular!")}/>
+                <EmptyTable isLoading={isLoading} label={t("Ohh! Não foi possível encontrar métodos para esta Unidade Curricular!")}/>
             ) : (
                 <div>
                     <ShowComponentIfAuthorized permission={SCOPES.MANAGE_EVALUATION_METHODS}>
@@ -354,15 +363,15 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                 <div className='sticky-methods-header'>
                                     <Button onClick={() => setOpenGroupMethods(true)} icon labelPosition="left"
                                             color="green" disabled={hasNoMethods}>
-                                        <Icon name={"object group outline"}/>{t("Agrupar metodos")}
+                                        <Icon name={"object group outline"}/>{t("Agrupar métodos")}
                                     </Button>
                                     <Button onClick={() => setOpenCopy(true)} icon labelPosition="left"
                                             color="blue" disabled={!hasNoMethods}>
-                                        <Icon name={"clone outline"}/>{t("Copiar metodos")}
+                                        <Icon name={"clone outline"}/>{t("Copiar métodos")}
                                     </Button>
                                     <Button onClick={() => setOpenClone(true)} icon labelPosition="left"
                                             color="yellow" disabled={hasNoMethods}>
-                                        <Icon name={"clone outline"}/>{t("Duplicar metodos")}
+                                        <Icon name={"clone outline"}/>{t("Duplicar métodos")}
                                     </Button>
                                     <Button onClick={onSubmit} color="green" icon labelPosition="left"
                                             loading={isSaving} disabled={!formValid}>
@@ -510,10 +519,11 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                                     <Slider step="5" min="0" max="100" value={method.weight}
                                                                             inputSide={"left"} disabled={hasGroup}
                                                                             valuePrefix={"%"}
-                                                                            eventHandler={(value) => updateMethodWeight(index, methodIndex, value)}/>
+                                                                            eventHandler={(value) => updateMethodWeight(index, methodIndex, value)}
+                                                                            key={`${methodIndex}-${method.weight}`}/>
                                                                 ) : (
                                                                     <Form.Input placeholder={t("Peso da Avaliação (%)")} fluid
-                                                                        value={method.weight} readOnly
+                                                                        value={method.weight}
                                                                         className="margin-top-base"
                                                                         />
                                                                 )}

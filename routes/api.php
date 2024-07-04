@@ -7,6 +7,7 @@ use App\Http\Controllers\API\EvaluationTypeController;
 use App\Http\Controllers\API\GroupController;
 use App\Http\Controllers\API\InterruptionTypeController;
 use App\Http\Controllers\API\LoginController;
+use App\Http\Controllers\API\MethodGroupController;
 use App\Http\Controllers\API\v1\V1ExamController;
 use App\Http\Controllers\API\v1\V1CalendarController;
 use App\Models\AcademicYear;
@@ -209,6 +210,10 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/method/clone',            'methodsClone'  );
         Route::post('/method/clone-grouped',    'methodsCloneGrouped'  );
 
+    });
+
+    Route::controller(MethodGroupController::class)->group(function (){
+        Route::post('/method-groups',           'store'         );
     });
 
     Route::controller(InterruptionController::class)->group(function () {

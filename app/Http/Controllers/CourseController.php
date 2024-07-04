@@ -163,19 +163,15 @@ class CourseController extends Controller
 
     public function assignCoordinator(Request $request, Course $course) {
         $coordinatorUser = User::where('email', $request->coordinator_user_email)->first();
-
-        if (is_null($coordinatorUser)) {
-            $newUser = new User([
-                "email" => $request->coordinator_user_email,
-                "name" => $request->coordinator_user_name,
-                "password" => ""
-            ]);
-            $newUser->save();
-            $this->assignCoordinatorUserToCourse($newUser->id, $course);
+        if(isset($course->coordinator_user_id)){
+            if( Course::where('coordinator_user_id', $course->coordinator_user_id)->pluck('id')->count() <= 1){
+                 User::where('id',$course->coordinator_user_id)->first()->groups()->detach(Group::coordinator()->get());
+            }
         }
-
-        $course->coordinator_user_id = is_null($coordinatorUser) ? $newUser->id : $coordinatorUser->id;
+        $this->assignCoordinatorUserToCourse($coordinatorUser->id, $course);
+        $course->coordinator_user_id = $coordinatorUser->id;
         $course->save();
+        return response()->json($coordinatorUser->groups()->get(), Response::HTTP_OK);
     }
 
     private function assignCoordinatorUserToCourse($user, $course)

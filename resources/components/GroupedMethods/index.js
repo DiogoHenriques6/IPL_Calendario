@@ -57,14 +57,23 @@ const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
     }
 
     const handleCourseUnitChange = (index, courseUnit) => {
-        setCourseUnits((prevSelectedCourseUnits) => {
-            const newSelectedCourseUnits = [...prevSelectedCourseUnits];
-            if (newSelectedCourseUnits[index] !== courseUnit) {
-                newSelectedCourseUnits[index] = courseUnit ? courseUnit : null;
-                console.log("Course Units", newSelectedCourseUnits);
-            }
-            return newSelectedCourseUnits;
+        let newSelectedCourseUnits = [...courseUnits];
+        if (newSelectedCourseUnits[index] !== courseUnit) {
+            newSelectedCourseUnits[index] = courseUnit ? courseUnit : null;
+        }
+        setCourseUnits(newSelectedCourseUnits);
+
+        setSelectedEvaluations((prevSelectedEvaluations) => {
+            return prevSelectedEvaluations.map((item) => {
+                return Object.keys(item).reduce((acc, key) => {
+                    if (newSelectedCourseUnits.includes(parseInt(key))) {
+                        acc[key] = item[key];
+                    }
+                    return acc;
+                }, {});
+            })
         });
+
         if (courseUnit) {
             axios.get(`/course-units/${courseUnit}/methods`).then((res) => {
                 if (res.status === 200) {
@@ -90,27 +99,27 @@ const GroupedMethods = ({isOpen, onClose, epochs, unitId}) => {
                 newSelectedEvaluations[epochIndex][courseUnits[courseIndex]] = value;
             else
                 delete newSelectedEvaluations[epochIndex][courseUnits[courseIndex]];
-            console.log(newSelectedEvaluations);
             return newSelectedEvaluations;
         })
     };
+
     const groupEvaluations = (index) => {
-        console.log(index)
         if(hasMoreThanOneCourseUnit(index)){
-            axios.post(`/methods_groups`,{ methods: selectedEvaluations[index] }).then((res) => {
-                if (res.status === 200) {
-                    // setEpochs(res.data);
-                    /*setSelectedEpochs((prevSelectedEpochs) => {
-                        const newSelectedEpochs = [...prevSelectedEpochs];
-                        newSelectedEpochs[index] = res.data;
-                        return newSelectedEpochs;
-                    });*/
+            axios.post(`/method-groups`,{ methods: selectedEvaluations[index], epoch_type_id: index + 1   }).then((res) => {
+                if (res.status === 201) {
                     toast(t('Métodos de avaliação agrupados com sucesso!'), successConfig);
+                    //TODO register the group in the modal
+                }
+                if(res.status === 204  ){
+                    toast(t('Método já está associado a um grupo!'), errorConfig);
+                }
+                else{
+                    toast(t('Erro ao agrupar métodos!'), errorConfig);
                 }
             });
         }
         else{
-            toast(t('Não foi possível criar os métodos de avaliação!'), errorConfig);
+            toast(t('Necessário selecionar mais do que um método!'), errorConfig);
         }
     }
 

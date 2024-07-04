@@ -279,16 +279,23 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
     const closeModalCopy = () => {
         setOpenCopy(false);
     }
+
     const selectAcademicYear = (yearId) => {
         setLoadingUCs(true);
         setAcademicYearSelected(yearId);
         axios.get('/method/copy?year=' + yearId).then((res) => {
             if (res.status === 200) {
-                setCurricularUnitsOptions(res?.data?.data?.map(({key, value, text}) => ({key, value, text})));
+                // setCurricularUnitsOptions(res?.data?.data?.map(({key, value, text}) => ({key, value, text})));
+                setCurricularUnitsOptions(res?.data?.data?.map(({id, name,course_description}) => ({
+                    key: id,
+                    value: id,
+                    text: name + " - (" + course_description + ")"
+                })));
                 setLoadingUCs(false);
             }
         });
-    }
+    };
+
     const handleSubmitCopy = () => {
         axios.post('/method/clone-grouped', {
             copy_course_unit_id: curricularUnitSelected,

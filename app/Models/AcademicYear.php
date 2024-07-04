@@ -33,6 +33,11 @@ class AcademicYear extends Model
         return $this->hasMany(CourseUnitGroup::class);
     }
 
+    public function methodGroups()
+    {
+        return $this->hasMany(MethodGroup::class);
+    }
+
     public function scopeSelected($query)
     {
         return $query->where('selected', true);

@@ -127,9 +127,9 @@ const CourseTabsCCP = ({ courseId, isLoading }) => {
                             <Form.Dropdown placeholder={ t("Procurar pelo email do utilizador") } label={ t("Utilizador a adicionar") } search selection
                                 loading={searchUser}
                                 // options={listOfStudents}
-                                options={listOfCCPMembers.map((ccpMember) => ({
+                                options={listOfCCPMembers?.map((ccpMember) => ({
                                     key: ccpMember.id,
-                                    text: ccpMember.name,
+                                    text: ccpMember.name + ' (' + ccpMember.email.split('@')[0] + ')',
                                     value: ccpMember.email,
                                 }))}
                                 onSearchChange={_.debounce(searchUsers, 400)}

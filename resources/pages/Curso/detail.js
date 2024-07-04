@@ -154,12 +154,12 @@ const Detail = () => {
                     <Card.Content>
                         <div className='card-header-alignment'>
                             <Header as="span">{ t('Curso') + ": " + ( courseDetail?.display_name || "") }</Header>
-                            <ShowComponentIfAuthorized permission={[SCOPES.EDIT_COURSES]}>
+                            {/*<ShowComponentIfAuthorized permission={[SCOPES.EDIT_COURSES]}>
                                 <Button onClick={handleSubmit} color="green" icon labelPosition="left" floated="right">
                                     <Icon name={'save'}/>
                                     { t('Guardar') }
                                 </Button>
-                            </ShowComponentIfAuthorized>
+                            </ShowComponentIfAuthorized>*/}
                         </div>
                     </Card.Content>
                     <Card.Content>
