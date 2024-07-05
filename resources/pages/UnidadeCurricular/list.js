@@ -1,5 +1,20 @@
 import React, {useEffect, useState} from 'react';
-import { Card, Container, Table, Form, Icon, Modal, Button, Header, Dimmer, Loader, Popup, Checkbox, List } from 'semantic-ui-react';
+import {
+    Card,
+    Container,
+    Table,
+    Form,
+    Icon,
+    Modal,
+    Button,
+    Header,
+    Dimmer,
+    Loader,
+    Popup,
+    Checkbox,
+    List,
+    ListContent
+} from 'semantic-ui-react';
 import axios from 'axios';
 import {Link, useSearchParams} from 'react-router-dom';
 import _ from 'lodash';
@@ -137,7 +152,7 @@ const CourseUnitsList = () => {
             permission: [SCOPES.VIEW_UC_GROUPS],
         },
         {name: t('Outros'), align: 'center', style: {width: '15%'} },
-        {name: t('Ramo'),   align: 'center', style: {width: '11%'}  },
+        {name: t('Ramo'),   align: 'center', style: {width: '11%'} },
         {
             name: t('Ações'),
             align: 'center',
@@ -247,6 +262,14 @@ const CourseUnitsList = () => {
                                             </ShowComponentIfAuthorized>
                                             <Table.Cell>
                                                 <List verticalAlign='middle'>
+                                                    <List.Item>
+                                                        <List.Content>
+                                                            { t('Curso') + ': ' }
+                                                        </List.Content>
+                                                        <List.Content floated='right'>
+                                                            <b>{ course_description }</b>
+                                                        </List.Content>
+                                                    </List.Item>
                                                     <List.Item>
                                                         <List.Content floated='right'>
                                                             <b>{ semester }</b>

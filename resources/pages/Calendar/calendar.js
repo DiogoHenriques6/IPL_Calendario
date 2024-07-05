@@ -12,6 +12,8 @@ import { useReactToPrint } from 'react-to-print';
 
 import PageLoader from '../../components/PageLoader';
 import SCOPES from '../../utils/scopesConstants';
+import GROUPS from "../../utils/groupConstants";
+
 import {errorConfig, successConfig} from '../../utils/toastConfig';
 
 import EmptyTable from "../../components/EmptyTable";
@@ -22,7 +24,6 @@ import PopupEvaluationDetail from './detail/popup-evaluation-detail';
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
 import {getCalendarPhasePermissions} from "../../utils/auth";
-import Cookies from 'js-cookie';
 
 const SweetAlertComponent = withReactContent(Swal);
 
@@ -66,7 +67,7 @@ const Calendar = () => {
     const [showingEpochs, setShowingEpochs] = useState([]);
 
     const componentRef = useRef();
-    const [myUCsOnly, setMyUCsOnly] = useState(true);
+    const [myUCsOnly, setMyUCsOnly] = useState(false);
 
     const myCourseUnit = localStorage.getItem('courseUnits') ? JSON.parse(localStorage.getItem('courseUnits')) : null;
 
@@ -78,7 +79,6 @@ const Calendar = () => {
                         margin: 12mm;
                     }`,
     });
-
 
     useEffect(() => {
         // check if URL params are just numbers or else redirects to previous page
@@ -99,15 +99,15 @@ const Calendar = () => {
                     localStorage.setItem('calendarPermissions', JSON.stringify(localPermissions));
                 }
                 setCalendarPermissions(getCalendarPhasePermissions(calendarPhase));
-                console.log("Here", res.headers);
             })
+        }
+        const currentGroup = localStorage.getItem('selectedGroup');
+        if(currentGroup.includes(GROUPS.STUDENT) || currentGroup.includes(GROUPS.TEACHER)){
+            setMyUCsOnly(true);
         }
     }, []);
 
 
-    /*
-     * Create / Edit Exams
-     */
     const scheduleExamHandler = (scholarYear, epoch, date, existingExamsAtThisDate) => {
         setScheduleExamInfo({
             calendarId: parseInt(calendarId, 10),

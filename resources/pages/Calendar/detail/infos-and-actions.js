@@ -327,7 +327,7 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                         (!isPublished && !isTemporary) ? (
                                 checkPermissionByPhase(SCOPES.CHANGE_CALENDAR_PHASE) && (
                                     <>
-                                        {localStorage.getItem('groups')?.indexOf('board') >= 0 || localStorage.getItem('groups')?.indexOf('pedagogic') >= 0 ? (
+                                        {localStorage.getItem('selectedGroup')?.includes('board') || localStorage.getItem('selectedGroup')?.includes('pedagogic') ? (
                                                 <div className="button-group-container">
                                                     <ButtonGroup className={"evaluation-buttons"}>
                                                         <Button color="red"

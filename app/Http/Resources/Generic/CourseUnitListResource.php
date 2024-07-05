@@ -9,10 +9,19 @@ class CourseUnitListResource extends JsonResource
     public function toArray($request)
     {
         $lang_header = $request->header("lang");
+
+        $courseDescription = isset($this->course->initials) && !is_null($this->course->initials) && $this->course->initials != ""
+            ? $this->course->initials
+            : ($lang_header == "en"
+                ? $this->course->name_en
+                : $this->course->name_pt);
+
+        $courseDescription .= " (Regime {$this->course->schedule})";
+
         return [
             'id'                    => $this->id,
             'name'                  => ($lang_header == "en" ? $this->name_en : $this->name_pt),
-            'course_description'    => ($lang_header == "en" ? $this->course->name_en : $this->course->name_pt) ." ({$this->course->code})",
+            'course_description'    => $courseDescription,
             'initials'              => $this->initials,
             'code'                  => $this->code,
             'curricularYear'        => $this->curricular_year,
