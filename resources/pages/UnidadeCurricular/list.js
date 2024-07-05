@@ -151,13 +151,13 @@ const CourseUnitsList = () => {
                 <Card.Content>
                     <div className='card-header-alignment'>
                         <Header as="span">{t("Unidades Curriculares")}</Header>
-                        <ShowComponentIfAuthorized permission={[SCOPES.CREATE_COURSE_UNITS]}>
-                            { !isLoading && (
-                                <Link to="/unidade-curricular/novo">
-                                    <Button floated="right" color="green">{t("Novo")}</Button>
-                                </Link>
-                            )}
-                        </ShowComponentIfAuthorized>
+                        {/*<ShowComponentIfAuthorized permission={[SCOPES.CREATE_COURSE_UNITS]}>*/}
+                        {/*    { !isLoading && (*/}
+                        {/*        <Link to="/unidade-curricular/novo">*/}
+                        {/*            <Button floated="right" color="green">{t("Novo")}</Button>*/}
+                        {/*        </Link>*/}
+                        {/*    )}*/}
+                        {/*</ShowComponentIfAuthorized>*/}
                     </div>
                 </Card.Content>
                 <Card.Content>

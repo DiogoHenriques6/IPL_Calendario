@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Card, Container, Dimmer, Form, Loader, Table, Button, Icon, Header, Popup} from 'semantic-ui-react';
+import {Card, Container, Dimmer, Form, Loader, Table, Button, Icon, Header, Popup, TableCell} from 'semantic-ui-react';
 import axios from 'axios';
 import {Link} from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -39,6 +39,7 @@ const CoursesList = () => {
         {name: t('Unidade de Ensino'), style: {width: '15%'} },
         {name: t('Código'), style: {width: '10%'} },
         {name: t('Nome')},
+        {name: t('Regime')},
         //{name: 'Sigla'},
         {name: t('Tipo de Curso'), style: {width: '15%'}},
         //{name: 'Numero de Anos'},
@@ -154,7 +155,7 @@ const CoursesList = () => {
                                 </Table.Row>
                             </Table.Header>
                             <Table.Body>
-                                {courseList.map(({id, school, code, name, level, has_issues}) => (
+                                {courseList.map(({id, school, code, name, schedule, level, has_issues}) => (
                                     <Table.Row key={code} warning={ (useComponentIfAuthorized(SCOPES.EDIT_COURSES) ? (has_issues) : false) }>
                                         <Table.Cell>{school}</Table.Cell>
                                         <Table.Cell>{code}</Table.Cell>
@@ -164,6 +165,7 @@ const CoursesList = () => {
                                             </ShowComponentIfAuthorized>
                                             {name}
                                         </Table.Cell>
+                                        <TableCell>{schedule === "D" ? "Diurno" : "Pós-Laboral"}</TableCell>
                                         <Table.Cell>{level}</Table.Cell>
                                         <Table.Cell textAlign="center">
                                             <Link to={`/curso/${id}`}>

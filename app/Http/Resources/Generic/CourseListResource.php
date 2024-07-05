@@ -21,6 +21,7 @@ class CourseListResource extends JsonResource
             'id'            => $this->id,
             'code'          => $this->code,
             'initials'      => $this->initials,
+            'schedule'      => $this->schedule,
             'name'          => ($request->header("lang") == "en" ? $this->name_en : $this->name_pt),
             'duration'      => $this->num_years,
             'has_issues'    => $this->coordinator_user_id == null,

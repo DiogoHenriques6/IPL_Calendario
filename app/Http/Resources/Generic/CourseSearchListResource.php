@@ -14,7 +14,7 @@ class CourseSearchListResource extends JsonResource
         return [
             'key'   => $this->id,
             'value' => $this->id,
-            'text'  => '(' . $this->code . ') ' . ($request->header("lang") == "en" ? $this->name_en : $this->name_pt),
+            'text'  => '(' . $this->code . ') ' . ($request->header("lang") == "en" ? $this->name_en : $this->name_pt) . ' - ' . $this->schedule,
         ];
     }
 }

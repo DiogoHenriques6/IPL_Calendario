@@ -18,10 +18,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Psy\Util\Str;
 
 //If the webservices change values change this values accordingly
-CONST DIURNO = "Diurno";
 CONST SEMESTER = "S";
 
 class ExternalImports
@@ -30,7 +28,7 @@ class ExternalImports
     public static function getYearHolidays($yearToImport)
     {
         $apiEndpoint = Config::get('constants.api.sapo_holidays_endpoint');
-        $url = "{$apiEndpoint}?year={$yearToImport}";
+        $url = "$apiEndpoint?year=$yearToImport";
         $holidays = simplexml_load_file($url);
         //dd($holidays->GetNationalHolidaysResult->Holiday);
         return $holidays->GetNationalHolidaysResult;//->Holiday;
@@ -39,7 +37,7 @@ class ExternalImports
     public static function importYearHolidays($yearToImport, $calendarId)
     {
         $apiEndpoint = Config::get('constants.api.sapo_holidays_endpoint');
-        $url = "{$apiEndpoint}?year={$yearToImport}";
+        $url = "$apiEndpoint?year=$yearToImport";
         $holidays = simplexml_load_file($url);
 
         foreach ($holidays->GetNationalHolidaysResult->Holiday as $key => $holiday) {
@@ -210,7 +208,7 @@ class ExternalImports
                             [
                                 "school_id" => $school->id,
                                 "initials"  => $teachersByUC->{$webservice->index_course_initials} ,//$gen_initials,
-                                "schedule"  => $courseUnit->{$webservice->index_course_initials} == DIURNO ? "D" : "PL",
+                                "schedule"  => $courseUnit->{$webservice->index_course_schedule},
 
                                 "name_pt"   => $courseUnit->{$webservice->index_course_name_pt},
                                 "name_en"   => $courseUnit->{$webservice->index_course_name_en} !== '' ? $courseUnit->{$webservice->index_course_name_en} :$courseUnit->{$webservice->index_course_name_pt}, // this will duplicate the value as default, to prevent empty states// this will duplicate the value as default, to prevent empty states
@@ -226,9 +224,9 @@ class ExternalImports
                                 $hasUpdate = true;
                                 $course->initials = $teachersByUC->{$webservice->index_course_initials};
                             }
-                            if($course->schedule != ($courseUnit->{$webservice->index_course_initials}  == DIURNO ? "D" : "PL")) {
+                            if($course->schedule != $courseUnit->{$webservice->index_course_schedule} ) {
                                 $hasUpdate = true;
-                                $course->schedule = $courseUnit->{$webservice->index_course_initials}  == DIURNO ? "D" : "PL";
+                                $course->schedule = $courseUnit->{$webservice->index_course_schedule} ;
                             }
                             if($course->name_pt != $courseUnit->{$webservice->index_course_name_pt}) {
                                 $hasUpdate = true;
@@ -498,7 +496,7 @@ class ExternalImports
                         [
                             "school_id" => $school->id,
                             "initials"  => $teachersByUC->{$webservice->index_course_initials},
-                            "schedule"  => $courseUnit->{$webservice->index_course_initials} == DIURNO ? "D" : "PL",
+                            "schedule"  => $courseUnit->{$webservice->index_course_schedule},
 
                             "name_pt"   => $courseUnit->{$webservice->index_course_name_pt},
                             "name_en"   => $courseUnit->{$webservice->index_course_name_en} !== '' ? $courseUnit->{$webservice->index_course_name_en} :$courseUnit->{$webservice->index_course_name_pt},
@@ -514,9 +512,9 @@ class ExternalImports
                             $hasUpdate = true;
                             $course->initials = $teachersByUC->{$webservice->index_course_initials};
                         }
-                        if($course->schedule != ($courseUnit->{$webservice->index_course_initials}  == DIURNO ? "D" : "PL")) {
+                        if($course->schedule != $courseUnit->{$webservice->index_course_schedule} ) {
                             $hasUpdate = true;
-                            $course->schedule = $courseUnit->{$webservice->index_course_initials}  == DIURNO ? "D" : "PL";
+                            $course->schedule = $courseUnit->{$webservice->index_course_schedule}  ;
                         }
                         if($course->name_pt != $courseUnit->{$webservice->index_course_name_pt}) {
                             $hasUpdate = true;

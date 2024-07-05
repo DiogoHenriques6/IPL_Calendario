@@ -13,7 +13,7 @@ class CourseUnitSearchResource extends JsonResource
         return [
                 'id'                    => $this->id,
                 'name'                  => ($lang_header == "en" ? $this->name_en : $this->name_pt),
-                'course_description'    => ($lang_header == "en" ? $this->course->name_en : $this->course->name_pt) ." ({$this->course->code})",
+                'course_description'    => ($lang_header == "en" ? $this->course->name_en : $this->course->name_pt) ." ({$this->course->schedule})",
                 'initials'              => $this->initials,
                 'code'                  => $this->code,
                 'curricularYear'        => $this->curricular_year,
