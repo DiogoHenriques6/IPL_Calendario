@@ -32,6 +32,7 @@ class SchoolEditResource extends JsonResource
             'index_course_name_pt'              => $this->webservice->index_course_name_pt,
             'index_course_name_en'              => $this->webservice->index_course_name_en,
             'index_course_initials'             => $this->webservice->index_course_initials,
+            'index_course_schedule'             => $this->webservice->index_course_schedule,
             'index_course_unit_code'            => $this->webservice->index_course_unit_code,
             'index_course_unit_name_pt'         => $this->webservice->index_course_unit_name_pt,
             'index_course_unit_name_en'         => $this->webservice->index_course_unit_name_en,

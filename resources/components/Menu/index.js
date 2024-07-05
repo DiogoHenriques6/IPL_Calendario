@@ -37,7 +37,9 @@ const HeaderMenu = () => {
         //TODO join both api calls into one (less time loading)
             axios.get('user-group/menu').then((response) => {
                 if (response.status >= 200 && response.status < 300) {
-                    setUserGroups(response?.data?.data);
+                    console.log("Data",response?.data)
+                    console.log("Data data" ,response?.data?.data)
+                    setUserGroups(response?.data?.data ? response?.data?.data : response?.data);
                     if(!localStorage.getItem('selectedGroup')){
                         if(response?.data?.data?.value){
                             // console.log(response.data.data)

@@ -94,11 +94,21 @@ class GroupController extends Controller
 
     public function getUserGroup()
     {
-        $selectedGroup = Group::where('id', request()->cookie('selectedGroup'))->first();
-        if($selectedGroup->code == InitialGroups::STUDENT){
-            return new MyGroupsResource($selectedGroup);
+        if(!request()->cookie('selectedGroup')){
+            $selectedGroup = Auth::user()->groups()->first();
+            if($selectedGroup->code == InitialGroups::STUDENT){
+                return (new MyGroupsResource($selectedGroup))->withCookie('selectedGroup', $selectedGroup->id);
+            }
+            $response = MyGroupsResource::collection(Auth::user()->groups);
+            return response($response)->withCookie('selectedGroup', $selectedGroup->id);
         }
-        return MyGroupsResource::collection(Auth::user()->groups);
+        else{
+            $selectedGroup = Group::where('id', request()->cookie('selectedGroup'))->first();
+            if($selectedGroup->code == InitialGroups::STUDENT){
+                return new MyGroupsResource($selectedGroup);
+            }
+            return MyGroupsResource::collection(Auth::user()->groups);
+        }
     }
 
     public function switch(SelectedGroupSwitchRequest $request)
