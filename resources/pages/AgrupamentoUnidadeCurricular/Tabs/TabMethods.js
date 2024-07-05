@@ -163,6 +163,7 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
             });
         }
     };
+
     // Get Epoch Type Total Value
     const getEpochValue = (index) => {
         return (epochs[index].methods || [])?.reduce((a, b) => a + (b?.weight || 0), 0);

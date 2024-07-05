@@ -206,7 +206,6 @@ const New = () => {
         return {id, description_pt, description_en, courseUnits: (course_units ? course_units.map((x) => x.id) : [])};
     }, [courseUnitGroupDetail]);
 
-
     const onSubmit = ({id, description_pt, description_en}) => {
         setIsSaving(true);
         const isNew = !id;
@@ -249,8 +248,7 @@ const New = () => {
             setIsDisable(true);
         }
     }
-
-
+    //TODO change add UCs to UCsTab
     return (
         <Container>
             <div className="margin-bottom-base">
@@ -316,21 +314,6 @@ const New = () => {
                                                     color="red">{t("Remover unidades curriculares selecionadas") + " (" + selectedCourseUnits.length + ")"}</Button>
                                         )}
                                     </Card.Content>
-                                </div>
-                            ) : null}
-                            {coursesCount > 0 ? (
-                                <div>
-                                    <Header as="h5">
-                                        {t("Unidades Curriculares")}
-                                    </Header>
-
-                                    <Grid.Row>
-                                        {courseUnitGroupDetail?.course_units.map((courseUnit, index) => (
-                                            <Label key={index} size={"large"} className={"margin-bottom-s"}>
-                                                {courseUnit.code + ' - ' + courseUnit.name}
-                                            </Label>
-                                        ))}
-                                    </Grid.Row>
                                 </div>
                             ) : null}
                             {isEditMode && (
