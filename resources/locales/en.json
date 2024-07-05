@@ -174,7 +174,7 @@
         "Configuração da queryString": "Configuration of queryString",
         "Dicas de implementação": "Implementation Tips",
         "Sugere-se que as variáveis que recebem os dados relativos ao ano letivo e ao semestre, sejam de acordo com a lista seguinte:": "It is suggested that the variables that receive data related to the academic year and semester are according to the following list:",
-        "anoletivo -> Pronto a receber no formato: 202122": "academic year -> Ready to receive in format: 202122",
+        "anoletivo -> Pronto a receber no formato: 2021/22": "academic year -> Ready to receive in format: 202122",
         "periodo -> Pronto a receber no formato (S1/S2)":  "semester -> Ready to receive in format (S1/S2)",
 
         "https://www.example.com/webservice?anoletivo=202122&periodo=S1": "https://www.example.com/webservice?anoletivo=202122&periodo=S1",
@@ -196,7 +196,7 @@
         "Grupo GOP da escola" : "GOP Group of school",
         "Grupo Direção da escola" :  "Management group of school",
         "Grupo Pedagógico da escola" : "Pedagogic group of school",
-        "Link do Webservice dos Cursos" :  "Webservice link for Courses",
+        "Link Base dos Webservices" :  "Base Link of Webservices",
 
         "Unidades Curriculares": "Curricular Units",
         "Unidade curricular eliminada com sucesso!": "Curricular unit deleted with success!",

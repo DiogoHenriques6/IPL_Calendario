@@ -125,7 +125,7 @@ class PermissionsAndGroupsSeeder extends Seeder
             "index_course_name_pt"              => "DS_CURSO",//"1",
             "index_course_name_en"              => "cursoIngles",
             "index_course_initials"             => "acronimoCurso",//"11",
-            "index_course_schedule"             => "NM_REGIME_FREQUENCIA",//"12",
+            "index_course_schedule"             => "BK_SIGES_REGIME_FREQUENCIA",//"12",
 
             "index_course_unit_code"            => "COD_UC",//"2",
             "index_course_unit_name_pt"         => "DS_DISCIP",//"3",
@@ -268,7 +268,7 @@ class PermissionsAndGroupsSeeder extends Seeder
 
             ["code" => "edit_users",                        "section_code" => "users",              "name_pt" => "Editar utilizadores",                             "name_en" => "Edit users",                      "is_general" => true  ],
             ["code" => "lock_users",                        "section_code" => "users",              "name_pt" => "Bloquear utilizadores",                           "name_en" => "Block users",                     "is_general" => true  ],
-            ["code" => "create_users",                      "section_code" => "users",              "name_pt" => "Criar Estudantes",                                "name_en" => "Create Students",                 "is_general" => true  ],
+            ["code" => "create_students",                      "section_code" => "users",              "name_pt" => "Criar Estudantes",                                "name_en" => "Create Students",                 "is_general" => true  ],
 
 
             ["code" => "create_evaluation_types",           "section_code" => "evaluation",         "name_pt" => "Criar tipos de avaliações",                       "name_en" => "Create types of evaluations",     "is_general" => true  ],

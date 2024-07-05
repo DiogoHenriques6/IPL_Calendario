@@ -136,7 +136,7 @@ class ExternalImports
 
                 // From URL to get webpage
                 //TODO try to change the S to be dinamic
-                $apiEndpoint = $webservice->base_link . $webservice->course_units_link. '?' . $webservice->query_param_semester . SEMESTER . $semester . '&' . $webservice->query_param_campus . '=' . $school->index_campus . '&' . $webservice->query_param_academic_year . '=' . $academicYearCode . '&formato=json';
+                $apiEndpoint = $webservice->base_link . $webservice->course_units_link. '?' . $webservice->query_param_semester . '=' . SEMESTER . $semester . '&' . $webservice->query_param_campus . '=' . $school->index_campus . '&' . $webservice->query_param_academic_year . '=' . $academicYearCode . '&formato=json';
                 Log::channel('sync_test')->info($apiEndpoint);
 
                 $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
@@ -156,7 +156,7 @@ class ExternalImports
                 Log::channel('courses_sync')->info("Quantity of course units: " . sizeof($courseUnits));
 
                 //Get docentes by UCs
-                $apiEndpoint = $webservice->base_link . $webservice->teachers_by_uc_link . '?' . $webservice->query_param_semester . SEMESTER . $semester . '&' . $webservice->query_param_academic_year . '=' . $academicYearCode . '&' . $webservice->query_param_campus . '=' . $school->index_campus . '&formato=json';
+                $apiEndpoint = $webservice->base_link . $webservice->teachers_by_uc_link . '?' . $webservice->query_param_semester . '=' .SEMESTER . $semester . '&' . $webservice->query_param_academic_year . '=' . $academicYearCode . '&' . $webservice->query_param_campus . '=' . $school->index_campus . '&formato=json';
                 Log::channel('sync_test')->info($apiEndpoint);
 
                 $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
@@ -445,9 +445,6 @@ class ExternalImports
             // get list of schools that have "base_link" data
             $school = School::find($schoolId);
             $webservice = Webservice::where('id', 1)->firstOrFail();
-
-            $courseUnits = [];
-
 
             // From URL to get webpage contents
             $apiEndpoint = $webservice->base_link . $webservice->course_units_link . '?' . $webservice->index_course_code . '=' .  $courseCode .'&'.$webservice->query_param_academic_year.'=' . $academicYearCode . '&formato=json';

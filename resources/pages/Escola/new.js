@@ -104,6 +104,7 @@ const New = () => {
             index_course_name_pt,
             index_course_name_en,
             index_course_initials,
+            index_course_schedule,
             index_course_unit_code,
             index_course_unit_name_pt,
             index_course_unit_name_en,
@@ -136,6 +137,7 @@ const New = () => {
             index_course_name_pt,
             index_course_name_en,
             index_course_initials,
+            index_course_schedule,
             index_course_unit_code,
             index_course_unit_name_pt,
             index_course_unit_name_en,
@@ -167,6 +169,7 @@ const New = () => {
             index_course_name_pt,
             index_course_name_en,
             index_course_initials,
+            index_course_schedule,
             index_course_unit_code,
             index_course_unit_name_pt,
             index_course_unit_name_en,
@@ -189,7 +192,7 @@ const New = () => {
             pedagogic_group_id,
             index_campus
     }) => {
-        if(!index_course_code || !index_course_name_pt || !index_course_name_en || !index_course_initials ||
+        if(!index_course_code || !index_course_name_pt || !index_course_name_en || !index_course_initials || !index_course_schedule ||
             !index_course_unit_name_pt || !index_course_unit_name_en || !index_course_unit_initials || !index_course_unit_curricular_year ||
             !index_course_unit_registered || !index_course_unit_passed || !index_course_unit_flunk || !index_course_unit_branch ||
             !index_course_unit_code || !index_course_unit_teachers){
@@ -203,13 +206,12 @@ const New = () => {
         setIsSaving(true);
         const isNew = !id;
         const axiosFn = isNew ? axios.post : axios.patch;
-
         axiosFn(`/schools${!isNew ? '/' + id : ''}`, {
             id: (!isNew ? id : null),
             code, name_pt, name_en,
             gop_group_id, board_group_id, pedagogic_group_id,
             base_link,
-            index_course_code, index_course_name_pt, index_course_name_en, index_course_initials,
+            index_course_code, index_course_name_pt, index_course_name_en, index_course_initials, index_course_schedule,
             index_course_unit_code, index_course_unit_name_pt, index_course_unit_name_en, index_course_unit_initials,
             index_course_unit_registered, index_course_unit_passed, index_course_unit_flunk, index_course_unit_branch,
             index_course_unit_curricular_year, index_course_unit_teachers,
@@ -274,6 +276,11 @@ const New = () => {
                                 <Field name="index_course_initials" validate={required}>
                                     {({input: index_course_initialsInput, meta}) => (
                                         <Form.Input type='text' label={ t("Index coluna Iniciais") } {...index_course_initialsInput} error={ meta.touched && meta.error } />
+                                    )}
+                                </Field>
+                                <Field name="index_course_schedule" validate={required}>
+                                    {({input: index_course_scheduleInput, meta}) => (
+                                        <Form.Input type='text' label={ t("Index coluna Regime") } {...index_course_scheduleInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                             </Form.Group>
@@ -399,7 +406,7 @@ const New = () => {
                             <Form.Group widths="3">
                                 <Field name="query_param_academic_year" validate={required}>
                                     {({input: query_param_academic_yearInput, meta}) => (
-                                        <Form.Input placeholder={t('anoletivo -> Pronto a receber no formato: 202122')} label={ t("Nome do parâmetro para o ano letivo") } {...query_param_academic_yearInput} error={ meta.touched && meta.error } />
+                                        <Form.Input placeholder={t('anoletivo -> Pronto a receber no formato: 2021/22')} label={ t("Nome do parâmetro para o ano letivo") } {...query_param_academic_yearInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                                 <Field name="query_param_semester" validate={required}>
@@ -471,7 +478,7 @@ const New = () => {
                                 </Field>
                                 <Field name="name_en" validate={required}>
                                     {( { input: nameEnInput, meta}) => (
-                                        <Form.Input label={t('Descrição EN')} {...nameEnInput} error={ meta.touched && meta.error } />
+                                        <Form.Input label={t('  Descrição EN')} {...nameEnInput} error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                             </Form.Group>
@@ -511,7 +518,7 @@ const New = () => {
                                     {({input: base_linkInput, meta}) => (
                                         <Form.Input placeholder="Exemplo: http://www.dei.estg.ipleiria.pt/intranet/horarios/ws/inscricoes/cursos_ucs.php"
                                             {...base_linkInput}
-                                            label={ t("Link do Webservice dos Cursos") } error={ meta.touched && meta.error } />
+                                            label={ t("Link Base dos Webservices") } error={ meta.touched && meta.error } />
                                     )}
                                 </Field>
                             </Form.Group>
