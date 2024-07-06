@@ -311,43 +311,23 @@ class CalendarService
         if(!$calendar->semester->special) {
             $availableMethods->where('semester_id', $calendar->semester_id);
         }
+        $selectedGroup = Group::find($request->cookie('selectedGroup'));
 
-        //return AvailableCourseUnitsResource::collection($availableMethods);
-        $includedCUs = [];
-        if (Auth::user()->groups()->isTeacher()->exists()
-            && (
-                Auth::user()->groups()->coordinator()->exists() && Auth::user()->groups()->board()->exists()
-                && Auth::user()->groups()->superAdmin()->exists() && Auth::user()->groups()->admin()->exists()
-                && Auth::user()->groups()->pedagogic()->exists() && Auth::user()->groups()->responsiblePedagogic()->exists()
-                && Auth::user()->groups()->gop()->exists()
-            )
-        ) {
-            // where Teachers have those CUs [CourseUnit.id in (....)]
-            $includedCUs = Auth::user()->courseUnits->pluck('id');
+        switch($selectedGroup){
+            case str_contains($selectedGroup->code,InitialGroups::GOP):
+                $availableMethods->where('course_unit_group_id','!=', null);
+                break;
+            case str_contains($selectedGroup->code,InitialGroups::RESPONSIBLE):
+                $availableMethods->where('responsible_user_id', Auth::user()->id);
+                break;
         }
 
-        if (Auth::user()->groups()->responsible()->exists()) {
-            // include CUs that the user is responsible for
-            $ucs = CourseUnit::where('responsible_user_id', Auth::user()->id)->get()->pluck('id')->toArray();
-            if(empty($includedCUs)){
-                $includedCUs = $ucs;
-            } else {
-                $includedCUs[] = $ucs;
-            }
-        }
-        if(!empty($includedCUs)) {
-            $availableMethods->whereIn('course_units.id', $includedCUs);
-        }
         $eachCourseUnit = $availableMethods->distinct()->get();
         $response = collect();
 
         foreach ($eachCourseUnit as $courseUnit) {
             $response->push($courseUnit);
         }
-
-        //$availableMethods = $availableMethods->join("evaluation_types", function($join){
-        //    $join->on("evaluation_types.id", "methods.evaluation_type_id");
-        //});
 
         foreach($response->toArray() as $key => $courseUnit) {
             //dd($response[$key]->methods);

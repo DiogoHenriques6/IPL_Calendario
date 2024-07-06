@@ -117,7 +117,6 @@ class GroupController extends Controller
         $permissions = $group->permissions()->where('group_permissions.enabled', true)
             ->groupBy('permissions.code')->pluck('permissions.code')
             ->values()->toArray();
-        LOG::channel('sync_test')->info("Permissions", $permissions);
         return response()->json($permissions)->withCookie('selectedGroup', $request->switch);
     }
 }

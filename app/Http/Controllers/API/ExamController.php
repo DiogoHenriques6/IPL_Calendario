@@ -12,6 +12,8 @@ use App\Models\CourseUnit;
 use App\Models\CourseUnitGroup;
 use App\Models\Epoch;
 use App\Models\Exam;
+use App\Models\Group;
+use App\Models\InitialGroups;
 use App\Models\Method;
 use Carbon\Carbon;
 use DateTime;
@@ -106,10 +108,22 @@ class ExamController extends Controller
     {
         $calendarId = $request->calendar_id;
         $epochId = $request->epoch_id;
+        $selectedGroup_id = $request->cookie('selectedGroup');
 
         $validation = $this->checkIfCanEditExam($calendarId, $epochId, $request->course_id, $request->method_id, $request->course_unit_id);
         if($validation){
             return $validation;
+        }
+
+        $currentGroup = Group::find($selectedGroup_id);
+//        Log::channel('sync_test')->info($currentGroup->code);
+        if(str_contains($currentGroup->code, InitialGroups::GOP)){
+            $courseUnit = CourseUnit::where('id', $request->course_unit_id)->first();
+//            Log::channel('sync_test')->info($courseUnit->group_id);
+            if(!isset($courseUnit->group_id)){
+                $response = ($request->header("lang") == "en" ? "Exam does not belong to a grouped CU!" : "Exame não pertence a UC agrupada!");
+                return response()->json($response, Response::HTTP_FORBIDDEN);
+            }
         }
 
         $courseUnitGroup = CourseUnit::find($request->course_unit_id)->group;
@@ -289,7 +303,6 @@ class ExamController extends Controller
     }
 
     public function checkIfCanEditExam($calendarId, $epochId, $course_id, $method_id, $course_unit_id, $examId = null){
-
         // TODO
         /**
          * DO NOT ALLOW BOOK EXAM WHEN (COMMULATIVE):
@@ -297,11 +310,12 @@ class ExamController extends Controller
          * - Year of the CourseUnit is the same (1st, 2nd or 3rd)
          * - Branch ("Ramo") is the same
          */
-
+//        Log::channel('sync_test')->info($selectedGroup);
         $epochRecord = Epoch::find($epochId);
         if ( $epochRecord->calendar->is_published ) {
             return response()->json("Not allowed to book exams on Published Calendars!", Response::HTTP_FORBIDDEN);
         }
+
         // $checkExam = Exam::where('epoch_id', '=', $epochId)->where('epoch_id', '=', $epochId)->where('method_id', '=', $method_id);
         // if($examId){
         //     $checkExam->where('id', '<>', $examId);
@@ -317,9 +331,13 @@ class ExamController extends Controller
         if ( Calendar::find($calendarId)->course->id !== $course_id ) {
             return response()->json("The course id is not correct for the given calendar.", Response::HTTP_UNPROCESSABLE_ENTITY);
         }
+
+
+
         $courseUnitMethods = CourseUnit::find($course_unit_id);
         // TODO rever erro aqui nos epochs
         $epochTypeId = $epochRecord->epoch_type_id;
+
         if ($courseUnitMethods->methods()->whereHas('epochType', function ($query) use ($epochTypeId) {
                 return $query->where('epoch_type_id', $epochTypeId);
             })->sum('weight') < 100) {

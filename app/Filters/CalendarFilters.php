@@ -37,9 +37,9 @@ class CalendarFilters extends QueryFilters
                 LOG::channel('sync_test')->info($schoolId);
                 break;
             case str_contains($currentGroup->code,InitialGroups::BOARD):
-                Log::channel('sync_test')->info($currentGroup->code);
+//                Log::channel('sync_test')->info($currentGroup->code);
                 $schoolId = $currentGroup->boardSchool()->pluck('id');
-                Log::channel('sync_test')->info($schoolId);
+//                Log::channel('sync_test')->info($schoolId);
                 break;
             case str_contains($currentGroup->code,InitialGroups::PEDAGOGIC):
 //                Log::channel('sync_test')->info($currentGroup->code);

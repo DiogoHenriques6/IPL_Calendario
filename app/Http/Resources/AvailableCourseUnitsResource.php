@@ -16,7 +16,7 @@ class AvailableCourseUnitsResource extends JsonResource
             'methods'       => AvailableMethodsResource::collection($this->methods),
             'is_complete'   => $this->is_complete && !empty($this->methods),
             'has_methods'   => !empty($this->methods),
-            //'branch' => $this->branch,
+            'has_group'    => !empty($this->group),
         ];
     }
 }
