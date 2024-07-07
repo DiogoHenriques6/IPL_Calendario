@@ -213,7 +213,9 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::controller(MethodGroupController::class)->group(function (){
-        Route::post('/method-groups',           'store'         );
+        Route::post('/method-groups',                       'store');
+        Route::get('/method-groups',                        'index' );
+        Route::delete('/method-groups/{methodGroup}',       'destroy');
     });
 
     Route::controller(InterruptionController::class)->group(function () {
@@ -275,6 +277,7 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/course-units/{courseUnit}/teacher/{teacherId}', 'removeTeacher'       );
         // methods for the course unit
         Route::get('/course-units/{courseUnit}/methods',                'methodsForCourseUnit');
+        Route::get('/course-units/{courseUnit}/epoch-types/{epochType}',       'methodsByEpoch' );
 
         //Route::get('/course-units/{courseUnit}/epochs',                 'epochsForCourseUnit' );
         Route::patch('/course-units/{courseUnit}/responsible',          'assignResponsible'   );

@@ -152,6 +152,7 @@ body {
     justify-content: flex-end;
     height: 83.33px;
 }
+
 .stikyDiv{
     display: flex;
     flex-direction: row;
@@ -162,6 +163,12 @@ body {
     display: flex;
     flex-direction: column;
     text-align: start;
+}
+
+.methods-epoch-btn{
+    display: flex;
+    justify-content: flex-end;
+    width: auto;
 }
 
 .ui.green.right.floated.button.btn-group-evaluations{

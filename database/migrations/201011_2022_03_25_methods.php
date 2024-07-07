@@ -21,6 +21,8 @@ return new class extends Migration
             $table->unsignedBigInteger('academic_year_id');
             $table->foreign('academic_year_id')->references('id')->on('academic_years');
             $table->unsignedBigInteger('evaluation_type_id');
+            $table->unsignedBigInteger('method_group_id');
+            $table->foreign('method_group_id')->references('id')->on('method_groups');
             $table->decimal("minimum");
             $table->decimal("weight");
             $table->string('description_pt');

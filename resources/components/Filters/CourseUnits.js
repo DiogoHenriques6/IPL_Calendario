@@ -5,7 +5,7 @@ import {useTranslation} from "react-i18next";
 import _ from "lodash";
 import {useSearchParams} from "react-router-dom";
 
-const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, school, hasMethods, currentCourseUnit}) => {
+const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, school, hasMethods, currentCourseUnits }) => {
     const [searchParams] = useSearchParams();
     const searchCourseUnit = searchParams.get('curso-unit');
 
@@ -48,8 +48,8 @@ const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, s
         }
         axios.get(link).then((res) => {
             if (res.status === 200) {
-                if(currentCourseUnit){
-                    res.data.data = res.data.data.filter(item => item.id != currentCourseUnit);
+                if(currentCourseUnits){
+                    res.data.data = res.data.data.filter(item => !currentCourseUnits.includes(item.id));
                 }
                 else{
                     res.data.data.unshift({id: '', name: t("Todas as Unidades curriculares")});
@@ -66,10 +66,9 @@ const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, s
                 }
             }
         });
-
-        if(currentCourseUnit){
+        if(currentCourseUnits){
             setCourseUnitsOptions(prevOptions =>
-                prevOptions.filter(option => option.id !== currentCourseUnit)
+                prevOptions.filter(option => !currentCourseUnits.includes(option.id))
             );
         }
     };

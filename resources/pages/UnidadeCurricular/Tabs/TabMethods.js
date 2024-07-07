@@ -41,6 +41,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
     const [curricularUnitsOptions, setCurricularUnitsOptions] = useState([]);
     const [curricularUnitSelected, setCurricularUnitSelected] = useState(-1);
     const [academicYearSelected, setAcademicYearSelected] = useState(-1);
+    const [epochToGroup, setEpochToGroup] = useState(-1);
 
     const isManagingMethods = useComponentIfAuthorized(SCOPES.MANAGE_EVALUATION_METHODS);
 
@@ -168,6 +169,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
             });
         }
     };
+
     // Get Epoch Type Total Value
     const getEpochValue = (index) => {
         return (epochs[index].methods || [])?.reduce((a, b) => a + (b?.weight || 0), 0);
@@ -326,6 +328,11 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
         });
     }
 
+    const openGroupingMethods = (epochId) => {
+        setOpenGroupMethods(true);
+        setEpochToGroup(epochs[epochId]);
+    }
+
     return (
         <div ref={contextRef}>
             { epochs?.length < 1 || isLoading ? (
@@ -361,10 +368,6 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                         {!hasGroup && (
                             <Sticky offset={50} context={contextRef}>
                                 <div className='sticky-methods-header'>
-                                    <Button onClick={() => setOpenGroupMethods(true)} icon labelPosition="left"
-                                            color="green" disabled={hasNoMethods}>
-                                        <Icon name={"object group outline"}/>{t("Agrupar métodos")}
-                                    </Button>
                                     <Button onClick={() => setOpenCopy(true)} icon labelPosition="left"
                                             color="blue" disabled={!hasNoMethods}>
                                         <Icon name={"clone outline"}/>{t("Copiar métodos")}
@@ -545,6 +548,11 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                             {t("Total pesos avaliacao:")} <Label
                                                             color={(getEpochValue(index) > 100 ? "red" : (getEpochValue(index) === 100 ? "green" : "yellow"))}>{(epochs[index].methods || [])?.reduce((a, b) => a + (b?.weight || 0), 0)}%</Label>
                                                             {!hasGroup && (
+                                                                <div className={"methods-epoch-btn"}>
+                                                                    <Button onClick={() => openGroupingMethods(index)} icon labelPosition="left"
+                                                                            color="green" disabled={item.methods.length === 0}>
+                                                                        <Icon name={"object group outline"}/>{t("Agrupar métodos")}
+                                                                    </Button>
                                                                     <Button floated='right' icon labelPosition='left'
                                                                             color={"green"} size='small' onClick={() => {
                                                                         addNewMethod(index, item.id);
@@ -552,6 +560,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
 
                                                                         <Icon name='plus'/> {t("Adicionar novo método")}
                                                                     </Button>
+                                                                </div>
                                                             )}
                                                         </Table.HeaderCell>
                                                     </Table.Row>
@@ -659,7 +668,8 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                             isOpen={openGroupMethods}
                             onClose={closeGroupMethods}
                             courseUnit={unitId}
-                            epochs={epochs}
+                            epochs={epochToGroup}
+                            epochTypeId={epochToGroup.id}
                             unitId={unitId}
                         />
                 </div>

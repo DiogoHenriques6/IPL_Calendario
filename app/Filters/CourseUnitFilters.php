@@ -52,7 +52,9 @@ class CourseUnitFilters extends QueryFilters
     }
 
     public function has_methods($hasMethods) {
-        return $this->builder->whereHas('methods');
+        return $this->builder->whereHas('methods', function ($query) {
+            $query->whereNull('method_group_id');
+        });
     }
 
     public function including($ids) {

@@ -341,8 +341,7 @@ class CalendarService
                 $query->where('epoch_type_id', $epoch_type_id);
             })->whereRelation('courseUnits', 'course_unit_id', $courseUnit['id'])
                 ->doesntHave('exams')
-                ->exists();//get()->toArray();
-            //dd($is_complete);
+                ->exists();
             $response[$key]->is_complete = $is_complete;
         }
         return AvailableCourseUnitsResource::collection($response);

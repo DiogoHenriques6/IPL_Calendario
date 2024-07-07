@@ -17,7 +17,7 @@ class CourseUnitResource extends JsonResource
             'name'                  => ($request->header("lang") == "en" ? $this->name_en : $this->name_pt),
             'initials'              => $this->initials,
             'group_name'            => $this->group->description ?? null,
-            'course_description'    => "(" . $this->course->code . ") " . ($request->header("lang") == "en" ? $this->course->name_en : $this->course->name_pt),
+            'course_description'    => "(" . $this->course->code . ") " . ($request->header("lang") == "en" ? $this->course->name_en : $this->course->name_pt) . " - (Regime " . $this->course->schedule . ")",
             'semester'              => $this->semester->number,
             'responsible_name'      => $this->whenLoaded('responsibleUser', is_null($this->responsibleUser) ? null :  $this->responsibleUser->name),
             'responsible_email'     => $this->whenLoaded('responsibleUser', is_null($this->responsibleUser) ? null :  $this->responsibleUser->email),

@@ -162,6 +162,7 @@ class MethodController extends Controller
                 }
             } else {
                 $newMethod->courseUnits()->sync($courseUnit);
+                $newMethod->method_group_id = null;
                 $newMethod->save();
             }
         }

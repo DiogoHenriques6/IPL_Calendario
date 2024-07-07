@@ -116,10 +116,8 @@ class ExamController extends Controller
         }
 
         $currentGroup = Group::find($selectedGroup_id);
-//        Log::channel('sync_test')->info($currentGroup->code);
         if(str_contains($currentGroup->code, InitialGroups::GOP)){
             $courseUnit = CourseUnit::where('id', $request->course_unit_id)->first();
-//            Log::channel('sync_test')->info($courseUnit->group_id);
             if(!isset($courseUnit->group_id)){
                 $response = ($request->header("lang") == "en" ? "Exam does not belong to a grouped CU!" : "Exame não pertence a UC agrupada!");
                 return response()->json($response, Response::HTTP_FORBIDDEN);
@@ -152,7 +150,6 @@ class ExamController extends Controller
                     $newLog->is_create = "1";
                     $newLog->new_date = $request->date_start;
                     $newLog->save();
-
                 }
             }else{
                 foreach ($examsWithMethod as $relatedExam) {
@@ -188,6 +185,7 @@ class ExamController extends Controller
                 }
             }
         } else {
+            //TODO verify if the method is grouped
             //verifica se existe algum exame com o mesmo metodo o mesmo epoch e a mesma UC apagado
             $exam = Exam::onlyTrashed()->where('method_id', $request->method_id)->where('epoch_id', $epochId)->where('course_unit_id', $request->course_unit_id)->first();
             if ($exam) {

@@ -32,9 +32,9 @@ class CalendarFilters extends QueryFilters
                 $isManagement = true;
                 break;
             case str_contains($currentGroup->code, InitialGroups::GOP):
-                Log::channel('sync_test')->info($currentGroup->code);
+//                Log::channel('sync_test')->info($currentGroup->code);
                 $schoolId = $currentGroup->gopSchool()->pluck('id');
-                LOG::channel('sync_test')->info($schoolId);
+//                LOG::channel('sync_test')->info($schoolId);
                 break;
             case str_contains($currentGroup->code,InitialGroups::BOARD):
 //                Log::channel('sync_test')->info($currentGroup->code);

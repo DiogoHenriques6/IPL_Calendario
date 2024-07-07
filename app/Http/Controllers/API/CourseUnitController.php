@@ -210,6 +210,7 @@ class CourseUnitController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
     public function refreshUc(CourseUnit $courseUnit)
     {
         $academicYear = AcademicYear::find($courseUnit->academic_year_id);
@@ -381,6 +382,26 @@ class CourseUnitController extends Controller
             return $updatedItem;
         });
         return $newCollection->all();
+    }
+
+    public function methodsByEpoch(CourseUnit $courseUnit, EpochType $epochType, Request $request){
+        $epochTypeId = $epochType->id;
+        $courseUnitId = $courseUnit->id;
+        $methods = Method::ofAcademicYear($request->cookie('academic_year'))
+            ->join('epoch_type_method', 'epoch_type_method.method_id', '=', 'methods.id')
+            ->where('epoch_type_method.epoch_type_id', $epochTypeId)
+            ->join('course_unit_method', 'course_unit_method.method_id', '=', 'methods.id')
+            ->where('course_unit_method.course_unit_id', $courseUnitId)
+            ->get();
+
+        $methodsByEpoch = [
+            'id' => $epochType->id,
+            'name_pt' => $epochType->name_pt,
+            'name_en' => $epochType->name_en,
+            'methods' => MethodResource::collection($methods),
+        ];
+
+        return $methodsByEpoch;
     }
 
     public function epochsForCourseUnit(CourseUnit $courseUnit)

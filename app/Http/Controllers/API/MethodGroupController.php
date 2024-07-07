@@ -13,6 +13,7 @@ use App\Http\Resources\Generic\CourseListResource;
 use App\Http\Resources\Generic\CourseUnitGroupSearchResource;
 use App\Http\Resources\Generic\EpochMethodResource;
 use App\Http\Resources\Generic\TeacherResource;
+use App\Http\Resources\MethodGroupListResource;
 use App\Http\Resources\MethodResource;
 use App\Models\Calendar;
 use App\Models\CalendarPhase;
@@ -40,49 +41,18 @@ class MethodGroupController extends Controller
      *
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
-    public function index(Request $request, CourseUnitGroupFilters $filters)
+    public function index(Request $request, EpochType $epochType)
     {
-        $perPage = request('per_page', 20);
-        $list = CourseUnitGroup::with('courseUnits')->filter($filters)->ofAcademicYear($request->cookie('academic_year'));
+        $courseUnit = CourseUnit::where('id', $request->courseUnitId)->first();
 
-        $user = Auth::user();
-        $currentUserId = $request->cookie('selectedGroup');
-        $currentGroup = Group::where('id', $currentUserId)->first();
-
-
-        $schoolId = null;
-        $courseId = null;
-        switch ($currentGroup->code) {
-            case str_contains($currentGroup->code, InitialGroups::GOP):
-//                Log::channel('sync_test')->info($currentGroup->code);
-                $schoolId = $currentGroup->gopSchool()->pluck('id');
-                break;
-            case str_contains($currentGroup->code, InitialGroups::BOARD):
-//                Log::channel('sync_test')->info($currentGroup->code);
-                $schoolId = $currentGroup->boardSchool()->pluck('id');
-                break;
-            case str_contains($currentGroup->code, InitialGroups::PEDAGOGIC):
-//                Log::channel('sync_test')->info($currentGroup->code);
-                $schoolId = $currentGroup->pedagogicSchool()->pluck('id');
-                break;
-            case str_contains($currentGroup->code, InitialGroups::COORDINATOR):
-//                Log::channel('sync_test')->info($currentGroup->code);
-                $courseId = Course::where('coordinator_user_id', Auth::user()->id)->pluck('id');
-                break;
-        }
-
-        if ($schoolId) {
-            $list->whereHas("courseUnits.course", function ($query) use ($schoolId){
-                $query->whereIn('school_id', $schoolId);
-            });
-        }
-
-        if ($courseId) {
-            $list->whereHas("courseUnits.course", function ($query) use ($courseId){
-                $query->whereIn('course_id', $courseId);
-            });
-        }
-        return CourseUnitGroupListResource::collection($list->paginate($perPage));
+        $methods = MethodGroup::ofAcademicYear($request->cookie('academic_year'))->get();
+//            ->where('evaluation_type_id', $epochType->id)->where('method_group_id', '!=', null)
+//            ->join('epoch_type_method', 'epoch_type_method.method_id', '=', 'methods.id')
+//            ->where('epoch_type_method.epoch_type_id', $request->epochTypeId)
+//            ->join('course_unit_method', 'course_unit_method.method_id', '=', 'methods.id')
+//            ->where('course_unit_method.course_unit_id', $request->courseUnitId)
+//            ->get();
+        return MethodGroupListResource::collection($methods);
     }
 
 //    public function search(Request $request, CourseUnitGroupFilters $filters)
@@ -108,17 +78,13 @@ class MethodGroupController extends Controller
      */
     public function store(Request $request)
     {
-        foreach ($request->methods as $courseUnit => $method) {
-
-            Log::channel('sync_test')->info($courseUnit);
-            Log::channel('sync_test')->info($method);
-            $selectedMethod= Method::where('id', $method)->first();
+        foreach ($request->methods as $method) {
+            $selectedMethod= Method::where('id', $method['value'])->first();
 
             if($selectedMethod->method_group_id != null){
                 return response()->json("Método já associado a um grupo!", Response::HTTP_NO_CONTENT);
             }
             $methodsToGroup[] = $selectedMethod;
-
         }
 
         $newMethodGroup = new MethodGroup();
@@ -141,7 +107,15 @@ class MethodGroupController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function update(CourseUnitGroupRequest $request, CourseUnitGroup $courseUnitGroup)
+    public function destroy(MethodGroup $methodGroup)
+    {
+        $methodGroup->methods()->update(['method_group_id' => null]);
+        $methodGroup->delete();
+
+        return response()->json("Grupo eliminado com sucesso!", Response::HTTP_OK);
+    }
+
+    /*public function update(CourseUnitGroupRequest $request, CourseUnitGroup $courseUnitGroup)
     {
         $courseUnitGroup->description_pt = $request->get('description_pt');
         $courseUnitGroup->description_en = $request->get('description_en');
@@ -194,28 +168,5 @@ class MethodGroupController extends Controller
 
 
         return response()->json("Grupo atualizado", Response::HTTP_OK);
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show(CourseUnitGroup $courseUnitGroup)
-    {
-        return new CourseUnitGroupResource($courseUnitGroup->load('courseUnits'));
-    }
-
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(CourseUnitGroup $courseUnitGroup)
-    {
-        $courseUnitGroup->delete();
-    }
+    }*/
 }
