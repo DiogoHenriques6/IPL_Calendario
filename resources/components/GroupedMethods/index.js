@@ -75,10 +75,9 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
     }
 
     useEffect(() => {
-        defineCourseUnit();
         loadGroupedMethods();
-    }, []);
-
+        defineCourseUnit();
+    }, [unitId, epochTypeId]);
 
     const handleSubmit = () => {
 
@@ -147,6 +146,7 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
         })))
         setSelectedEvaluations([]);
     }
+
     const groupEvaluations = () => {
         if(selectedEvaluations.length >=2){
             axios.post(`/method-groups`,{ methods: selectedEvaluations, epoch_type_id: epochTypeId }).then((res) => {
@@ -169,18 +169,35 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
         }
         loadGroupedMethods();
     }
+
+
+    const editMethodGroup= (methods, course_units) => {
+        console.log("Methods", methods)
+        console.log("CourseUnits", course_units)
+    }
+
      useEffect(() => {
          console.log(selectedEpochs)
      },[selectedEpochs])
-    const loadGroupedMethods= () =>{
-         axios.get(`/method-groups`,{epochType : epochTypeId, courseUnitId : unitId}).then((res) => {
-            if (res.status === 200) {
-                setGroupedMethodsList(res.data.data);
-                setIsLoading(false);
-            }
-        });
+
+    const loadGroupedMethods= () => {
+        if (epochTypeId && unitId ){
+            axios.get(`/method-groups`, {
+                    params: {
+                        epochTypeId: epochTypeId,
+                        courseUnitId: unitId
+                    }
+                }
+            ).then((res) => {
+                if (res.status === 200) {
+                    setGroupedMethodsList(res.data.data);
+                    setIsLoading(false);
+                }
+            });
+        }
     }
 
+    // TODO every method that no longer has_groups should be changed in the list itself for dropdown options
     const remove = (methodGroupId) => {
         let transl = t('Ao eliminar o agrupamento, as avaliações e métodos já adicionados continuarão a estar acessiveis, no entanto não conseguirá utilizar este agrupamento para novas avaliações/métodos!');
         transl += "<br/><strong>";
@@ -270,11 +287,11 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
                                         <Table.Cell textAlign="center">{num_methods}</Table.Cell>
                                         <Table.Cell textAlign="center">
                                             {/*<ShowComponentIfAuthorized permission={[SCOPES.EDIT_UC_GROUPS]}>*/}
-                                                <Link to={`/agrupamento-unidade-curricular/edit/${id}`}>
-                                                    <Button color="yellow" icon>
+                                            {/*    <Link to={`/agrupamento-unidade-curricular/edit/${id}`}>*/}
+                                                    <Button color="yellow" icon onClick={()=>editMethodGroup(methods,course_units)}>
                                                         <Icon name="edit"/>
                                                     </Button>
-                                                </Link>
+                                                {/*</Link>*/}
                                             {/*</ShowComponentIfAuthorized>*/}
                                             {/*<ShowComponentIfAuthorized permission={[SCOPES.DELETE_UC_GROUPS]}>*/}
                                                 <Button onClick={() => remove(id) } color="red" icon loading={removingMethodGroup === id}>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use tiagomichaelsousa\LaravelFilters\Traits\Filterable;
@@ -14,9 +15,9 @@ class MethodGroup extends Model
         "academic_year_id"
     ];
 
-    public function academicYears()
+    public function academicYear()
     {
-        return $this->belongsToMany(AcademicYear::class);
+        return $this->belongsTo(AcademicYear::class);
     }
 
     public function methods()
@@ -24,7 +25,10 @@ class MethodGroup extends Model
         return $this->hasMany(Method::class);
     }
 
-    public function scopeOfAcademicYear($query, $academicYearId) {
-        return $query->where('academic_year_id', $academicYearId);
+    public function scopeOfAcademicYear($query, $academicYearId)
+    {
+        return $query->whereHas('academicYear', function (Builder $q) use ($academicYearId) {
+            $q->where('academic_years.id', $academicYearId);
+        });
     }
 }

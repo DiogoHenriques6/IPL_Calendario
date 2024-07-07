@@ -43,15 +43,19 @@ class MethodGroupController extends Controller
      */
     public function index(Request $request, EpochType $epochType)
     {
-        $courseUnit = CourseUnit::where('id', $request->courseUnitId)->first();
+//        $courseUnit = CourseUnit::where('id', $request->courseUnitId)->first();
+        Log::channel('sync_test')->info('methodsByCourseUnit' . $request->epochTypeId);
+        $methods = MethodGroup::ofAcademicYear($request->cookie('academic_year'))
 
-        $methods = MethodGroup::ofAcademicYear($request->cookie('academic_year'))->get();
-//            ->where('evaluation_type_id', $epochType->id)->where('method_group_id', '!=', null)
-//            ->join('epoch_type_method', 'epoch_type_method.method_id', '=', 'methods.id')
-//            ->where('epoch_type_method.epoch_type_id', $request->epochTypeId)
-//            ->join('course_unit_method', 'course_unit_method.method_id', '=', 'methods.id')
-//            ->where('course_unit_method.course_unit_id', $request->courseUnitId)
-//            ->get();
+            ->join('methods', 'methods.method_group_id', '=', 'method_groups.id')
+            ->join('course_unit_method', 'course_unit_method.method_id', '=', 'methods.id')
+            ->where('course_unit_method.course_unit_id', $request->courseUnitId)
+            ->join('epoch_type_method', 'epoch_type_method.method_id', '=', 'methods.id')
+            ->where('epoch_type_method.epoch_type_id', $request->epochTypeId)
+            ->select('method_groups.*')
+            ->distinct()
+            ->get();
+//        $methods->load(['methods', 'methods.courseUnits']);
         return MethodGroupListResource::collection($methods);
     }
 
