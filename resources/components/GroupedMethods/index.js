@@ -14,9 +14,6 @@ import axios from "axios";
 import {toast} from "react-toastify";
 import {errorConfig, successConfig} from "../../utils/toastConfig";
 import EmptyTable from "../EmptyTable";
-import ShowComponentIfAuthorized from "../ShowComponentIfAuthorized";
-import SCOPES from "../../utils/scopesConstants";
-import {Link} from "react-router-dom";
 import withReactContent from "sweetalert2-react-content";
 import Swal from "sweetalert2";
 
@@ -40,13 +37,13 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
     const [isLoading, setIsLoading] = useState(true);
     const [groupedMethodsList, setGroupedMethodsList] = useState([]);
     const [removingMethodGroup, setRemovingMethodGroup] = useState(null);
-    //TODO EDIT METHOD GROUPS
     const [isEditMode, setIsEditMode] = useState(false);
+    const [selectedEpochsOptions, setSelectedEpochsOptions] = useState([]);
+    const [inEditGroup, setInEditGroup] = useState();
+    const [removedFromGroupMethods, setRemovedFromGroupMethods] = useState([]);
 
     useEffect(() => {
-        console.log(epochs)
         setSelectedEpochs([epochs]);
-
     }, [epochs, epochTypeId]);
 
     const addColumn = () => {
@@ -54,9 +51,8 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
     };
 
     const closeModal = () =>{
-        setColumns(2);
-        setSelectedEvaluations([]);
-        setCourseUnits([parseInt(unitId)])
+        remakeEpochs();
+
         onClose();
     }
 
@@ -66,9 +62,8 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
             axios.get(`/course-units/${unitId}`).then((res) => {
                 if (res.status === 200) {
                     setCourseUnit(res.data.data);
-
-                    setSemester(res.data.data.semester)
-                    setSchool(res.data.data.school)
+                    setSemester(res.data.data.semester);
+                    setSchool(res.data.data.school);
                 }
             });
         }
@@ -79,8 +74,40 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
         defineCourseUnit();
     }, [unitId, epochTypeId]);
 
-    const handleSubmit = () => {
+    const setOptions =(epochsChosen) =>{
+        if(epochsChosen && epochsChosen.length > 0){
+            const options = epochsChosen?.map((epoch) => {
+                if(isEditMode){
+                    return epoch.methods?.filter(method => !method.has_group || method.group_id === inEditGroup)
+                        .map(method => {
+                            return {
+                                key: method.id,
+                                value: method.id,
+                                text: method.description,
+                            };
+                        });
+                }
+                else{
+                    return epoch.methods?.filter(method => !method.has_group)
+                        .map(method => {
+                            return {
+                                key: method.id,
+                                value: method.id,
+                                text: method.description,
+                            };
+                        });
+                }
+            });
+            console.log(options)
+            setSelectedEpochsOptions(options);
+        }
+    }
 
+    useEffect(() => {
+        setOptions(selectedEpochs);
+    }, [selectedEpochs]);
+
+    const handleSubmit = () => {
     }
 
     const handleCourseUnitChange = (index, courseUnit) => {
@@ -126,40 +153,53 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
         })
     };
 
-
-    const setColumnCount = (courseUnitsCount) =>{
-        setColumns(columns > courseUnitsCount ? columns : courseUnitsCount);
-    }
-
     const remakeEpochs = () => {
         const selectedEvaluationIds = new Set(
             selectedEvaluations.flatMap(evaluation => evaluation.value)
         );
-        console.log("SElected IDs ",selectedEvaluationIds)
-
-        setSelectedEpochs(selectedEpochs.map((epoch) => ({
-            ...epoch,
-            methods: epoch.methods.map(method => ({
-                ...method,
-                has_group: selectedEvaluationIds.has(method.id) ? true : method.has_group
-            }))
-        })))
+        setIsEditMode(false);
+        setInEditGroup(null);
+        setCourseUnits([unitId]);
         setSelectedEvaluations([]);
     }
+    const changeCurrentEpochValue = (newGroup) => {
+        const selectedEpochsCopy = selectedEpochs.map(() => ({ ...selectedEpochs[0] }));
+
+
+        setSelectedEpochs((prevEpoch) => {
+            const updatedEpochs = prevEpoch.map((epoch) => {
+                return {
+                    ...epoch,
+                    methods: epoch.methods.map(method => ({
+                        ...method,
+                        has_group: selectedEvaluations.find(evaluation => evaluation.value === method.id) ? false : method.has_group,
+                        group_id: selectedEvaluations.find(evaluation => evaluation.value === method.id) ? null : method.group_id
+                    }))
+                };
+            });
+            console.log("PrevEpoch", updatedEpochs);
+            return updatedEpochs;
+        });
+        console.log(selectedEpochsCopy)
+        setSelectedEpochs(selectedEpochsCopy);
+    }
+
 
     const groupEvaluations = () => {
         if(selectedEvaluations.length >=2){
-            axios.post(`/method-groups`,{ methods: selectedEvaluations, epoch_type_id: epochTypeId }).then((res) => {
-                if (res.status === 201) {
-                    toast(t('Métodos de avaliação agrupados com sucesso!'), successConfig);
-                    //TODO register the group in the modal
-                    remakeEpochs()
+            const axiosFn = isEditMode ? axios.patch : axios.post;
+            axiosFn(`/method-groups/${isEditMode ? inEditGroup : ''}`, {methods: selectedEvaluations, epoch_type_id: epochTypeId}).then((res) => {
+                if (res.status >= 200 && res.status <204) {
+                    toast(t(`O agrupamento de métodos foi ${isEditMode ? 'editado' : 'criado'} com sucesso!`), successConfig);
+                    loadGroupedMethods();
+                    changeCurrentEpochValue(res.data.id);
+                    remakeEpochs();
 
                 }
-                else if(res.status === 204  ){
+                else if (res.status === 204) {
                     toast(t('Método já está associado a um grupo!'), errorConfig);
                 }
-                else{
+                else {
                     toast(t('Erro ao agrupar métodos!'), errorConfig);
                 }
             });
@@ -167,18 +207,44 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
         else{
             toast(t('Necessário selecionar mais do que um método!'), errorConfig);
         }
-        loadGroupedMethods();
     }
 
+    const editMethodGroup = (groupId, methods, course_units) => {
+        const courseUnitIds = [parseInt(unitId), ...course_units.map(course_unit => course_unit.id).filter(id => id !== parseInt(unitId))];
+        setCourseUnits(courseUnitIds);
+        setColumns(courseUnitIds.length);
+        setIsEditMode(true);
+        setInEditGroup(groupId);
 
-    const editMethodGroup= (methods, course_units) => {
-        console.log("Methods", methods)
-        console.log("CourseUnits", course_units)
+        let newSelectedEpochs = [...selectedEpochs];
+        courseUnitIds.forEach((courseUnitId, index) => {
+            if (courseUnitId !== parseInt(unitId)) {
+                axios.get(`/course-units/${courseUnitId}/epoch-types/${epochTypeId}`).then((res) => {
+                    setSelectedEpochs(prevSelectedEpochs => {
+                        let newSelectedEpochs = [...prevSelectedEpochs];
+                        newSelectedEpochs[index] = res.data;
+                        return newSelectedEpochs;
+                    });
+                });
+            }
+        });
+        setSelectedEvaluations((prevSelectedEvaluations) => {
+            let newSelectedEvaluations = [...prevSelectedEvaluations];
+
+            courseUnitIds.forEach((courseUnitId, index) => {
+                const method = methods.find(method => method.courseUnitId === courseUnitId);
+
+                if (!newSelectedEvaluations[index]) {
+                    newSelectedEvaluations[index] = {};
+                }
+
+                newSelectedEvaluations[index].courseUnits = course_units[index].id;
+                newSelectedEvaluations[index].value = method.id;
+
+            });
+            return newSelectedEvaluations;
+        })
     }
-
-     useEffect(() => {
-         console.log(selectedEpochs)
-     },[selectedEpochs])
 
     const loadGroupedMethods= () => {
         if (epochTypeId && unitId ){
@@ -197,8 +263,12 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
         }
     }
 
+    useEffect(() => {
+        console.log("Selected Epochs", selectedEpochsOptions);
+    }, [selectedEpochsOptions]);
+
     // TODO every method that no longer has_groups should be changed in the list itself for dropdown options
-    const remove = (methodGroupId) => {
+    const remove = (methodGroupId, methods) => {
         let transl = t('Ao eliminar o agrupamento, as avaliações e métodos já adicionados continuarão a estar acessiveis, no entanto não conseguirá utilizar este agrupamento para novas avaliações/métodos!');
         transl += "<br/><strong>";
         transl += t('Tem a certeza que deseja eliminar este agrupamento de unidades curriculares, em vez de editar?');
@@ -215,16 +285,41 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
             denyButtonColor: '#db2828',
         };
 
+
+
         SweetAlertComponent.fire(sweetAlertOptions).then((result) => {
             if (result.isConfirmed) {
                 setRemovingMethodGroup(methodGroupId);
 
                 axios.delete(`/method-groups/${methodGroupId}`).then((res) => {
                     setRemovingMethodGroup(null);
-                    loadGroupedMethods();
-
                     if (res.status === 200) {
+                        loadGroupedMethods();
                         toast( t('Agrupamento eliminado com sucesso!'), successConfig);
+                        let methodsToRemove = [];
+                        methods.forEach( (method,index) => {
+                                methodsToRemove[index] = method.id
+                            }
+                        )
+
+                        //Change methods removed to methods.has_group = false
+                        setSelectedEpochs((prevEpoch) => {
+                            const updatedEpochs = prevEpoch.map((epoch) => {
+                                return {
+                                    ...epoch,
+                                    methods: epoch.methods.map(method => ({
+                                        ...method,
+                                        has_group: methodsToRemove.includes(method.id) ? false : method.has_group,
+                                        group_id: methodsToRemove.includes(method.id) ? null : method.group_id
+                                    }))
+                                };
+                            });
+                            console.log("PrevEpoch", updatedEpochs);
+                            return updatedEpochs;
+                        });
+
+
+                        remakeEpochs();
                     }
                     else {
                         toast( t('Ocorreu um problema ao eliminar este agrupamento!'), errorConfig);
@@ -239,71 +334,65 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
             <Modal.Header>{t("Agrupar Métodos")}</Modal.Header>
             <Modal.Content>
                 { (!groupedMethodsList || groupedMethodsList?.length < 1) || isLoading ? (
-                        <EmptyTable isLoading={isLoading} label={t("Ohh! Não foi possível encontrar Métodos Agrupados!")} />
-                    ) : (
-                        <Table celled fixed striped selectable>
-                            <Table.Header>
-                                <Table.Row>
-                                    {tableColumns.map((col, index) => (
-                                        <Table.HeaderCell key={index} textAlign={col.align} style={ col.style } >{col.name}</Table.HeaderCell>
-                                    ))}
-                                </Table.Row>
-                            </Table.Header>
-                            <Table.Body>
-                                { groupedMethodsList?.map(({ id, methods, course_units, courses, num_methods }, index ) => (
-                                    <Table.Row key={index}>
-                                        {/*<Table.Cell>{description}</Table.Cell>*/}
-                                        <Table.Cell>
-                                            <List bulleted>
-                                                {methods?.map((method, methodIndex) => (
-                                                    <List.Item key={"method_" + methodIndex}>
-                                                        <List.Content>
-                                                            <List.Header>{ method.description }</List.Header>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                <div>{ t('Nota mínima') + ': ' }</div>
-                                                                <div><b>{ method.minimum }</b></div>
-                                                            </div>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                <div>{ t('Peso') + ': ' }</div>
-                                                                <div><b>{ method.weight + '%' }</b></div>
-                                                            </div>
-                                                        </List.Content>
-                                                    </List.Item>
-                                                ))}
-                                            </List>
-                                        </Table.Cell>
-                                        <Table.Cell>
-                                            <List bulleted>
-                                                {course_units?.map((uc, ucIndex) => (
-                                                    <List.Item key={"uc_" + ucIndex}>
-                                                        <List.Content>
-                                                            <List.Header>{ uc.name }</List.Header>
-                                                            <List.Description className={"margin-top-xs padding-left-base"}>{uc.course_description}</List.Description>
-                                                        </List.Content>
-                                                    </List.Item>
-                                                ))}
-                                            </List>
-                                        </Table.Cell>
-                                        <Table.Cell textAlign="center">{num_methods}</Table.Cell>
-                                        <Table.Cell textAlign="center">
-                                            {/*<ShowComponentIfAuthorized permission={[SCOPES.EDIT_UC_GROUPS]}>*/}
-                                            {/*    <Link to={`/agrupamento-unidade-curricular/edit/${id}`}>*/}
-                                                    <Button color="yellow" icon onClick={()=>editMethodGroup(methods,course_units)}>
-                                                        <Icon name="edit"/>
-                                                    </Button>
-                                                {/*</Link>*/}
-                                            {/*</ShowComponentIfAuthorized>*/}
-                                            {/*<ShowComponentIfAuthorized permission={[SCOPES.DELETE_UC_GROUPS]}>*/}
-                                                <Button onClick={() => remove(id) } color="red" icon loading={removingMethodGroup === id}>
-                                                    <Icon name="trash"/>
-                                                </Button>
-                                            {/*</ShowComponentIfAuthorized>*/}
-                                        </Table.Cell>
-                                    </Table.Row>
+                    <EmptyTable isLoading={isLoading} label={t("Ohh! Não foi possível encontrar Métodos Agrupados!")} />
+                ) : (
+                    <Table celled fixed striped selectable>
+                        <Table.Header>
+                            <Table.Row>
+                                {tableColumns.map((col, index) => (
+                                    <Table.HeaderCell key={index} textAlign={col.align} style={ col.style } >{col.name}</Table.HeaderCell>
                                 ))}
-                            </Table.Body>
-                        </Table>
-                    )
+                            </Table.Row>
+                        </Table.Header>
+                        <Table.Body>
+                            { groupedMethodsList?.map(({ id, methods, course_units, courses, num_methods }, index ) => (
+                                <Table.Row key={index}>
+                                    {/*<Table.Cell>{description}</Table.Cell>*/}
+                                    <Table.Cell>
+                                        <List bulleted>
+                                            {methods?.map((method, methodIndex) => (
+                                                <List.Item key={"method_" + methodIndex}>
+                                                    <List.Content>
+                                                        <List.Header>{ method.description }</List.Header>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <div>{ t('Nota mínima') + ': ' }</div>
+                                                            <div><b>{ method.minimum }</b></div>
+                                                        </div>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <div>{ t('Peso') + ': ' }</div>
+                                                            <div><b>{ method.weight + '%' }</b></div>
+                                                        </div>
+                                                    </List.Content>
+                                                </List.Item>
+                                            ))}
+                                        </List>
+                                    </Table.Cell>
+                                    <Table.Cell>
+                                        <List bulleted>
+                                            {course_units?.map((uc, ucIndex) => (
+                                                <List.Item key={"uc_" + ucIndex}>
+                                                    <List.Content>
+                                                        <List.Header>{ uc.name }</List.Header>
+                                                        <List.Description className={"margin-top-xs padding-left-base"}>{uc.course_description}</List.Description>
+                                                    </List.Content>
+                                                </List.Item>
+                                            ))}
+                                        </List>
+                                    </Table.Cell>
+                                    <Table.Cell textAlign="center">{num_methods}</Table.Cell>
+                                    <Table.Cell textAlign="center">
+                                        <Button color="yellow" icon onClick={()=>editMethodGroup(id ,methods, course_units)}>
+                                            <Icon name="edit"/>
+                                        </Button>
+                                        <Button onClick={() => remove(id, methods) } color="red" icon loading={removingMethodGroup === id}>
+                                            <Icon name="trash"/>
+                                        </Button>
+                                    </Table.Cell>
+                                </Table.Row>
+                            ))}
+                        </Table.Body>
+                    </Table>
+                )
                 }
 
                 <br/>
@@ -314,41 +403,37 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
                             <Card key={index}>
                                 <CardContent style={{height: '95px'}} >
                                     {index === 0 ? (
-                                            <Form.Input
-                                                fluid
-                                                label={t("Unidade Curricular")}
-                                                readOnly
-                                                value={i18n.language === "en" ? courseUnit?.name_en : courseUnit?.name_pt}
-                                            />
-                                        ) : (
-                                            <CourseUnits school={school} semester={semester} hasMethods currentCourseUnits={courseUnits ? courseUnits : []}
-                                                         setColumn={setColumns} column={columns}
-                                                eventHandler={(selectedUnit) =>
-                                                    handleCourseUnitChange(index, selectedUnit)
-                                                }
-                                                isSearch={false}
-                                            />
+                                        <Form.Input
+                                            fluid
+                                            label={t("Unidade Curricular")}
+                                            readOnly
+                                            value={i18n.language === "en" ? courseUnit?.name_en : courseUnit?.name_pt}
+                                        />
+                                    ) : (
+                                        <CourseUnits school={school} semester={semester} hasMethods currentCourseUnits={courseUnits ? courseUnits : []}
+                                                     setColumn={setColumns} column={columns} unitId={courseUnits[index]}
+                                                     eventHandler={(selectedUnit) =>
+                                                         handleCourseUnitChange(index, selectedUnit)
+                                                     }
+                                                     isSearch={false}
+                                        />
                                     )}
                                 </CardContent>
                                 <CardContent style={{minHeight:"112.33px"}}>
-                                    { courseUnits[index] && selectedEpochs[index] && (
+                                    { courseUnits[index] && selectedEpochsOptions[index] && (
                                         <div
-                                            key={selectedEpochs[index]?.id}
+                                            key={selectedEpochsOptions[index]?.id}
                                         >
                                             <Header as="span">
-                                                {i18n.language === "en" ? selectedEpochs[index]?.name_en : selectedEpochs[index]?.name_pt}
+                                                {i18n.language === "en" ? selectedEpochsOptions[index]?.name_en : selectedEpochsOptions[index]?.name_pt}
                                             </Header>
                                             <Form.Dropdown
-                                                disabled={selectedEpochs[index]?.methods?.length === 0}
+                                                disabled={selectedEpochsOptions[index]?.methods?.length === 0}
                                                 fluid
                                                 clearable
                                                 selection
-                                                options={selectedEpochs[index]?.methods?.filter(method => !method.has_group)
-                                                    .map(method => ({
-                                                        key: method.id,
-                                                        value: method.id,
-                                                        text: method.description,
-                                                    }))}
+                                                value = {selectedEvaluations[index]?.value || null}
+                                                options= {selectedEpochsOptions[index]}
                                                 label={t("Métodos")}
                                                 placeholder={t("Método de avaliação")}
                                                 onChange={
@@ -356,17 +441,17 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
                                                 }
                                             />
                                         </div>
-                                        )
+                                    )
                                     }
                                 </CardContent>
                             </Card>
                         ))}
                         {columns < 4 && (
-                                <Button className={'add-column-btn'}
+                            <Button className={'add-column-btn'}
                                     style={{ marginTop : '1rem',height:"30px"}}  color={"blue"} floated={"left"} onClick={addColumn} >
-                                    <Icon name="add" />
-                                </Button>
-                                )}
+                                <Icon name="add" />
+                            </Button>
+                        )}
 
                         <div className={"group-container-evaluation"}>
                             <div className={"add-group-evaluations"}>
@@ -375,7 +460,7 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
                                 >
                                     <Button color={"green"} floated={"right"}
                                             onClick={() =>groupEvaluations()} width={2}>
-                                        Agrupar Avaliações
+                                        {isEditMode ? t("Confirmar Alterações") : t("Agrupar Métodos")}
                                     </Button>
                                 </div>
                             </div>

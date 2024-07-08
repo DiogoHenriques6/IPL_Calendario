@@ -23,7 +23,8 @@ class MethodResource extends JsonResource
             'initials_en'           => $this->initials_en,
             'is_blocked'            => $this->evaluation_type_id == EvaluationType::typeStatementRelease() || $this->evaluation_type_id == EvaluationType::typePublicOralPresentation(),
             'has_group'            => $this->method_group_id != null ,//TODO group by id of "parent" (like projet has those above in "blocked"
-//            'epoch' => EpochResource::collection($this->epochType),
+            'group_id'              => $this->method_group_id,
+            'courseUnitId'          => $this->courseUnits()->pluck('id')->first(),
         ];
     }
 }

@@ -6,6 +6,7 @@ use App\Filters\CourseUnitGroupFilters;
 use App\Http\Controllers\API\LdapController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CourseUnitGroupRequest;
+use App\Http\Requests\MethodGroupRequest;
 use App\Http\Resources\Admin\CourseUnitGroupListResource;
 use App\Http\Resources\Admin\Edit\CourseUnitGroupResource;
 use App\Http\Resources\Admin\LogsResource;
@@ -43,7 +44,6 @@ class MethodGroupController extends Controller
      */
     public function index(Request $request, EpochType $epochType)
     {
-//        $courseUnit = CourseUnit::where('id', $request->courseUnitId)->first();
         Log::channel('sync_test')->info('methodsByCourseUnit' . $request->epochTypeId);
         $methods = MethodGroup::ofAcademicYear($request->cookie('academic_year'))
 
@@ -55,7 +55,7 @@ class MethodGroupController extends Controller
             ->select('method_groups.*')
             ->distinct()
             ->get();
-//        $methods->load(['methods', 'methods.courseUnits']);
+
         return MethodGroupListResource::collection($methods);
     }
 
@@ -80,7 +80,7 @@ class MethodGroupController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(MethodGroupRequest $request)
     {
         foreach ($request->methods as $method) {
             $selectedMethod= Method::where('id', $method['value'])->first();
@@ -100,7 +100,41 @@ class MethodGroupController extends Controller
             $method->save();
         }
 
-        return response()->json($methodsToGroup, Response::HTTP_CREATED);
+        return response()->json($newMethodGroup, Response::HTTP_CREATED);
+    }
+
+
+    public function update(MethodGroup $methodGroup, MethodGroupRequest $request){
+        $currentMethods = $methodGroup->methods()->get();
+
+        $requestedMethodIds = array_column($request->methods, 'value');
+        //foreah methods if method not in request, remove group id
+
+        $methodsToAdd = Method::whereIn('id', $requestedMethodIds)->get();
+
+        $methodsToGroup = [];
+        foreach ($methodsToAdd as $method) {
+            if ($method->method_group_id !== null && $method->method_group_id !== $methodGroup->id) {
+                return response()->json("Método já associado a um grupo!", Response::HTTP_NO_CONTENT);
+            }
+            $methodsToGroup[] = $method;
+        }
+
+        $methodsToRemove = $currentMethods->filter(function($method) use ($requestedMethodIds) {
+            return !in_array($method->id, $requestedMethodIds);
+        });
+
+        foreach ($methodsToRemove as $method) {
+            $method->method_group_id = null;
+            $method->save();
+        }
+
+        foreach ($methodsToGroup as $method) {
+            $method->method_group_id = $methodGroup->id;
+            $method->save();
+        }
+
+        return response()->json($methodGroup, Response::HTTP_OK);
     }
 
     /**

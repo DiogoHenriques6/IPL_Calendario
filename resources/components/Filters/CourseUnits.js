@@ -5,7 +5,7 @@ import {useTranslation} from "react-i18next";
 import _ from "lodash";
 import {useSearchParams} from "react-router-dom";
 
-const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, school, hasMethods, currentCourseUnits }) => {
+const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, school, hasMethods, currentCourseUnits, unitId }) => {
     const [searchParams] = useSearchParams();
     const searchCourseUnit = searchParams.get('curso-unit');
 
@@ -19,6 +19,11 @@ const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, s
             setCourseUnit(searchCourseUnit);
         }
     }, [searchCourseUnit]);
+    useEffect(() => {
+        if(unitId && hasMethods){
+            setCourseUnit(unitId);
+        }
+    }, [unitId]);
 
     const loadCourses = (search = '', includeCourseUnit) => {
         setLoading(true);
@@ -49,7 +54,7 @@ const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, s
         axios.get(link).then((res) => {
             if (res.status === 200) {
                 if(currentCourseUnits){
-                    res.data.data = res.data.data.filter(item => !currentCourseUnits.includes(item.id));
+                    res.data.data = res.data.data.filter(item => !currentCourseUnits.includes(item.id) || (unitId ? item.id === unitId : false));
                 }
                 else{
                     res.data.data.unshift({id: '', name: t("Todas as Unidades curriculares")});
@@ -57,7 +62,7 @@ const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, s
                 setCourseUnitsOptions(res?.data?.data?.map(({ id, name, course_description }) => ({
                     key: id,
                     value: id,
-                    text: name + (hasGroup && id != ''? ` - ${course_description}` : "")
+                    text: name + (id != ''? ` - ${course_description}` : "")
                 })));
                 setLoading(false);
                 if(searchCourseUnit && search === ""){
@@ -87,8 +92,8 @@ const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, s
     };
 
     return (
-        <Form.Dropdown selectOnBlur={false} width={widthSize} search clearable selection value={courseUnit} defaultValue={(searchCourseUnit ? searchCourseUnit : undefined)} options={courseUnitsOptions}
-                       label={t("Unidade Curricular")} placeholder={t("Pesquisar a unidade curricular...")} loading={loading}
+        <Form.Dropdown selectOnBlur={false} width={widthSize} search clearable selection value={courseUnit} defaultValue={(searchCourseUnit ? searchCourseUnit : undefined)}
+                       options={courseUnitsOptions} label={t("Unidade Curricular")} placeholder={t("Pesquisar a unidade curricular...")} loading={loading}
                        onSearchChange={_.debounce(handleSearchCourses, 400)} onChange={filterByCourse}/>
     );
 };

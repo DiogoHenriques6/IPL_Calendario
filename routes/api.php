@@ -216,6 +216,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/method-groups',                       'store');
         Route::get('/method-groups',                        'index' );
         Route::delete('/method-groups/{methodGroup}',       'destroy');
+        Route::patch('/method-groups/{methodGroup}',         'update');
     });
 
     Route::controller(InterruptionController::class)->group(function () {
