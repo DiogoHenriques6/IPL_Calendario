@@ -44,6 +44,8 @@
         "Grupo de utilizador removido com sucesso!": "User group deleted with success!",
         "Não foi possível remover o Grupo de utilizador!": "There was a problem removing the User Group!",
         "Ohh! Não foi possível encontrar grupos de utilizador!": "Ohh! It wasn't possible to find User Groups!",
+        "Não existem métodos Agrupados!": "There are no Grouped Methods!",
+        "Sair": "Leave",
 
         "A carregar registos...": "Loading records...",
         "A carregar dados": "Loading data",
@@ -463,7 +465,8 @@
         "Total pesos avaliacao:": "Total evaluation weights:",
         "Duplicar métodos":" Clone methods",
         "Copiar métodos": "Copy methods",
-        "Agrupar métodos": "Group methods",
+        "Agrupar Métodos": "Group methods",
+        "Confirmar Alterações": "Confirm Changes",
         "Adicionar novo método": "Add new method",
         "Falta adicionar os métodos desta unidade curricular": "This UC does not have any saved methods",
         "Falta selecionar o responsável da unidade curricular": "This UC does not have a responsible assigned",

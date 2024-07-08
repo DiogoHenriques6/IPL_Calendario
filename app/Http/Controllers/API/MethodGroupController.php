@@ -59,21 +59,6 @@ class MethodGroupController extends Controller
         return MethodGroupListResource::collection($methods);
     }
 
-//    public function search(Request $request, CourseUnitGroupFilters $filters)
-//    {
-//        $list = CourseUnitGroup::filter($filters)->ofAcademicYear($request->cookie('academic_year'));
-//
-//        $user = Auth::user();
-//        // List for coordinator
-//        if ($user->groups->contains('code', InitialGroups::COORDINATOR)) {
-//            $list->whereHas("courseUnits.course", function ($query){
-//                $query->whereIn('course_id', Course::where('coordinator_user_id', Auth::user()->id)->pluck('id'));
-//            });
-//        }
-//        return CourseUnitGroupSearchResource::collection($list->paginate(30));
-//    }
-
-
     /**
      * Store a newly created resource in storage.
      *
@@ -102,7 +87,6 @@ class MethodGroupController extends Controller
 
         return response()->json($newMethodGroup, Response::HTTP_CREATED);
     }
-
 
     public function update(MethodGroup $methodGroup, MethodGroupRequest $request){
         $currentMethods = $methodGroup->methods()->get();
@@ -152,59 +136,4 @@ class MethodGroupController extends Controller
 
         return response()->json("Grupo eliminado com sucesso!", Response::HTTP_OK);
     }
-
-    /*public function update(CourseUnitGroupRequest $request, CourseUnitGroup $courseUnitGroup)
-    {
-        $courseUnitGroup->description_pt = $request->get('description_pt');
-        $courseUnitGroup->description_en = $request->get('description_en');
-        $courseUnitGroup->save();
-
-        // Get current course_units with methods
-        $methodsId = $courseUnitGroup->courseUnits()->first()->methods()->pluck("id")->toArray();
-
-        // Get current course_units ids
-        $ucs = $courseUnitGroup->courseUnits()->pluck("id")->toArray();
-
-        // get deleted ones
-        $removing_ucs = array_diff($ucs, $request->get('course_units'));
-        if(!empty($removing_ucs)){
-            DB::table("course_unit_method")->whereIn("course_unit_id", $removing_ucs)->delete();
-
-            $ucs_text = CourseUnit::select(DB::raw('CONCAT("(", code, ") ", name_pt) AS name'))->whereIn("id", $removing_ucs)->pluck("name");
-            //implode(", ", $removing_ucs)
-            UnitLog::create([
-                "course_unit_group_id"  => $courseUnitGroup->id,
-                "user_id"               => Auth::id(),
-                "description"           => "Removidos métodos de avaliação á UCs '" . $ucs_text->join(', ', ' e ') . "' por '" . Auth::user()->name . "'."
-            ]);
-        }
-
-        // get new ones
-        $adding_ucs = array_diff($request->get('course_units'), $ucs);
-
-        if(!empty($adding_ucs)){
-            $newInserts = [];
-            foreach ($adding_ucs as $uc) {
-                foreach ($methodsId as $method) {
-                    $newInserts[] = ["course_unit_id" => $uc, "method_id" => $method];
-                }
-            }
-            DB::table("course_unit_method")->insert($newInserts);
-
-            $ucs_text = CourseUnit::select(DB::raw('CONCAT("(", code, ") ", name_pt) AS name'))->whereIn("id", $adding_ucs)->pluck("name");
-            //implode(", ", $adding_ucs)
-            UnitLog::create([
-                "course_unit_group_id"  => $courseUnitGroup->id,
-                "user_id"               => Auth::id(),
-                "description"           => "Adicionados métodos de avaliação á UCs '" . $ucs_text->join(', ', ' e ') . "' por '" . Auth::user()->name . "'."
-            ]);
-        }
-
-        //update the "course_unit_group_id" field,  adding and removing course units
-        CourseUnit::whereIn('id', $request->get('course_units'))->update(['course_unit_group_id' => $courseUnitGroup->id]);
-        CourseUnit::whereNotIn('id', $request->get('course_units'))->where('course_unit_group_id', $courseUnitGroup->id)->update(['course_unit_group_id' => null]);
-
-
-        return response()->json("Grupo atualizado", Response::HTTP_OK);
-    }*/
 }

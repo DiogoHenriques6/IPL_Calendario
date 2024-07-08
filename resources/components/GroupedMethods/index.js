@@ -98,7 +98,6 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
                         });
                 }
             });
-            console.log(options)
             setSelectedEpochsOptions(options);
         }
     }
@@ -177,10 +176,8 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
                     }))
                 };
             });
-            console.log("PrevEpoch", updatedEpochs);
             return updatedEpochs;
         });
-        console.log(selectedEpochsCopy)
         setSelectedEpochs(selectedEpochsCopy);
     }
 
@@ -264,10 +261,8 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
     }
 
     useEffect(() => {
-        console.log("Selected Epochs", selectedEpochsOptions);
     }, [selectedEpochsOptions]);
 
-    // TODO every method that no longer has_groups should be changed in the list itself for dropdown options
     const remove = (methodGroupId, methods) => {
         let transl = t('Ao eliminar o agrupamento, as avaliações e métodos já adicionados continuarão a estar acessiveis, no entanto não conseguirá utilizar este agrupamento para novas avaliações/métodos!');
         transl += "<br/><strong>";
@@ -314,7 +309,6 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
                                     }))
                                 };
                             });
-                            console.log("PrevEpoch", updatedEpochs);
                             return updatedEpochs;
                         });
 
@@ -333,8 +327,11 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
         <Modal size={'fullscreen'} closeOnEscape closeOnDimmerClick open={isOpen} onClose={closeModal}>
             <Modal.Header>{t("Agrupar Métodos")}</Modal.Header>
             <Modal.Content>
+                <Header>
+                    {(i18n.language === "en" ? epochs?.name_en : epochs?.name_pt)}
+                </Header>
                 { (!groupedMethodsList || groupedMethodsList?.length < 1) || isLoading ? (
-                    <EmptyTable isLoading={isLoading} label={t("Ohh! Não foi possível encontrar Métodos Agrupados!")} />
+                    <EmptyTable isLoading={isLoading} label={t("Não existem métodos Agrupados!")} />
                 ) : (
                     <Table celled fixed striped selectable>
                         <Table.Header>
@@ -347,7 +344,6 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
                         <Table.Body>
                             { groupedMethodsList?.map(({ id, methods, course_units, courses, num_methods }, index ) => (
                                 <Table.Row key={index}>
-                                    {/*<Table.Cell>{description}</Table.Cell>*/}
                                     <Table.Cell>
                                         <List bulleted>
                                             {methods?.map((method, methodIndex) => (

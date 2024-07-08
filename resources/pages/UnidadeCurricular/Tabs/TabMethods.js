@@ -551,7 +551,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                                 <div className={"methods-epoch-btn"}>
                                                                     <Button onClick={() => openGroupingMethods(index)} icon labelPosition="left"
                                                                             color="green" disabled={item.methods.length === 0}>
-                                                                        <Icon name={"object group outline"}/>{t("Agrupar métodos")}
+                                                                        <Icon name={"object group outline"}/>{t("Agrupar Métodos")}
                                                                     </Button>
                                                                     <Button floated='right' icon labelPosition='left'
                                                                             color={"green"} size='small' onClick={() => {
