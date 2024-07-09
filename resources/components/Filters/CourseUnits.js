@@ -62,7 +62,8 @@ const FilterOptionCourseUnits = ({widthSize, eventHandler, hasGroup, semester, s
                 setCourseUnitsOptions(res?.data?.data?.map(({ id, name, course_description }) => ({
                     key: id,
                     value: id,
-                    text: name + (id != ''? ` - ${course_description}` : "")
+                    text: name,
+                    description: course_description
                 })));
                 setLoading(false);
                 if(searchCourseUnit && search === ""){
