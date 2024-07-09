@@ -42,6 +42,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
     const [curricularUnitSelected, setCurricularUnitSelected] = useState(-1);
     const [academicYearSelected, setAcademicYearSelected] = useState(-1);
     const [epochToGroup, setEpochToGroup] = useState(-1);
+    const [selectedOption, setSelectedOption] = useState(null);
 
     const isManagingMethods = useComponentIfAuthorized(SCOPES.MANAGE_EVALUATION_METHODS);
 
@@ -56,13 +57,6 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
 
         if(methodList?.length > 0 ) {
             methodList.forEach((item) => {
-                /*
-                //check if it has methods
-                if (!item.methods?.length) {
-                    isValid = false;
-                    HasUncompleteData = true;
-                }
-                 */
                 // check if it has more than 100%
                 let methodWeight = item.methods.reduce((acc, curr) => curr.weight + acc, 0);
                 if (methodWeight > 100) {
@@ -104,6 +98,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
     };
 
     useEffect(() => {
+        // setAcademicYearSelected(localStorage.getItem('academicYearSelected') || -1);
         axios.get('/evaluation-types').then((res) => {
             if (res.status === 200) {
                 res.data.data.unshift({id: '', name: t("Selecionar Tipo de avaliação"), enabled: true});
@@ -298,6 +293,17 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
     const closeModalCopy = () => {
         setOpenCopy(false);
     }
+
+    useEffect(() => {
+        if (openCopy) {
+            const year =  sessionStorage.getItem('academicYear') || -1 ;
+            console.log(year);
+            if(year !== -1){
+                selectAcademicYear(year);
+            }
+        }
+    }, [openCopy]);
+
     const selectAcademicYear = (yearId) => {
         setLoadingUCs(true);
         setAcademicYearSelected(yearId);
@@ -307,7 +313,8 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                 setCurricularUnitsOptions(res?.data?.data?.map(({ id, name, course_description }) => ({
                     key: id,
                     value: id,
-                    text: name + " - (" + course_description + ")"
+                    text: name,
+                    description: course_description
                 })));
                 setLoadingUCs(false);
             }
@@ -332,6 +339,12 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
         setOpenGroupMethods(true);
         setEpochToGroup(epochs[epochId]);
     }
+
+    useEffect(() => {
+        if(curricularUnitSelected){
+            setSelectedOption(curricularUnitsOptions.find(option => option.value === curricularUnitSelected));
+        }
+    }, [curricularUnitSelected]);
 
     return (
         <div ref={contextRef}>
@@ -573,10 +586,6 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                         )}
 
                         <FinalForm onSubmit={cloneMethods}
-                            // initialValues={{
-                            //     epochFromInput: -1,
-                            //     epochToInput: -1,
-                            // }}
                                    render={({handleSubmit}) => (
                                        <Modal onClose={closeModal} onOpen={() => setOpenClone(true)} open={openClone}>
                                            <Modal.Header>{t("Duplicar Métodos")}</Modal.Header>
@@ -644,11 +653,18 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                         <GridColumn width={10}>
                                             <Form.Dropdown selectOnBlur={false} selection search={true}
                                                            value={curricularUnitSelected}
-                                                           disabled={(academicYearSelected === -1) || curricularUnitsOptions.length === 0}
+                                                           disabled={curricularUnitsOptions.length === 0}
                                                            options={curricularUnitsOptions}
                                                            label={t("Unidade Curricular")}
                                                            placeholder={t("Unidade Curricular")}
                                                            loading={loadingUCs}
+                                                           trigger={
+                                                               selectedOption && (
+                                                                   <span>
+                                                                    {selectedOption.text} - <i>{selectedOption.description}</i>
+                                                                   </span>
+                                                               )
+                                                           }
                                                            onChange={(e, {value}) => setCurricularUnitSelected(value)}/>
                                             {academicYearSelected !== -1 && curricularUnitsOptions.length === 0 && !loadingUCs && (
                                                 <Message warning>

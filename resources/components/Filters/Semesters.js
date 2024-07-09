@@ -18,9 +18,10 @@ const FilterOptionSemester = ({withSpecial, widthSize, eventHandler, value, disa
                 }
                 setSemestersOptions(response.data.data);
                 setLoading(false);
+                const semesterAux = sessionStorage.getItem('semester');
+                setSemester(semesterAux ? parseInt(semesterAux) : semester)
             }
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -29,6 +30,7 @@ const FilterOptionSemester = ({withSpecial, widthSize, eventHandler, value, disa
 
     const filterBySemester = (e, {value}) => {
         setSemester(value);
+        sessionStorage.setItem('semester', value);
         eventHandler(value);
     };
 

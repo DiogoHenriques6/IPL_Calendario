@@ -17,6 +17,7 @@ const FilterOptionCourse = ({widthSize, eventHandler, school}) => {
     useEffect(() => {
         if(searchCourse){
             setCourse(searchCourse);
+            sessionStorage.setItem('course', searchCourse);
         }
     }, [searchCourse]);
 
@@ -55,6 +56,14 @@ const FilterOptionCourse = ({widthSize, eventHandler, school}) => {
                 if(searchCourse && search === ""){
                     let selected = res.data.data.find((item) => item.value == searchCourse);
                     setCourse(selected.value);
+                    sessionStorage.setItem('course', selected.value);
+                }
+                else{
+                    const course = sessionStorage.getItem('course') || -1;
+                    if(course !== -1){
+                        console.log(course)
+                        setCourse(parseInt(course));
+                    }
                 }
             }
         });
@@ -70,6 +79,7 @@ const FilterOptionCourse = ({widthSize, eventHandler, school}) => {
 
     const filterByCourse = (e, {value}) => {
         setCourse(value);
+        sessionStorage.setItem('course', value);
         eventHandler(value);
     };
 

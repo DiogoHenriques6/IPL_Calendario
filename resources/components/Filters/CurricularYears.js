@@ -18,6 +18,8 @@ const FilterOptionCurricularYear = ({widthSize, eventHandler, value, disabled, c
                 }
                 setCurricularYearOptions(response.data.data);
                 setLoading(false);
+                const curricularYearAux = sessionStorage.getItem('curricularYear');
+                setCurricularYear(curricularYearAux ? parseInt(curricularYearAux) : curricularYear)
             }
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -29,6 +31,7 @@ const FilterOptionCurricularYear = ({widthSize, eventHandler, value, disabled, c
 
     const filterByYear = (e, {value}) => {
         setCurricularYear(value);
+        sessionStorage.setItem('curricularYear', value);
         eventHandler(value);
     };
 

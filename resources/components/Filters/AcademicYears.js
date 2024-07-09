@@ -17,6 +17,14 @@ const FilterOptionAcademicYear = ({widthSize, eventHandler, value, disabled, cla
                     response.data.data.unshift({value: '', text: t("Todos")});
                 }
                 setAcademicYearOptions(response.data.data);
+                response.data?.data?.map((item) => {
+                    if (item.selected) {
+                        setAcademicYear(item.value);
+                        sessionStorage.setItem('academicYear', item.value);
+                    }
+                    return item;
+                });
+                console.log(response.data.data);
                 setLoading(false);
             }
         });

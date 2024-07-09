@@ -12,6 +12,7 @@ class AcademicYearSearchResource extends JsonResource
             'key'           => $this->id,
             'value'         => $this->id,
             'text'          => $this->display,
+            'selected'      => !!$this->selected,
             'description'   => (!!$this->selected ? ($request->header("lang") == "en" ? "Current Year" : "Ano a decorrer") : null)
         ];
     }

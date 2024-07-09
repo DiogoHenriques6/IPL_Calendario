@@ -280,8 +280,6 @@ const GroupedMethods = ({isOpen, onClose, epochs, epochTypeId, unitId}) => {
             denyButtonColor: '#db2828',
         };
 
-
-
         SweetAlertComponent.fire(sweetAlertOptions).then((result) => {
             if (result.isConfirmed) {
                 setRemovingMethodGroup(methodGroupId);

@@ -117,7 +117,11 @@ class MethodController extends Controller
 
 
     public function methodsToCopy(Request $request){
-        $ucs = CourseUnit::has('methods')->ofAcademicYear($request->year)->get();
+        if($request->year != null){
+            $ucs = CourseUnit::has('methods')->ofAcademicYear($request->year)->get();
+        } else {
+            $ucs = CourseUnit::has('methods')->ofAcademicYear($request->cookie("academic_year"))->get();
+        }
         return CourseUnitSearchResource::collection($ucs);
     }
 

@@ -53,6 +53,7 @@ const CourseUnitsList = () => {
     const [perPage, setPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [initialLoad, setInitialLoad] = useState(true);
 
     useEffect(() => {
         if(searchCourse){
@@ -60,12 +61,29 @@ const CourseUnitsList = () => {
         }
     }, [searchCourse]);
 
+    useEffect(() => {
+        const loadFiltersFromSession = () => {
+            const course = parseInt(sessionStorage.getItem('course')) || -1;
+            const semester = parseInt(sessionStorage.getItem('semester')) || -1;
+            const curricularYear = parseInt(sessionStorage.getItem('curricularYear')) || -1;
+            const currentPage = parseInt(sessionStorage.getItem('currentPage')) || 1;
+
+            setCourseFilter(course);
+            setSemesterFilter(semester);
+            setCurricularYearFilter(curricularYear);
+            setCurrentPage(currentPage);
+        };
+
+        loadFiltersFromSession();
+        setInitialLoad(false);
+    }, []);
+
     const fetchCourseUnits = () => {
         setContentLoading(true);
         let link = '/course-units?page=' + currentPage;
-        link += (semesterFilter         ? '&semester='      + semesterFilter        : '');
-        link += (courseFilter           ? '&course='        + courseFilter          : '');
-        link += (curricularYearFilter   ? '&year='          + curricularYearFilter  : '');
+        link += (semesterFilter && semesterFilter !== -1         ? '&semester='      + semesterFilter        : '');
+        link += (courseFilter && courseFilter !== -1           ? '&course='        + courseFilter          : '');
+        link += (curricularYearFilter && curricularYearFilter !== -1   ? '&year='          + curricularYearFilter  : '');
         link += (groupUnitFilter        ? '&group_unit='    + groupUnitFilter       : '');
         link += (searchFilter           ? '&search='        + searchFilter          : '');
         link += '&per_page=' + perPage;
@@ -81,12 +99,18 @@ const CourseUnitsList = () => {
     };
 
     useEffect(() => {
-        if(currentPage === 1){
+        if (!initialLoad) {
             fetchCourseUnits();
-        } else {
-            setCurrentPage(1);
         }
-    }, [semesterFilter, courseFilter, curricularYearFilter, groupUnitFilter, searchFilter, courseUnitAllFilter]);
+    }, [courseFilter, semesterFilter, curricularYearFilter, groupUnitFilter, searchFilter, currentPage]);
+    // useEffect(() => {
+    //     if(currentPage === 1){
+    //         fetchCourseUnits();
+    //     } else {
+    //         setCurrentPage(1);
+    //         sessionStorage.setItem('currentPage', 1);
+    //     }
+    // }, [semesterFilter, courseFilter, curricularYearFilter, groupUnitFilter, searchFilter, courseUnitAllFilter]);
 
     useEffect(() => {
         fetchCourseUnits();
@@ -101,6 +125,7 @@ const CourseUnitsList = () => {
 
     const changedPage = (activePage) => {
         setCurrentPage(activePage);
+        sessionStorage.setItem('currentPage', activePage);
     }
 
     const remove = (courseUnit) => {
@@ -160,6 +185,7 @@ const CourseUnitsList = () => {
             style: {width: '10%' }
         },
     ];
+
     return (
         <Container>
             <Card fluid>

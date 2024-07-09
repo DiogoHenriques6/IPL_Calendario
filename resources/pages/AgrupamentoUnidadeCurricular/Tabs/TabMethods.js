@@ -38,6 +38,9 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
     const [curricularUnitSelected, setCurricularUnitSelected] = useState(-1);
     const [academicYearSelected, setAcademicYearSelected] = useState(-1);
 
+    const [selectedOption, setSelectedOption] = useState(null);
+
+
 
     const isFormValid = (methodList) => {
         let isValid = true;
@@ -281,6 +284,16 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
         setOpenCopy(false);
     }
 
+    useEffect(() => {
+        if (openCopy) {
+            const year =  sessionStorage.getItem('academicYear') || -1 ;
+            console.log(year);
+            if(year !== -1){
+                selectAcademicYear(year);
+            }
+        }
+    }, [openCopy]);
+
     const selectAcademicYear = (yearId) => {
         setLoadingUCs(true);
         setAcademicYearSelected(yearId);
@@ -290,7 +303,8 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                 setCurricularUnitsOptions(res?.data?.data?.map(({id, name,course_description}) => ({
                     key: id,
                     value: id,
-                    text: name + " - (" + course_description + ")"
+                    text: name,
+                    description: course_description
                 })));
                 setLoadingUCs(false);
             }
@@ -310,6 +324,12 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
             }
         });
     }
+
+    useEffect(() => {
+        if(curricularUnitSelected){
+            setSelectedOption(curricularUnitsOptions.find(option => option.value === curricularUnitSelected));
+        }
+    }, [curricularUnitSelected]);
 
     return (
         <div ref={contextRef}>
@@ -552,9 +572,21 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                                 <AcademicYears eventHandler={selectAcademicYear} isSearch={false} />
                             </GridColumn>
                             <GridColumn width={10}>
-                                <Form.Dropdown selectOnBlur={false} selection search={true} value={curricularUnitSelected} disabled={ (academicYearSelected === -1) || curricularUnitsOptions.length === 0 }
-                                               options={curricularUnitsOptions} label={t("Unidade Curricular")} placeholder={ t("Unidade Curricular") }
-                                               loading={loadingUCs} onChange={(e, {value}) => setCurricularUnitSelected(value)}/>
+                                <Form.Dropdown selectOnBlur={false} selection search={true}
+                                               value={curricularUnitSelected}
+                                               disabled={ (academicYearSelected === -1) || curricularUnitsOptions.length === 0 }
+                                               options={curricularUnitsOptions}
+                                               label={t("Unidade Curricular")}
+                                               placeholder={ t("Unidade Curricular") }
+                                               loading={loadingUCs}
+                                               trigger={
+                                                   selectedOption && (
+                                                       <span>
+                                                                    {selectedOption.text} - <i>{selectedOption.description}</i>
+                                                                   </span>
+                                                   )
+                                               }
+                                               onChange={(e, {value}) => setCurricularUnitSelected(value)}/>
                                 { academicYearSelected !== -1 && curricularUnitsOptions.length === 0 && !loadingUCs && (
                                     <Message warning>
                                         <p>{ t("Não existe nenhuma unidade curricular com métodos definidos para o ano letivo selecionado!") }</p>
