@@ -144,11 +144,15 @@ class CourseUnitController extends Controller
                 break;
             case str_contains($currentGroup->code, InitialGroups::COORDINATOR):
 //                Log::channel('sync_test')->info($currentGroup->code);
-                $courseId = Course::where('coordinator_user_id', Auth::user()->id)->pluck('id');
+                if($request->has_methods){
+                    $schoolId = Course::where('coordinator_user_id', $userId)->pluck('school_id');
+                    break;
+                }
+                $courseId = Course::where('coordinator_user_id', $userId)->pluck('id');
                 break;
             case str_contains($currentGroup->code, InitialGroups::RESPONSIBLE):
 //                Log::channel('sync_test')->info($currentGroup->code);
-                $courseUnits = CourseUnit::where('responsible_user_id', Auth::user()->id);
+                $courseUnits = CourseUnit::where('responsible_user_id', $userId);
                 break;
         }
         if ($request->has('all') && $request->all === "true") {

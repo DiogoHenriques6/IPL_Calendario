@@ -121,7 +121,7 @@ class MethodController extends Controller
 
     public function methodsToCopy(Request $request){
         $currentGroup = Group::where('id', $request->cookie("selectedGroup"))->first();
-        $courseUnits = CourseUnit::with('methods')->ofAcademicYear($request->year);
+        $courseUnits = CourseUnit::has('methods')->ofAcademicYear($request->year);
         $schoolId = null;
         $courseId = null;
         switch ($currentGroup->code) {

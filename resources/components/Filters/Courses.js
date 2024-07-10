@@ -56,13 +56,12 @@ const FilterOptionCourse = ({widthSize, eventHandler, school}) => {
                 if(searchCourse && search === ""){
                     let selected = res.data.data.find((item) => item.value == searchCourse);
                     setCourse(selected.value);
-                    sessionStorage.setItem('course', selected.value);
                 }
-                else{
-                    const course = sessionStorage.getItem('course') || -1;
-                    if(course !== -1){
-                        console.log(course)
-                        setCourse(parseInt(course));
+                if(!course){
+                    const sessionCourse = parseInt(sessionStorage.getItem('course')) || -1;
+                    if(sessionCourse !== -1){
+                        console.log(sessionCourse)
+                        setCourse(sessionCourse);
                     }
                 }
             }

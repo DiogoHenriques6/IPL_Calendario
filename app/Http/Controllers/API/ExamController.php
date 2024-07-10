@@ -15,6 +15,7 @@ use App\Models\Exam;
 use App\Models\Group;
 use App\Models\InitialGroups;
 use App\Models\Method;
+use App\Models\MethodGroup;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Http\Response;
@@ -127,7 +128,7 @@ class ExamController extends Controller
         $courseUnitGroup = CourseUnit::find($request->course_unit_id)->group;
         $courseUnitGroup = $courseUnitGroup ? $courseUnitGroup->id : null;
 
-        if ($courseUnitGroup) {
+        if ($courseUnitGroup != null) {
             $examsWithMethod = Exam::withTrashed()->where('method_id', $request->method_id)->get();
             if ($examsWithMethod->isEmpty()) {
                 $courseUnitsInGroup = CourseUnit::where('course_unit_group_id', $courseUnitGroup)->get();
@@ -185,35 +186,73 @@ class ExamController extends Controller
                 }
             }
         } else {
-            //TODO verify if the method is grouped
-            //verifica se existe algum exame com o mesmo metodo o mesmo epoch e a mesma UC apagado
-            $exam = Exam::onlyTrashed()->where('method_id', $request->method_id)->where('epoch_id', $epochId)->where('course_unit_id', $request->course_unit_id)->first();
-            if ($exam) {
-                $exam->restore();
-                $exam->room = $request->room;
-                $exam->date_start = $request->date_start;
-                $exam->date_end = $request->date_end;
-                $exam->in_class = $request->in_class;
-                $exam->hour = $request->hour;
-                $exam->duration_minutes = $request->duration_minutes;
-                $exam->observations_pt = $request->observations_pt;
-                $exam->observations_en = $request->observations_en;
-                $exam->description_pt = $request->description_pt;
-                $exam->description_en = $request->description_en;
-                $exam->save();
-                $newExam = $exam;
-            } else {
-                $newExam = new Exam($request->all());
-                $newExam->save();
+            $methodGroupId = Method::find($request->method_id)->method_group_id;
+            if ($methodGroupId != null) {
+                $courseUnitsInGroup = CourseUnit::whereHas('methods', function ($query) use ($methodGroupId) {
+                    $query->where('method_group_id', $methodGroupId);
+                })->get();
+
+                foreach ($courseUnitsInGroup as $courseUnit) {
+                    $calendarIDByCourseId = Calendar::where('course_id', $courseUnit->course_id)->first()->id;
+                    $epochTypeByMethod = Method::find($request->method_id)->epochType;
+                    $methodId = $courseUnit->methods->where('method_group_id',$methodGroupId)->pluck('id')->first();
+                    $epochByType = Epoch::where('epoch_type_id', $epochTypeByMethod[0]['id'])->where('calendar_id', $calendarIDByCourseId)->first();
+
+                    $exam = Exam::onlyTrashed()->where('method_id', $methodId)->where('epoch_id', $epochByType->id)->where('course_unit_id', $courseUnit->id)->first();
+                    if ($exam) {
+                        $exam->restore();
+                        $exam->fill($request->all());
+                        $exam->method_id = $methodId;
+                        $exam->save();
+                        $newExam = $exam;
+                    } else {
+                        $newExam = new Exam($request->all());
+                        $newExam->course_unit_id = $courseUnit->id;
+                        $newExam->epoch_id = $epochByType->id;
+                        $newExam->method_id = $methodId;
+                        $newExam->save();
+                    }
+
+                    $newLog = new CalendarLog();
+                    $newLog->calendar_id = $epochByType->calendar->id;
+                    $newLog->course_unit_id = $courseUnit->id;
+                    $newLog->exam_id = $newExam->id;
+                    $newLog->user_id = auth()->user()->id;
+                    $newLog->is_create = "1";
+                    $newLog->new_date = $request->date_start;
+                    $newLog->save();
+                }
+
             }
-            $newLog = new CalendarLog();
-            $newLog->calendar_id = $newExam->epoch->calendar->id;
-            $newLog->course_unit_id = $newExam->course_unit_id;
-            $newLog->exam_id = $newExam->id;
-            $newLog->user_id = auth()->user()->id;
-            $newLog->is_create = "1";
-            $newLog->new_date = $request->date_start;
-            $newLog->save();
+            else {
+                $exam = Exam::onlyTrashed()->where('method_id', $request->method_id)->where('epoch_id', $epochId)->where('course_unit_id', $request->course_unit_id)->first();
+                if ($exam) {
+                    $exam->restore();
+                    $exam->room = $request->room;
+                    $exam->date_start = $request->date_start;
+                    $exam->date_end = $request->date_end;
+                    $exam->in_class = $request->in_class;
+                    $exam->hour = $request->hour;
+                    $exam->duration_minutes = $request->duration_minutes;
+                    $exam->observations_pt = $request->observations_pt;
+                    $exam->observations_en = $request->observations_en;
+                    $exam->description_pt = $request->description_pt;
+                    $exam->description_en = $request->description_en;
+                    $exam->save();
+                    $newExam = $exam;
+                } else {
+                    $newExam = new Exam($request->all());
+                    $newExam->save();
+                }
+                $newLog = new CalendarLog();
+                $newLog->calendar_id = $newExam->epoch->calendar->id;
+                $newLog->course_unit_id = $newExam->course_unit_id;
+                $newLog->exam_id = $newExam->id;
+                $newLog->user_id = auth()->user()->id;
+                $newLog->is_create = "1";
+                $newLog->new_date = $request->date_start;
+                $newLog->save();
+            }
         }
         return response()->json(new ExamResource($newExam), Response::HTTP_CREATED);
     }
@@ -227,7 +266,6 @@ class ExamController extends Controller
 
         // Check if CUs of exam belongs to any group
         $courseUnitGroup = $exam->courseUnit->group ;
-        Log::channel('sync_test')->info($courseUnitGroup);
         $courseUnitGroup = $courseUnitGroup ? $courseUnitGroup->id : null;
         if ($courseUnitGroup != null) {
             $examsWithMethod = $exam->courseUnit->exams->where('method_id', $exam->method_id);
@@ -265,37 +303,75 @@ class ExamController extends Controller
             }
 
         } else {
-            // Verifica se a data do exame foi alterada, se sim, cria um log a dizer que a data foi alterada
-            $examDataBeforeUpdate = Exam::find($exam->id);
+            $methodGroupId = Method::find($request->method_id)->method_group_id;
+            if ($methodGroupId != null) {
+                $relatedMethods = Method::where('method_group_id',$methodGroupId)->pluck('id');
 
-            $date1 = new DateTime($examDataBeforeUpdate->date_start);
-            $date2 = new DateTime($request->date_start);
-            if ($date1->format('Y-m-d') != $date2->format('Y-m-d')){
-                $newLog = new CalendarLog();
-                $newLog->calendar_id = $request->calendar_id;
-                $newLog->course_unit_id = $request->course_unit_id;
-                $newLog->exam_id = $exam->id;
-                $newLog->user_id = auth()->user()->id;
-                $newLog->is_update = "1";
-                // Vai buscar a data do exame antes de ser alterada
-                $newLog->old_date = $examDataBeforeUpdate->date_start;
-                $newLog->new_date = $request->date_start;
-                $newLog->save();
+                $examsWithMethod = Exam::whereIn('method_id',$relatedMethods)->get();
+                foreach ($examsWithMethod as $relatedExam){
+                    $examDataBeforeUpdate = Exam::find($relatedExam->id);
+
+                    $date1 = new DateTime($examDataBeforeUpdate->date_start);
+                    $date2 = new DateTime($request->date_start);
+                    if ($date1->format('Y-m-d') != $date2->format('Y-m-d')){
+                        $newLog = new CalendarLog();
+                        $newLog->calendar_id = $relatedExam->epoch->calendar->id;
+                        $newLog->course_unit_id = $request->course_unit_id;
+                        $newLog->exam_id = $relatedExam->id;
+                        $newLog->user_id = auth()->user()->id;
+                        $newLog->is_update = "1";
+                        // Vai buscar a data do exame antes de ser alterada
+                        $newLog->old_date = $examDataBeforeUpdate->date_start;
+                        $newLog->new_date = $request->date_start;
+                        $newLog->save();
+                    }
+                    $relatedExam->room            = $request->room;
+                    $relatedExam->group_id        = $request->group_id;
+                    $relatedExam->date_start      = $request->date_start;
+                    $relatedExam->date_end        = $request->date_end;
+                    $relatedExam->hour            = $request->hour;
+                    $relatedExam->in_class        = $request->in_class;
+                    $relatedExam->duration_minutes = $request->duration_minutes;
+                    $relatedExam->observations_pt = $request->observations_pt;
+                    $relatedExam->observations_en = $request->observations_en;
+                    $relatedExam->save();
+                }
+//                $examsWithMethod = $exam->courseUnit->exams->where('method_id', $exam->method_id);
+
             }
+            else{
+                // Verifica se a data do exame foi alterada, se sim, cria um log a dizer que a data foi alterada
+                $examDataBeforeUpdate = Exam::find($exam->id);
 
-            // Atualiza as informações do exame
-            $exam->epoch_id        = $request->epoch_id;
-            $exam->method_id       = $request->method_id;
-            $exam->room            = $request->room;
-            $exam->group_id        = $request->group_id;
-            $exam->date_start      = $request->date_start;
-            $exam->date_end        = $request->date_end;
-            $exam->hour            = $request->hour;
-            $exam->in_class        = $request->in_class;
-            $exam->duration_minutes = $request->duration_minutes;
-            $exam->observations_pt = $request->observations_pt;
-            $exam->observations_en = $request->observations_en;
-            $exam->save();
+                $date1 = new DateTime($examDataBeforeUpdate->date_start);
+                $date2 = new DateTime($request->date_start);
+                if ($date1->format('Y-m-d') != $date2->format('Y-m-d')){
+                    $newLog = new CalendarLog();
+                    $newLog->calendar_id = $request->calendar_id;
+                    $newLog->course_unit_id = $request->course_unit_id;
+                    $newLog->exam_id = $exam->id;
+                    $newLog->user_id = auth()->user()->id;
+                    $newLog->is_update = "1";
+                    // Vai buscar a data do exame antes de ser alterada
+                    $newLog->old_date = $examDataBeforeUpdate->date_start;
+                    $newLog->new_date = $request->date_start;
+                    $newLog->save();
+                }
+
+                // Atualiza as informações do exame
+                $exam->epoch_id        = $request->epoch_id;
+                $exam->method_id       = $request->method_id;
+                $exam->room            = $request->room;
+                $exam->group_id        = $request->group_id;
+                $exam->date_start      = $request->date_start;
+                $exam->date_end        = $request->date_end;
+                $exam->hour            = $request->hour;
+                $exam->in_class        = $request->in_class;
+                $exam->duration_minutes = $request->duration_minutes;
+                $exam->observations_pt = $request->observations_pt;
+                $exam->observations_en = $request->observations_en;
+                $exam->save();
+            }
         }
         return response()->json(new ExamResource($exam), Response::HTTP_OK);
     }
@@ -308,7 +384,6 @@ class ExamController extends Controller
          * - Year of the CourseUnit is the same (1st, 2nd or 3rd)
          * - Branch ("Ramo") is the same
          */
-//        Log::channel('sync_test')->info($selectedGroup);
         $epochRecord = Epoch::find($epochId);
         if ( $epochRecord->calendar->is_published ) {
             return response()->json("Not allowed to book exams on Published Calendars!", Response::HTTP_FORBIDDEN);
@@ -386,14 +461,33 @@ class ExamController extends Controller
                 $relatedExam->delete();
             }
         } else {
-            $newLog = new CalendarLog();
-            $newLog->calendar_id = $exam->epoch->calendar->id;
-            $newLog->course_unit_id = $exam->course_unit_id;
-            $newLog->exam_id = $exam->id;
-            $newLog->user_id = auth()->user()->id;
-            $newLog->new_date = $exam->date_start;
-            $newLog->save();
-            $exam->delete();
+
+            $methodGroupId = Method::where("id", $exam->method_id)->pluck('method_group_id')->first();
+            Log::channel("sync_test")->info($methodGroupId);
+            if($methodGroupId != null){
+                $relatedMethods = Method::where('method_group_id',$methodGroupId)->pluck('id');
+
+                $examsWithMethod = Exam::whereIn('method_id',$relatedMethods)->get();
+                foreach ($examsWithMethod as $relatedExam){
+                    $newLog = new CalendarLog();
+                    $newLog->calendar_id = $relatedExam->epoch->calendar->id;
+                    $newLog->course_unit_id = $relatedExam->course_unit_id;
+                    $newLog->exam_id = $relatedExam->id;
+                    $newLog->user_id = auth()->user()->id;
+                    $newLog->new_date = $relatedExam->date_start;
+                    $newLog->save();
+                    $relatedExam->delete();
+                }
+            }else{
+                $newLog = new CalendarLog();
+                $newLog->calendar_id = $exam->epoch->calendar->id;
+                $newLog->course_unit_id = $exam->course_unit_id;
+                $newLog->exam_id = $exam->id;
+                $newLog->user_id = auth()->user()->id;
+                $newLog->new_date = $exam->date_start;
+                $newLog->save();
+                $exam->delete();
+            }
         }
         return response()->json("Removed!");
     }
