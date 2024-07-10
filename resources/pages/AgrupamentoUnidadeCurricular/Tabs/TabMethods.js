@@ -1,6 +1,19 @@
 import React, {useEffect, useState, createRef} from 'react';
 import {Field, Form as FinalForm} from 'react-final-form';
-import { Button, Form, Header, Icon, Label, Message, Grid, GridColumn, Modal, Sticky, Table } from 'semantic-ui-react';
+import {
+    Button,
+    Form,
+    Header,
+    Icon,
+    Label,
+    Message,
+    Grid,
+    GridColumn,
+    Modal,
+    Sticky,
+    Table,
+    Input
+} from 'semantic-ui-react';
 import axios from "axios";
 import {toast} from "react-toastify";
 import {errorConfig, successConfig} from "../../../utils/toastConfig";
@@ -8,6 +21,7 @@ import Slider from "../../../components/Slider";
 import EmptyTable from "../../../components/EmptyTable";
 import {useTranslation} from "react-i18next";
 import AcademicYears from "../../../components/Filters/AcademicYears";
+import {Slider as SemanticSlider} from "react-semantic-ui-range";
 
 const UnitTabMethods = ({ groupId, warningsHandler }) => {
     const { t,i18n } = useTranslation();
@@ -193,12 +207,27 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
             if (!copy[index].methods?.length) {
                 copy[index].methods = [];
             }
-            let newWeight = 100 - copy[index].methods.reduce((a, b) => a + (b?.weight || 0), 0,);
-            newWeight = (newWeight >= 0 ? newWeight : 0);
+
+
+
+            copy[index].methods.forEach((method, index) => {
+                method.weight = defaultWeight;
+                return method;
+            });
+            console.log(copy[index].methods)
+            //
+            // // Calculate the new total weight
+            // let newWeight = 100 - copy[index].methods.reduce((a, b) => a + (b?.weight || 0), 0);
+            //
+            // // Adjust the first method's weight to ensure the total is 100
+            // if (methodsLength > 0) {
+            //     copy[index].methods[0].weight += newWeight;
+            // }
+
             copy[index].methods.push({
                 epoch_type_id: epoch_id,
-                weight: newWeight,
-                minimum: 9.5,
+                weight: defaultWeight,
+                minimum: 0,
                 evaluation_type_id: undefined,
                 description_pt: '',
                 description_en: '',
@@ -206,17 +235,50 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                 initials_en: '',
                 is_blocked: false
             });
+
+            // Recalculate weights
+            const methodsLength = copy[index].methods.length;
+            const defaultWeight = Math.floor(100 / methodsLength);
+
+            // Distribute default weight
+            copy[index].methods.forEach(method => {
+                method.weight = defaultWeight;
+            });
+
+            // Calculate remaining weight to make the total exactly 100
+            const totalWeight = copy[index].methods.reduce((a, b) => a + b.weight, 0);
+            const remainingWeight = 100 - totalWeight;
+
+            // Adjust the weight of the last method added to ensure the total is 100
+            if (remainingWeight !== 0 && methodsLength > 0) {
+                copy[index].methods[methodsLength - 1].weight += remainingWeight;
+            }
+
             return copy;
         });
     }
+
     const updateMethodMinimum = (index, methodIndex, value) => {
+        if (value > 20)
+            value = 20
+        else if (value < 0 || !value)
+            value = 0;
+        else
+            value = parseFloat(value)
         setEpochs((current) => {
             const copy = [...current];
             copy[index].methods[methodIndex].minimum = parseFloat(value);
             return copy;
         })
     }
+
     const updateMethodWeight = (index, methodIndex, value) => {
+        if (value > 100)
+            value = 100
+        else if (value < 0 || !value)
+            value = 0;
+        else
+            value = parseInt(value)
         setEpochs((current) => {
             const copy = [...current];
             copy[index].methods[methodIndex].weight = parseFloat(value);
@@ -287,7 +349,6 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
     useEffect(() => {
         if (openCopy) {
             const year =  sessionStorage.getItem('academicYear') || -1 ;
-            console.log(year);
             if(year !== -1){
                 selectAcademicYear(year);
             }
@@ -324,6 +385,8 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
             }
         });
     }
+
+
 
     useEffect(() => {
         if(curricularUnitSelected){
@@ -484,13 +547,49 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                                             </Table.Cell>
                                             { !method.is_blocked && (
                                                 <Table.Cell width={5}>
-                                                    <Slider step="0.5" min="0" max="20" value={method.minimum} inputSide={"left"} eventHandler={(value) => updateMethodMinimum(index, methodIndex, value)} />
+                                                    <div>
+                                                        <Grid>
+                                                            <Grid.Column width={6}>
+                                                                <Input placeholder="Value" fluid type="number"
+                                                                       loading={isLoading} value={method.minimum}
+                                                                       style={{minWidth: "40px"}}
+                                                                       onChange={(e) => updateMethodMinimum(index, methodIndex, e.target.value)}/>
+                                                            </Grid.Column>
+                                                            <GridColumn width={10}>
+                                                                <SemanticSlider value={method.minimum} color="blue"
+                                                                                settings={{
+                                                                                    start: 2,
+                                                                                    min: 0,
+                                                                                    max: 20,
+                                                                                    step: 1,
+                                                                                    onChange: (newValue) =>
+                                                                                        updateMethodMinimum(index, methodIndex, newValue)
+                                                                                }}
+                                                                />
+                                                            </GridColumn>
+                                                        </Grid>
+                                                    </div>
                                                 </Table.Cell>
                                             )}
-                                            { !method.is_blocked && (
+                                            {!method.is_blocked && (
                                                 <Table.Cell width={5}>
-                                                    <Slider step="5" min="0" max="100" value={method.weight} inputSide={"left"} valuePrefix={"%"} eventHandler={(value) => updateMethodWeight(index, methodIndex, value)}/>
-                                                </Table.Cell>
+                                                    <Grid >
+                                                        <Grid.Column width={6}>
+                                                            <Input placeholder="Value" fluid type="number" loading={isLoading} value={method.weight} style={{ minWidth :"40px"}}
+                                                                   onChange={(e) => updateMethodWeight(index, methodIndex, e.target.value)} />
+                                                        </Grid.Column>
+                                                        <GridColumn width={10}>
+                                                            <SemanticSlider value={method.weight} color="blue" settings={{
+                                                                start: 2,
+                                                                min: 0,
+                                                                max: 100,
+                                                                step: 5,
+                                                                onChange: (newValue) =>
+                                                                    updateMethodWeight(index, methodIndex, newValue)
+                                                            }}
+                                                            />
+                                                        </GridColumn>
+                                                    </Grid>                                                </Table.Cell>
                                             )}
                                             <Table.Cell collapsing width={1}>
                                                 <Icon name={"trash"} onClick={() => removeMethod(index, methodIndex)}/>
@@ -502,9 +601,13 @@ const UnitTabMethods = ({ groupId, warningsHandler }) => {
                                 <Table.Footer fullWidth>
                                     <Table.Row>
                                         <Table.HeaderCell colSpan='8'>
-                                            { t("Total pesos avaliação:") } <Label color={(getEpochValue(index) > 100 ? "red" : (getEpochValue(index) === 100 ? "green" : "yellow"))}>{ (epochs[index].methods || [])?.reduce((a, b) => a + (b?.weight || 0), 0)  }%</Label>
-                                            <Button floated='right' icon labelPosition='left' color={"green"} size='small' onClick={() => {addNewMethod(index, item.id);}}>
-                                                <Icon name='plus' /> { t("Adicionar novo método") }
+                                            {t("Total pesos avaliação:")} <Label
+                                            color={(getEpochValue(index) > 100 ? "red" : (getEpochValue(index) === 100 ? "green" : "yellow"))}>{(epochs[index].methods || [])?.reduce((a, b) => a + (b?.weight || 0), 0)}%</Label>
+                                            <Button floated='right' icon labelPosition='left' color={"green"}
+                                                    size='small' onClick={() => {
+                                                addNewMethod(index, item.id);
+                                            }}>
+                                                <Icon name='plus'/> {t("Adicionar novo método")}
                                             </Button>
                                         </Table.HeaderCell>
                                     </Table.Row>

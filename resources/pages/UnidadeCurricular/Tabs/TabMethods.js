@@ -1,6 +1,19 @@
 import React, {useEffect, useState, createRef} from 'react';
 import {Field, Form as FinalForm} from 'react-final-form';
-import { Button, Form, Header, Icon, Label, Message, Grid, GridColumn, Modal, Sticky, Table } from 'semantic-ui-react';
+import {
+    Button,
+    Form,
+    Header,
+    Icon,
+    Label,
+    Message,
+    Grid,
+    GridColumn,
+    Modal,
+    Sticky,
+    Table,
+    Input
+} from 'semantic-ui-react';
 import axios from "axios";
 import {toast} from "react-toastify";
 import {errorConfig, successConfig} from "../../../utils/toastConfig";
@@ -11,6 +24,9 @@ import AcademicYears from "../../../components/Filters/AcademicYears";
 import GroupedMethods from "../../../components/GroupedMethods";
 import ShowComponentIfAuthorized, {useComponentIfAuthorized} from "../../../components/ShowComponentIfAuthorized";
 import SCOPES from "../../../utils/scopesConstants";
+import {Slider as SemanticSlider} from "react-semantic-ui-range";
+import {value} from "lodash/seq";
+import _ from "lodash";
 
 const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
     const { t, i18n } = useTranslation();
@@ -191,12 +207,22 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
             if (!copy[index].methods?.length) {
                 copy[index].methods = [];
             }
-            let defaultWeight = copy[index].methods.length ? 100 / (copy[index].methods.length + 1) : 100;
+
+
 
             copy[index].methods.forEach((method, index) => {
                 method.weight = defaultWeight;
                 return method;
             });
+            console.log(copy[index].methods)
+            //
+            // // Calculate the new total weight
+            // let newWeight = 100 - copy[index].methods.reduce((a, b) => a + (b?.weight || 0), 0);
+            //
+            // // Adjust the first method's weight to ensure the total is 100
+            // if (methodsLength > 0) {
+            //     copy[index].methods[0].weight += newWeight;
+            // }
 
             copy[index].methods.push({
                 epoch_type_id: epoch_id,
@@ -209,19 +235,50 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                 initials_en: '',
                 is_blocked: false
             });
+
+            // Recalculate weights
+            const methodsLength = copy[index].methods.length;
+            const defaultWeight = Math.floor(100 / methodsLength);
+
+            // Distribute default weight
+            copy[index].methods.forEach(method => {
+                method.weight = defaultWeight;
+            });
+
+            // Calculate remaining weight to make the total exactly 100
+            const totalWeight = copy[index].methods.reduce((a, b) => a + b.weight, 0);
+            const remainingWeight = 100 - totalWeight;
+
+            // Adjust the weight of the last method added to ensure the total is 100
+            if (remainingWeight !== 0 && methodsLength > 0) {
+                copy[index].methods[methodsLength - 1].weight += remainingWeight;
+            }
+
             return copy;
         });
     }
 
     const updateMethodMinimum = (index, methodIndex, value) => {
-        setEpochs((current) => {
-            const copy = [...current];
-            copy[index].methods[methodIndex].minimum = parseFloat(value);
-            return copy;
-        })
+            if (value > 20)
+                value = 20
+            else if (value < 0 || !value)
+                value = 0;
+            else
+                value = parseFloat(value)
+            setEpochs((current) => {
+                const copy = [...current];
+                copy[index].methods[methodIndex].minimum = parseFloat(value);
+                return copy;
+            })
     }
 
     const updateMethodWeight = (index, methodIndex, value) => {
+        if (value > 100)
+            value = 100
+        else if (value < 0 || !value)
+            value = 0;
+        else
+            value = parseInt(value)
         setEpochs((current) => {
             const copy = [...current];
             copy[index].methods[methodIndex].weight = parseFloat(value);
@@ -517,10 +574,26 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                         {!method.is_blocked && (
                                                             <Table.Cell width={5}>
                                                                 {isManagingMethods ? (
-                                                                    <Slider step="0.5" min="0" max="20"
-                                                                            value={method.minimum}
-                                                                            disabled={hasGroup}
-                                                                            eventHandler={(value) => updateMethodMinimum(index, methodIndex, value)}/>
+                                                                    <div>
+                                                                        <Grid >
+                                                                            <Grid.Column width={6}>
+                                                                                <Input placeholder="Value" fluid type="number" loading={isLoading} value={method.minimum} style={{ minWidth :"40px"}}
+                                                                                       onChange={(e) => updateMethodMinimum(index, methodIndex, e.target.value)} />
+                                                                            </Grid.Column>
+                                                                            <GridColumn width={10}>
+                                                                                <SemanticSlider value={method.minimum} color="blue" settings={{
+                                                                                    start: 2,
+                                                                                    min: 0,
+                                                                                    max: 20,
+                                                                                    step: 1,
+                                                                                    disabled:{hasGroup},
+                                                                                    onChange: (newValue) =>
+                                                                                        updateMethodMinimum(index, methodIndex, newValue)
+                                                                                }}
+                                                                                />
+                                                                            </GridColumn>
+                                                                        </Grid>
+                                                                    </div>
                                                                 ) : (
                                                                     <Label color="blue">{method.minimum}</Label>
                                                                     // <Form.Input placeholder={t("Nota Mínima")} fluid
@@ -532,12 +605,26 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                         )}
                                                         {!method.is_blocked && (
                                                             <Table.Cell width={5}>
+
                                                                 {isManagingMethods ? (
-                                                                    <Slider step="5" min="0" max="100" value={method.weight}
-                                                                            inputSide={"left"} disabled={hasGroup}
-                                                                            valuePrefix={"%"}
-                                                                            eventHandler={(value) => updateMethodWeight(index, methodIndex, value)}
-                                                                            key={`${methodIndex}-${method.weight}`}/>
+                                                                        <Grid >
+                                                                            <Grid.Column width={6}>
+                                                                                <Input placeholder="Value" fluid type="number" loading={isLoading} value={method.weight} style={{ minWidth :"40px"}}
+                                                                                       onChange={(e) => updateMethodWeight(index, methodIndex, e.target.value)} />
+                                                                            </Grid.Column>
+                                                                            <GridColumn width={10}>
+                                                                                <SemanticSlider value={method.weight} color="blue" settings={{
+                                                                                    start: 2,
+                                                                                    min: 0,
+                                                                                    max: 100,
+                                                                                    step: 5,
+                                                                                    disabled:{hasGroup},
+                                                                                    onChange: (newValue) =>
+                                                                                        updateMethodWeight(index, methodIndex, newValue)
+                                                                                }}
+                                                                                />
+                                                                            </GridColumn>
+                                                                        </Grid>
                                                                 ) : (
                                                                     <Label color="blue">{method.weight}</Label>
                                                                 )}
