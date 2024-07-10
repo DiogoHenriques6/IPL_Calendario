@@ -161,6 +161,12 @@ class CourseController extends Controller
         $course->save();
     }
 
+    public function copyMethodsForCourse(Course $course, Request $request)
+    {
+        $course->courseUnits();
+        $courseToCopy = Course::ofAcademicYear($request->year)->where('code', $course->code)->first();
+    }
+
     public function assignCoordinator(Request $request, Course $course) {
         $coordinatorUser = User::where('email', $request->coordinator_user_email)->first();
         if(isset($course->coordinator_user_id)){

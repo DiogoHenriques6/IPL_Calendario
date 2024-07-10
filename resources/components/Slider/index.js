@@ -1,8 +1,33 @@
-import React, {useState} from 'react';
-import {Form} from "semantic-ui-react";
+import React, {useCallback, useState} from 'react';
+import {Form, GridColumn, GridRow} from "semantic-ui-react";
+import { Slider as SemanticSlider } from "react-semantic-ui-range";
+import { Label, Grid, Input } from "semantic-ui-react";
 
-const Slider = ({ min, max, step, value, inputSide, disabled, valuePrefix, eventHandler}) => {
+const Slider = ({ min, max, step, value, disabled, valuePrefix, eventHandler}) => {
     const [tempValue, setTempValue] = useState(value);
+
+    const settings = {
+        start: 2,
+        min: parseInt(min) ? parseInt(min) : 0,
+        max: parseInt(max),
+        step: 5,
+        onChange: newValue => {
+            setTempValue(newValue);
+        }
+    };
+
+    const handleValueChange = e => {
+        let auxValue = parseInt(e.target.value);
+        switch(auxValue){
+            case auxValue > 100:
+                auxValue = 100;
+                break;
+            case auxValue < 0 || !auxValue:
+                auxValue = 0;
+                break;
+        }
+        setTempValue(auxValue);
+    };
 
     const changeSliderValue = (e) => {
         let value = e.target.value;
@@ -14,19 +39,17 @@ const Slider = ({ min, max, step, value, inputSide, disabled, valuePrefix, event
         setTempValue(value)
     };
 
+
     return (
-        <div className={"display-flex"}>
-            { inputSide === "left" && (
-                <Form.Field placeholder="Peso da avaliação (%)" type="number" control="input" step={step} min={min} max={max} value={tempValue} onChange={changeSliderValue} disabled={disabled} />
-            )}
-            <div className={"slider-holder " + (inputSide === "left" ? "slider-input-left" : (inputSide === "right" ? "slider-input-right" : "slider-input-single"))}>
-                <span className={"slider-label-min"}>{min}{valuePrefix}</span>
-                <input placeholder="Peso da avaliação (%)" type="range" step={step} min={min} max={max} value={tempValue} onInput={changeSliderValue} onChange={changeSliderValue} disabled={disabled} />
-                <span className={"slider-label-max"}>{max}{valuePrefix}</span>
-            </div>
-            { inputSide === "right" && (
-                <Form.Field placeholder="Peso da avaliação (%)" type="number" control="input" step={step} min={min} max={max} value={tempValue} onChange={changeSliderValue} disabled={disabled} />
-            )}
+        <div>
+            <Grid >
+                    <Grid.Column width={6}>
+                        <Input placeholder="Value" fluid type="number" value={tempValue} onChange={handleValueChange} />
+                    </Grid.Column>
+                    <GridColumn width={10}>
+                        <SemanticSlider value={tempValue} color="blue" settings={settings}/>
+                    </GridColumn>
+            </Grid>
         </div>
     );
 }

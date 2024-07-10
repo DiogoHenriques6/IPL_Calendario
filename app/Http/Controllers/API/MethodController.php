@@ -5,8 +5,11 @@ namespace App\Http\Controllers\API;
 use App\Http\Requests\CloneMethodRequest;
 use App\Http\Requests\NewGroupMethodRequest;
 use App\Http\Resources\Generic\CourseUnitSearchResource;
+use App\Models\Course;
 use App\Models\CourseUnit;
 use App\Models\CourseUnitGroup;
+use App\Models\Group;
+use App\Models\InitialGroups;
 use App\Models\Method;
 
 use App\Http\Controllers\Controller;
@@ -117,12 +120,45 @@ class MethodController extends Controller
 
 
     public function methodsToCopy(Request $request){
-        if($request->year != null){
-            $ucs = CourseUnit::has('methods')->ofAcademicYear($request->year)->get();
-        } else {
-            $ucs = CourseUnit::has('methods')->ofAcademicYear($request->cookie("academic_year"))->get();
+        $currentGroup = Group::where('id', $request->cookie("selectedGroup"))->first();
+        $courseUnits = CourseUnit::with('methods')->ofAcademicYear($request->year);
+        $schoolId = null;
+        $courseId = null;
+        switch ($currentGroup->code) {
+            case str_contains($currentGroup->code, InitialGroups::ADMIN):
+            case str_contains($currentGroup->code, InitialGroups::SUPER_ADMIN):
+                break;
+            case str_contains($currentGroup->code, InitialGroups::GOP):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->gopSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code, InitialGroups::BOARD):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->boardSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code, InitialGroups::COORDINATOR):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $courseId = Course::where('coordinator_user_id', Auth::user()->id)->pluck('id');
+                break;
+            case str_contains($currentGroup->code, InitialGroups::RESPONSIBLE):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $courseUnits = CourseUnit::where('responsible_user_id', Auth::user()->id);
+                break;
+            default:
+                return response()->json("No permissions!", Response::HTTP_UNAUTHORIZED);
         }
-        return CourseUnitSearchResource::collection($ucs);
+
+        if ($schoolId != null) {
+            if(count($schoolId) > 0) {
+                $courses = Course::where('school_id', $schoolId)->pluck('id');
+                $courseUnits->whereIn('course_id', $courses);
+            }
+        }
+
+        if ($courseId != null) {
+            $courseUnits->whereIn('course_id', $courseId);
+        }
+        return CourseUnitSearchResource::collection($courseUnits->limit(20)->get());
     }
 
     public function methodsClone(CloneMethodRequest $request){

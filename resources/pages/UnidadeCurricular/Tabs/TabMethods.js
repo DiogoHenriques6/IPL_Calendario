@@ -518,14 +518,15 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                             <Table.Cell width={5}>
                                                                 {isManagingMethods ? (
                                                                     <Slider step="0.5" min="0" max="20"
-                                                                            value={method.minimum} inputSide={"left"}
+                                                                            value={method.minimum}
                                                                             disabled={hasGroup}
                                                                             eventHandler={(value) => updateMethodMinimum(index, methodIndex, value)}/>
                                                                 ) : (
-                                                                    <Form.Input placeholder={t("Nota Mínima")} fluid
-                                                                                value={method.minimum} readOnly
-                                                                                className="margin-top-base"
-                                                                    />
+                                                                    <Label color="blue">{method.minimum}</Label>
+                                                                    // <Form.Input placeholder={t("Nota Mínima")} fluid
+                                                                    //             value={method.minimum} readOnly
+                                                                    //             className="margin-top-base"
+                                                                    // />
                                                                 )}
                                                             </Table.Cell>
                                                         )}
@@ -538,10 +539,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                                             eventHandler={(value) => updateMethodWeight(index, methodIndex, value)}
                                                                             key={`${methodIndex}-${method.weight}`}/>
                                                                 ) : (
-                                                                    <Form.Input placeholder={t("Peso da Avaliação (%)")} fluid
-                                                                        value={method.weight}
-                                                                        className="margin-top-base"
-                                                                        />
+                                                                    <Label color="blue">{method.weight}</Label>
                                                                 )}
                                                             </Table.Cell>
                                                         )}
