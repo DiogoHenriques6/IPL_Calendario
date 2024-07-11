@@ -23,7 +23,8 @@ class CourseResource extends JsonResource
             'degree_id'     => $this->degree,
             'degree_label'  => DegreesUtil::getDegreeLabel($this->degree),
             'school'        => $this->whenLoaded('school'),
-            'coordinator'   => $this->coordinatorUser
+            'coordinator'   => $this->coordinatorUser,
+            'academicYear'  =>  $this->academicYear()->pluck('code')->first()
         ];
     }
 }

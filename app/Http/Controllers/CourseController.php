@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Filters\CourseFilters;
+use App\Http\Controllers\API\MethodController;
 use App\Http\Requests\CourseRequest;
 use App\Http\Resources\Generic\CourseFullDetailResource;
 use App\Http\Resources\Generic\CourseListResource;
@@ -17,6 +18,7 @@ use App\Models\Course;
 use App\Models\CourseUnit;
 use App\Models\Group;
 use App\Models\InitialGroups;
+use App\Models\UnitLog;
 use App\Models\User;
 use App\Services\DegreesUtil;
 use App\Utils\Utils;
@@ -161,11 +163,48 @@ class CourseController extends Controller
         $course->save();
     }
 
-    public function copyMethodsForCourse(Course $course, Request $request)
+    public function copyAllCourseMethods(Course $course, Request $request)
     {
+        //TODO FUTURE WORK SEE IF IT SHOULD RECREATE THE GROUPED UCs AS WELL
         $course->courseUnits();
-        $courseToCopy = Course::ofAcademicYear($request->year)->where('code', $course->code)->first();
+        $currentAcademicYear = $request->cookie('academic_year');
+        $previousAcademicYear = AcademicYear::where('code', $request->prevYear)->where('active',1)
+            ->where('s1_sync_last', '!=', null)->where('s2_sync_last', '!=', null)->first();
+        if($previousAcademicYear == null){
+            return response()->json(`No records of the year $request->prevYear!`, Response::HTTP_BAD_REQUEST);
+        }
+        $courseToCopy = Course::ofAcademicYear($previousAcademicYear->id)->where('code', $course->code)->first();
+
+        $oldUCs = $courseToCopy->courseUnits()->get();
+        $newUCs = $course->courseUnits()->pluck('code');
+        Log::channel("sync_test")->info("Old" . $oldUCs);
+        Log::channel("sync_test")->info("New" . $newUCs);
+        foreach($oldUCs as $oldUC){
+            $newUC= CourseUnit::ofAcademicYear($previousAcademicYear->id)->where('code',$oldUC->code)->orWhere('name_pt',$oldUC->name_pt)->first();
+            //TODO Check if exists defined methods
+            foreach ($oldUC->methods as $method) {
+                $newMethod = $method->replicate()->fill([
+                    'academic_year_id'  => $currentAcademicYear,
+                    'created_at'        => null,
+                    'updated_at'        => null
+                ]);
+                $newMethod->save();
+
+                $newMethod->epochType()->syncWithoutDetaching($method->epochType->first()->id);
+                $newMethod->courseUnits()->sync($newUCs);
+                $newMethod->method_group_id = null;
+                $newMethod->save();
+            }
+            Log::channel("sync_test")->info($newUC->id);
+            UnitLog::create([
+                "course_unit_id"        => ($newUC->id),
+                "user_id"               => Auth::id(),
+                "description"           => "Metodos de avaliacao copiados por '" . Auth::user()->name . "' da UC '" . $oldUC->name_pt . "'."
+            ]);
+        }
     }
+
+
 
     public function assignCoordinator(Request $request, Course $course) {
         $coordinatorUser = User::where('email', $request->coordinator_user_email)->first();

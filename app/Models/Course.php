@@ -25,9 +25,9 @@ class Course extends Model
         "school_id"
     ];
 
-    public function academicYears()
+    public function academicYear()
     {
-        return $this->belongsToMany(AcademicYear::class);
+        return $this->belongsTo(AcademicYear::class);
     }
 
     public function coordinatorUser() {

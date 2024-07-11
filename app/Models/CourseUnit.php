@@ -44,8 +44,8 @@ class CourseUnit extends Model
         return $this->hasMany(UnitLog::class)->orderBy('created_at', 'desc');
     }
 
-    public function academicYears(){
-        return $this->belongsToMany(AcademicYear::class);
+    public function academicYear(){
+        return $this->belongsTo(AcademicYear::class);
     }
 
     public function branch() {

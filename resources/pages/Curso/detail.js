@@ -27,6 +27,7 @@ const Detail = () => {
     const [searchCoordinator, setSearchCoordinator] = useState(false);
     const [hasCoordinator, setHasCoordinator] = useState(false);
     const [dropdownOptions, setDropdownOptions] = useState([]);
+    const [previousYear, setPreviousYear] = useState([])
 
     const hasPermissionToEdit = useComponentIfAuthorized([SCOPES.EDIT_COURSES]);
 
@@ -34,6 +35,20 @@ const Detail = () => {
         [SCOPES.DEFINE_COURSE_COORDINATOR],
     );
 
+    const getAllMethods = () => {
+        axios.post(`/courses/${courseDetail.id}/copyMethods`, {
+            prevYear : previousYear
+        }).then((res)=>{
+                if(res.status === 200){
+                    toast(t('Métodos do último ano letivo copiados com sucesso!',successConfig));
+                }
+                else{
+                    toast(t('Não existem dados registados do ano letivo anterior!'), errorConfig);
+                }
+            }
+
+            )
+    }
 
     useEffect(() => {
         const options = teachers.map((teacher) => ({
@@ -76,6 +91,7 @@ const Detail = () => {
                 });
             }
             setCourseDetail(res.data.data);
+            setPreviousYear(parseInt(res.data?.data?.academicYear) - 101)
             document.title = "Detalhe de Curso - " + "Calendários de Avaliação - IPLeiria";
         });
     };
@@ -233,6 +249,11 @@ const Detail = () => {
                                     <Form.Button disabled={loading || !hasPermissionToDefineCoordinator} label={ t("Guardar") } onClick={setCoordinator} color="green" icon labelPosition="left">
                                         <Icon name="save"/> { t("Guardar coordenador") }
                                     </Form.Button>
+                                    <ShowComponentIfAuthorized permission={SCOPES.EDIT_COURSES}>
+                                        <Form.Button disabled={loading} label={ t("Guardar") } onClick={getAllMethods} color="blue" icon labelPosition="left">
+                                            <Icon name="refresh"/> { t("Copiar Métodos do ano letivo anterior") }
+                                        </Form.Button>
+                                    </ShowComponentIfAuthorized>
                                 </Form.Group>
                         </ShowComponentIfAuthorized>
                         </Form>

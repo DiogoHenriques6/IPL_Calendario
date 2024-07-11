@@ -176,7 +176,7 @@ class MethodController extends Controller
         $courseUnitGroup = CourseUnitGroup::find($request->course_unit_group_id);
         $groupCourseUnits = $courseUnitGroup->courseUnits()->get();
 
-        return $this->cloneMethod($request->copy_course_unit_id, null, $request->cookie('academic_year'), $groupCourseUnits, $courseUnitGroup->id);
+        return $this->cloneMethod($request->copy_course_unit_id, null, $request->cookie('academic_year'),    $groupCourseUnits, $courseUnitGroup->id);
     }
 
     private function cloneMethod($old_course_unit_id, $new_course_unit_id, $academic_year_id, $grouped = null, $group_id = null)
