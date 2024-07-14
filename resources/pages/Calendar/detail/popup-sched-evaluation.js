@@ -203,6 +203,7 @@ const PopupScheduleEvaluation = ( {scheduleInformation, interruptions, isOpen, o
                 } else if (res.status === 201) {
                     toast(t('Avaliação marcada com sucesso'), successConfig);
                     addedExam(res.data);
+                    console.log(res.data);
                 } else {
                     toast(res.response.data ? res.response.data :`Ocorreu um erro ao gravar a avaliação!`, errorConfig);
                     // toast(res.response.data, errorConfig);

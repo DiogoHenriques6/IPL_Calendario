@@ -293,6 +293,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/course-unit-groups',                     'index'  );
         Route::get('/course-unit-groups/search',              'search'  );
         Route::get('/course-unit-groups/{courseUnitGroup}',   'show'   );
+        Route::patch('/course-unit-groups/{courseUnitGroup}/course-units', 'updateCourseUnits' );
         // methods for the course unit group
         Route::get('/course-unit-groups/{courseUnitGroup}/methods', 'methodsForCourseUnitGroup');
         // get all logs for this course unit group

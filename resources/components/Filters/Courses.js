@@ -41,6 +41,12 @@ const FilterOptionCourse = ({widthSize, eventHandler, school}) => {
         if (includeCourse) {
             params.append('include', includeCourse);
         }
+        else if(parseInt(sessionStorage.getItem('course'))){
+            params.append('include', sessionStorage.getItem('course'));
+        }
+
+
+
 
         const queryString = params.toString();
         if (queryString) {
@@ -56,11 +62,11 @@ const FilterOptionCourse = ({widthSize, eventHandler, school}) => {
                 if(searchCourse && search === ""){
                     let selected = res.data.data.find((item) => item.value == searchCourse);
                     setCourse(selected.value);
+                    // eventHandler(selected.value);
                 }
                 if(!course){
                     const sessionCourse = parseInt(sessionStorage.getItem('course')) || -1;
                     if(sessionCourse !== -1){
-                        console.log(sessionCourse)
                         setCourse(sessionCourse);
                     }
                 }

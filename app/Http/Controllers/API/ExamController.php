@@ -119,7 +119,7 @@ class ExamController extends Controller
         $currentGroup = Group::find($selectedGroup_id);
         if(str_contains($currentGroup->code, InitialGroups::GOP)){
             $courseUnit = CourseUnit::where('id', $request->course_unit_id)->first();
-            if(!isset($courseUnit->group_id)){
+            if($courseUnit->course_unit_group_id == null){
                 $response = ($request->header("lang") == "en" ? "Exam does not belong to a grouped CU!" : "Exame não pertence a UC agrupada!");
                 return response()->json($response, Response::HTTP_FORBIDDEN);
             }
@@ -134,6 +134,7 @@ class ExamController extends Controller
                 $courseUnitsInGroup = CourseUnit::where('course_unit_group_id', $courseUnitGroup)->get();
 
                 foreach ($courseUnitsInGroup as $courseUnit) {
+                    Log::channel("sync_test")->info($courseUnit->course_id);
                     $calendarIDByCourseId = Calendar::where('course_id', $courseUnit->course_id)->first()->id;
                     $epochTypeByMethod = Method::find($request->method_id)->epochType;
                     $epochByType = Epoch::where('epoch_type_id', $epochTypeByMethod[0]['id'])->where('calendar_id', $calendarIDByCourseId)->first();

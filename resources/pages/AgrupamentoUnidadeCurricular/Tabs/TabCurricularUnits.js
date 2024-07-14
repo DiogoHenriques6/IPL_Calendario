@@ -21,6 +21,7 @@ import PaginationDetail from "../../../components/Pagination";
 import React, {createRef, useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
 import axios from "axios";
+import {toast} from "react-toastify";
 
 const UnitTabCurricularUnits = ({ groupId }) => {
 
@@ -60,6 +61,7 @@ const UnitTabCurricularUnits = ({ groupId }) => {
             axios.get(`/course-unit-groups/${groupId}`).then((res) => {
                 setLoading(false);
                 setSelectedCourseUnits(res?.data?.data?.course_units);
+                setSemester(res?.data?.data?.course_units[0]?.semester);
             });
         }
     }, [groupId]);
@@ -91,7 +93,8 @@ const UnitTabCurricularUnits = ({ groupId }) => {
 
         let searchLink = `/course-units/search?page=${currentPage}`;
         searchLink += `${courseUnitSearch ? `&search=${courseUnitSearch}` : ''}`;
-        searchLink += `${course ? `&course=${course}` : ''}`;
+        const sessionCourse = course ?  course : parseInt(sessionStorage.getItem('course')) || -1;
+        searchLink += `${sessionCourse !== -1 ? `&course=${sessionCourse}` : ''}`;
         searchLink += `${semester ? `&semester=${semester}` : ''}`;
         searchLink += `${school ? `&school=${school}` : ''}`;
         searchLink += '&per_page=' + ( allResults ? "all" : perPage );
@@ -171,7 +174,14 @@ const UnitTabCurricularUnits = ({ groupId }) => {
     }
 
     const handleSubmit = () => {
-
+        setIsSaving(true);
+        const courseUnitIds = selectedCourseUnits.map(({id}) => id);
+        axios.patch(`/course-unit-groups/${groupId}/course-units`, {course_units: courseUnitIds}).then((response) => {
+            if (response.status >= 200 && response.status < 300) {
+                setIsSaving(false);
+                toast(t("Unidades Curriculares guardadas com sucesso!"), {type: "success"});
+            }
+        });
     }
 
     return (
@@ -202,7 +212,7 @@ const UnitTabCurricularUnits = ({ groupId }) => {
                                 <Card.Content>
                                     <Button onClick={handleSubmit} color="green" icon labelPosition="left" floated='right' disabled={selectedCourseUnits.length < 2}
                                             loading={isSaving}>
-                                        <Icon name="save"/>{t("Guardar")}
+                                        <Icon name="save"/>{t("Guardar Unidades Curriculares")}
                                     </Button>
                                 </Card.Content>
                             </div>
@@ -251,14 +261,14 @@ const UnitTabCurricularUnits = ({ groupId }) => {
                                 </Table.Header>
                                 <Table.Body>
                                     {courseUnits.map((courseUnit, index) => (
-                                        <Table.Row key={index} warning={courseUnit?.has_group == 1} >
+                                        <Table.Row key={index} warning={courseUnit?.has_group === 1} >
                                             <Table.Cell>{courseUnit.code}</Table.Cell>
                                             <Table.Cell>{courseUnit.initials}</Table.Cell>
                                             <Table.Cell>{courseUnit.name}</Table.Cell>
                                             <Table.Cell>{courseUnit.course_description}</Table.Cell>
                                             <Table.Cell>{courseUnit.semester}</Table.Cell>
                                             <Table.Cell >
-                                                {courseUnit.has_group === 1 && courseUnit.group_id != groupId ? console.log( courseUnit.group_id ) || (
+                                                {courseUnit.has_group === 1 && courseUnit.group_id !== parseInt(groupId) ? (
                                                     <div className={"padding-left-xl" }>
                                                         <Popup  trigger={
                                                             <Icon name="warning sign" />
@@ -268,11 +278,22 @@ const UnitTabCurricularUnits = ({ groupId }) => {
                                                     </div>
                                                 ) : (
                                                     selectedCourseUnits.find(({id: courseUnitId}) => courseUnitId === courseUnit.id) ? (
+                                                        selectedCourseUnits.length < 2 ? (
                                                         <Button onClick={() => removeCourseUnit(courseUnit.id)} color="red">{t("Remover")}</Button>
+                                                        ): (
+                                                            <div className={"padding-left-xl"}>
+                                                                <Popup trigger={
+                                                                    <Icon name="warning sign"/>
+                                                                }
+                                                                       content={
+                                                                           <div>{t("UC pertence a este agrupamento")}</div>}
+                                                                       position='top center'/>
+                                                            </div>
+                                                        )
                                                     ) : (
                                                         <Button onClick={() => addCourseUnit(courseUnit)} color="teal">{t("Adicionar")}</Button>
                                                     )
-                                                )}
+                                                ) }
                                             </Table.Cell>
                                         </Table.Row>
                                     ))}

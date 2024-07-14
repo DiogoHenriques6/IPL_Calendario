@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Filters\CourseUnitGroupFilters;
 use App\Http\Controllers\API\LdapController;
 use App\Http\Requests\CourseUnitGroupRequest;
+use App\Http\Requests\UpdateCourseUnitGroupRequest;
 use App\Http\Resources\Admin\CourseUnitGroupListResource;
 use App\Http\Resources\Admin\Edit\CourseUnitGroupResource;
 use App\Http\Resources\Admin\LogsResource;
@@ -148,6 +149,11 @@ class CourseUnitGroupController extends Controller
         $courseUnitGroup->description_en = $request->get('description_en');
         $courseUnitGroup->save();
 
+        return response()->json("Grupo atualizado", Response::HTTP_OK);
+    }
+
+    public function updateCourseUnits(UpdateCourseUnitGroupRequest $request, CourseUnitGroup $courseUnitGroup)
+    {
         // Get current course_units with methods
         $methodsId = $courseUnitGroup->courseUnits()->first()->methods()->pluck("id")->toArray();
 
@@ -192,7 +198,6 @@ class CourseUnitGroupController extends Controller
         //update the "course_unit_group_id" field,  adding and removing course units
         CourseUnit::whereIn('id', $request->get('course_units'))->update(['course_unit_group_id' => $courseUnitGroup->id]);
         CourseUnit::whereNotIn('id', $request->get('course_units'))->where('course_unit_group_id', $courseUnitGroup->id)->update(['course_unit_group_id' => null]);
-
 
         return response()->json("Grupo atualizado", Response::HTTP_OK);
     }
