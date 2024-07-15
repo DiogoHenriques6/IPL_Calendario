@@ -24,7 +24,7 @@ const FilterOptionCourse = ({widthSize, eventHandler, school}) => {
     useEffect(() => {
         loadCourses()
     }, [school]);
-
+    //TODO filtrar por escola do gop unica e explusivamente
     const loadCourses = (search = '', includeCourse) => {
         setLoading(true);
         let link = '/courses-search';

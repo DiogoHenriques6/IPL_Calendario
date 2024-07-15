@@ -311,7 +311,7 @@ const Calendar = () => {
 
                     setGeneralInfo(general_info);
                     setIsLoading(false);
-                    //TODO check if week ten is rly weekten or if its wrong
+
                     setWeekTen(moment(week_ten).week());
                     setWeekToday(parseInt(moment().format('w')));
 
