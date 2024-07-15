@@ -159,6 +159,7 @@ const Calendar = () => {
     };
 
     const addExamToList = (exam) => {
+        console.log("New Exam", exam);
         setExamList((current) => [...current, exam]);
     }
 
@@ -172,6 +173,7 @@ const Calendar = () => {
             return copy;
         });
     }
+
     const removeExamFromList = (examId) => {
         setExamList((current) => current.filter((item) => item.id !== examId));
     }
@@ -249,9 +251,7 @@ const Calendar = () => {
     useEffect(() => {
         if (typeof calendarPhase === 'number') {
             setCalendarPermissions(getCalendarPhasePermissions(calendarPhase));
-            // console.log(getCalendarPhasePermissions(calendarPhase))
             if( getCalendarPhasePermissions(calendarPhase).filter((x) => x.name === SCOPES.VIEW_CALENDAR).length === 0){
-                console.log('no permissions');
                 history(-1);
             }
         }
@@ -591,7 +591,6 @@ const Calendar = () => {
             if (existingExamsAtThisDate?.length) {
                 // show a button per exam in this day
                 examsComponents = existingExamsAtThisDate.map((exam) => {
-                    console.log(myCourseUnit && myCourseUnit.includes(exam.course_unit.id));
                     return (
                         // <Button key={exam.id} onClick={() => openExamDetailHandler(year, exam)} isModified={differences?.includes(exam.id)} >
                         // For the Future (drag and drop

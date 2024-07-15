@@ -277,9 +277,10 @@ const UnitTabCurricularUnits = ({ groupId }) => {
                                                                 position='top center'/>
                                                     </div>
                                                 ) : (
-                                                    selectedCourseUnits.find(({id: courseUnitId}) => courseUnitId === courseUnit.id) ? (
-                                                        selectedCourseUnits.length < 2 ? (
-                                                        <Button onClick={() => removeCourseUnit(courseUnit.id)} color="red">{t("Remover")}</Button>
+                                                    //TODO FIX BUG
+                                                    selectedCourseUnits.find(({id: courseUnitId}) => courseUnitId === courseUnit.id) ?
+                                                        ( selectedCourseUnits.length > 2 ? (
+                                                            <Button onClick={() => removeCourseUnit(courseUnit.id)} color="red">{t("Remover")}</Button>
                                                         ): (
                                                             <div className={"padding-left-xl"}>
                                                                 <Popup trigger={

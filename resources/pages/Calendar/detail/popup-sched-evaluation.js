@@ -61,7 +61,6 @@ const PopupScheduleEvaluation = ( {scheduleInformation, interruptions, isOpen, o
     }, [scheduleInformation])
 
     useEffect(() => {
-        //console.log(scheduleInformation);
         if (loadRemainingCourseUnits) {
             axios.get(`/available-methods/${calendarId}/?epoch_id=${selectedEpoch}&year=${scheduleInformation.scholarYear}`)
                 .then((response) => {
@@ -192,24 +191,29 @@ const PopupScheduleEvaluation = ( {scheduleInformation, interruptions, isOpen, o
             observations_en: values.observationsEN || undefined,
             room: values.room || undefined,
         };
-
-        const axiosFn = values?.exam_id ? axios.patch : axios.post;
-        axiosFn(`/exams/${values?.exam_id ? values?.exam_id : ''}`, examScheduleObj)
-            .then((res) => {
-                setSavingExam(false);
-                if (res.status === 200) {
-                    toast(t('Avaliação atualizado com sucesso'), successConfig);
-                    updatedExam(res.data);
-                } else if (res.status === 201) {
-                    toast(t('Avaliação marcada com sucesso'), successConfig);
-                    addedExam(res.data);
-                    console.log(res.data);
-                } else {
-                    toast(res.response.data ? res.response.data :`Ocorreu um erro ao gravar a avaliação!`, errorConfig);
-                    // toast(res.response.data, errorConfig);
-                }
-                onClose();  // close modal
-            });
+        console.log("Exam method", values.method)
+        if(values.method !== -1) {
+            const axiosFn = values?.exam_id ? axios.patch : axios.post;
+            axiosFn(`/exams/${values?.exam_id ? values?.exam_id : ''}`, examScheduleObj)
+                .then((res) => {
+                    setSavingExam(false);
+                    if (res.status === 200) {
+                        toast(t('Avaliação atualizado com sucesso'), successConfig);
+                        updatedExam(res.data);
+                    } else if (res.status === 201) {
+                        toast(t('Avaliação marcada com sucesso'), successConfig);
+                        addedExam(res.data);
+                    }
+                    else {
+                        toast(res.response.data ? res.response.data :`Ocorreu um erro ao gravar a avaliação!`, errorConfig);
+                        // toast(res.response.data, errorConfig);
+                    }
+                    onClose();  // close modal
+                });
+        } else {
+            toast(t('Necessário selecionar um elemento de avaliação!'), errorConfig);
+            setSavingExam(false);
+        }
     };
 
     useEffect(() => {

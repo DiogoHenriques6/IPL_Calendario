@@ -129,60 +129,101 @@ class ExamController extends Controller
         $courseUnitGroup = $courseUnitGroup ? $courseUnitGroup->id : null;
 
         if ($courseUnitGroup != null) {
+            //check if groupedUCs have an existing calendar for the same semester
+            $courseUnitsInGroup = CourseUnit::where('course_unit_group_id', $courseUnitGroup)->get();
+            foreach ($courseUnitsInGroup as $courseUnit) {
+                $calendarByCourseId = Calendar::where('course_id', $courseUnit->course_id)
+                    ->where("semester_id", $courseUnit->semester_id)
+                    ->first();
+
+                if ($calendarByCourseId == null) {
+                    $course = Course::ofAcademicYear($request->cookie('academic_year'))->find($courseUnit->course_id);
+                    $response = $request->header("lang") == "en"
+                        ? "There is no {$courseUnit->semester_id}º semester calendar for the course ({$course->code}) {$course->name_en}!"
+                        : "Não existe calendário de {$courseUnit->semester_id}º semestre para o curso ({$course->code}) {$course->name_en}!";
+                    return response()->json($response, Response::HTTP_UNPROCESSABLE_ENTITY);
+                }
+            }
+
+            //check if there are any exams with the same method deleted
             $examsWithMethod = Exam::withTrashed()->where('method_id', $request->method_id)->get();
+            //create if it doesnt exist
             if ($examsWithMethod->isEmpty()) {
-                $courseUnitsInGroup = CourseUnit::where('course_unit_group_id', $courseUnitGroup)->get();
+                $newExam = new Exam($request->all());
+                $newExam->save();
+
+                $newLog = new CalendarLog();
+                $newLog->calendar_id = $calendarId;
+                $newLog->course_unit_id = $request->course_unit_id;
+                $newLog->exam_id = $newExam->id;
+                $newLog->user_id = auth()->user()->id;
+                $newLog->is_create = "1";
+                $newLog->new_date = $request->date_start;
+                $newLog->save();
+
+                //remove the courseUnit that sent in the request
+                $courseUnitsInGroup = $courseUnitsInGroup->reject(function ($courseUnit) use ($request) {
+                    return $courseUnit->id == $request->course_unit_id;
+                });
 
                 foreach ($courseUnitsInGroup as $courseUnit) {
-                    Log::channel("sync_test")->info($courseUnit->course_id);
-                    $calendarIDByCourseId = Calendar::where('course_id', $courseUnit->course_id)->first()->id;
+                    $calendarIDByCourseId = Calendar::where('course_id', $courseUnit->course_id)
+                        ->where("semester_id",$courseUnit->semester_id)->first()->id;
                     $epochTypeByMethod = Method::find($request->method_id)->epochType;
                     $epochByType = Epoch::where('epoch_type_id', $epochTypeByMethod[0]['id'])->where('calendar_id', $calendarIDByCourseId)->first();
 
-                    $newExam = new Exam($request->all());
-                    $newExam->course_unit_id = $courseUnit->id;
-                    $newExam->epoch_id = $epochByType->id;
-                    $newExam->save();
+                    $newRelatedExam = new Exam($request->all());
+                    $newRelatedExam->course_unit_id = $courseUnit->id;
+                    $newRelatedExam->epoch_id = $epochByType->id;
+                    $newRelatedExam->save();
 
                     $newLog = new CalendarLog();
                     $newLog->calendar_id = $epochByType->calendar->id;
                     $newLog->course_unit_id = $courseUnit->id;
-                    $newLog->exam_id = $newExam->id;
+                    $newLog->exam_id = $newRelatedExam->id;
                     $newLog->user_id = auth()->user()->id;
                     $newLog->is_create = "1";
                     $newLog->new_date = $request->date_start;
                     $newLog->save();
                 }
-            }else{
-                foreach ($examsWithMethod as $relatedExam) {
-                    //verifica se existe algum exame com o mesmo metodo o mesmo epoch e a mesma UC apagado
-                    $exam = Exam::onlyTrashed()->where('method_id', $request->method_id)->where('epoch_id', $epochId)->where('course_unit_id', $request->course_unit_id)->first();
-                    if ($exam) {
-                        $exam->restore();
-                        $exam->room = $request->room;
-                        $exam->date_start = $request->date_start;
-                        $exam->date_end = $request->date_end;
-                        $exam->in_class = $request->in_class;
-                        $exam->hour = $request->hour;
-                        $exam->duration_minutes = $request->duration_minutes;
-                        $exam->observations_pt = $request->observations_pt;
-                        $exam->observations_en = $request->observations_en;
-                        $exam->description_pt = $request->description_pt;
-                        $exam->description_en = $request->description_en;
-                        $exam->save();
-                        $newExam = $exam;
+            }
+            else{
+                foreach ($examsWithMethod as $deletedExam){
+                    Log::channel("sync_test")->info("Deleted Exam" . $deletedExam);
+                    if($deletedExam->course_unit_id == $request->course_unit_id){
+                        $newExam = $deletedExam;
+                        $newExam->restore();
+                        $newExam->fill($request->all());
+                        $newExam->save();
 
                         $newLog = new CalendarLog();
-                        $newLog->calendar_id = $relatedExam->epoch->calendar->id;
-                        $newLog->course_unit_id = $relatedExam->course_unit_id;
-                        $newLog->exam_id = $relatedExam->id;
+                        $calendarId = Epoch::find($newExam->epoch_id)->calendar_id;
+                        $newLog->calendar_id = $calendarId;
+                        $newLog->course_unit_id = $newExam->course_unit_id;
+                        $newLog->exam_id = $newExam->id;
                         $newLog->user_id = auth()->user()->id;
                         $newLog->is_create = "1";
                         $newLog->new_date = $request->date_start;
                         $newLog->save();
-                    } else {
-                        $newExam = new Exam($request->all());
-                        $newExam->save();
+                    }
+                    else{
+                        $deletedExam->restore();
+                        $originalCourseUnitId = $deletedExam->course_unit_id;
+                        $originalEpochId = $deletedExam->epoch_id;
+                        $deletedExam->fill($request->except(['course_unit_id', 'epoch_id']));
+                        $deletedExam->course_unit_id = $originalCourseUnitId;
+                        $deletedExam->epoch_id = $originalEpochId;
+                        $deletedExam->save();
+
+                        $newLog = new CalendarLog();
+                        $calendarId = Epoch::find($deletedExam->epoch_id)->calendar_id;
+                        $newLog->calendar_id = $calendarId;
+                        $newLog->course_unit_id = $deletedExam->course_unit_id;
+                        $newLog->exam_id = $deletedExam->id;
+                        $newLog->user_id = auth()->user()->id;
+                        $newLog->is_create = "1";
+                        $newLog->new_date = $request->date_start;
+                        $newLog->save();
                     }
                 }
             }
@@ -198,7 +239,7 @@ class ExamController extends Controller
                     $epochTypeByMethod = Method::find($request->method_id)->epochType;
                     $methodId = $courseUnit->methods->where('method_group_id',$methodGroupId)->pluck('id')->first();
                     $epochByType = Epoch::where('epoch_type_id', $epochTypeByMethod[0]['id'])->where('calendar_id', $calendarIDByCourseId)->first();
-
+                    //TODO check if restoring grouped methods is working
                     $exam = Exam::onlyTrashed()->where('method_id', $methodId)->where('epoch_id', $epochByType->id)->where('course_unit_id', $courseUnit->id)->first();
                     if ($exam) {
                         $exam->restore();
@@ -223,7 +264,6 @@ class ExamController extends Controller
                     $newLog->new_date = $request->date_start;
                     $newLog->save();
                 }
-
             }
             else {
                 $exam = Exam::onlyTrashed()->where('method_id', $request->method_id)->where('epoch_id', $epochId)->where('course_unit_id', $request->course_unit_id)->first();
@@ -389,14 +429,6 @@ class ExamController extends Controller
         if ( $epochRecord->calendar->is_published ) {
             return response()->json("Not allowed to book exams on Published Calendars!", Response::HTTP_FORBIDDEN);
         }
-
-        // $checkExam = Exam::where('epoch_id', '=', $epochId)->where('epoch_id', '=', $epochId)->where('method_id', '=', $method_id);
-        // if($examId){
-        //     $checkExam->where('id', '<>', $examId);
-        // }
-        // if ( $checkExam->exists() ) {
-        //     return response()->json("Not allowed to insert the same exam on this calendar!", Response::HTTP_UNPROCESSABLE_ENTITY);
-        // }
 
         if ( $epochRecord->calendar->id !== $calendarId ) {
             return response()->json("The epoch id is not correct for the given calendar.", Response::HTTP_UNPROCESSABLE_ENTITY);

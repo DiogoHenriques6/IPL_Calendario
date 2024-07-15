@@ -404,6 +404,12 @@
         "Observações EN": "Observations EN",
         "Remover avaliação": "Remove assessment",
         "Marcar Avaliação": "Schedule Assessment",
+        "Selecione a Unidade Curricular": "Select the Curricular Unit",
+        "Outra Unidade Curricular": "Other Curricular Unit",
+        "Unidade Curricular - Outras": "Curricular Unit - Others",
+        "Selecione a Unidade Curricular - Outras" : "Select the Curricular Unit - Others",
+        "Selecione o elemento de Avaliação": "Select the Assessment Element",
+        "Necessário selecionar um elemento de avaliação!" : "It is necessary to select an assessment element",
 
         "Calendário publicado com sucesso!": "Calendar published with success!",
         "Submeter calendário para a próxima fase": "Submit calendar to the next phase",
