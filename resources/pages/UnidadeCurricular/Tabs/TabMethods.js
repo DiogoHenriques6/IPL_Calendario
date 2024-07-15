@@ -560,15 +560,42 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                             )}
                                                         </Table.Cell>
                                                         <Table.Cell width={3} colSpan={method.is_blocked ? 3 : 0}>
-                                                            {i18n.language == 'pt' &&(
-                                                                <Form.Input placeholder={t("Descrição PT")} fluid
-                                                                            value={method.description_pt} readOnly
-                                                                            />
-                                                            )}
-                                                            {i18n.language == 'en' &&(
-                                                                <Form.Input placeholder={t("Descrição EN")} fluid
-                                                                            value={method.description_en} readOnly
-                                                                            />
+                                                            {isManagingMethods ? (
+                                                                <div>
+                                                                    <Form.Input placeholder={t("Descrição PT")} fluid
+                                                                                value={method.description_pt}
+                                                                                onChange={
+                                                                                    (ev, {value}) => setEpochs((current) => {
+                                                                                        const copy = [...current];
+                                                                                        copy[index].methods[methodIndex].description_pt = value;
+                                                                                        return copy;
+                                                                                    })
+                                                                                }
+                                                                                />
+                                                                    <Form.Input placeholder={t("Descrição EN")} fluid
+                                                                                value={method.description_en} className={"margin-top-base"}
+                                                                                onChange={
+                                                                                    (ev, {value}) => setEpochs((current) => {
+                                                                                        const copy = [...current];
+                                                                                        copy[index].methods[methodIndex].description_en = value;
+                                                                                        return copy;
+                                                                                    })
+                                                                                }
+                                                                                />
+                                                                </div>
+                                                                ):(
+                                                                <div>
+                                                                    {i18n.language == 'pt' ?
+                                                                        (
+                                                                    <Form.Input placeholder={t("Descrição PT")} fluid
+                                                                                value={method.description_pt} readOnly
+                                                                    />
+                                                                        ): (
+                                                                    <Form.Input placeholder={t("Descrição EN")} fluid
+                                                                                value={method.description_en} readOnly
+                                                                    />
+                                                                        )}
+                                                                </div>
                                                             )}
                                                         </Table.Cell>
                                                         {!method.is_blocked && (
@@ -646,12 +673,12 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                             {t("Total pesos avaliacao:")} <Label
                                                             color={(getEpochValue(index) > 100 ? "red" : (getEpochValue(index) === 100 ? "green" : "yellow"))}>{(epochs[index].methods || [])?.reduce((a, b) => a + (b?.weight || 0), 0)}%</Label>
                                                             {!hasGroup && (
-                                                                <div className={"methods-epoch-btn"}>
+                                                                <div className={"margin-top-base"}>
                                                                     <Button onClick={() => openGroupingMethods(index)} icon labelPosition="left"
                                                                             color="green" disabled={item.methods.length === 0}>
                                                                         <Icon name={"object group outline"}/>{t("Agrupar Métodos")}
                                                                     </Button>
-                                                                    <Button floated='right' icon labelPosition='left'
+                                                                    <Button icon labelPosition='left'
                                                                             color={"green"} size='small' onClick={() => {
                                                                         addNewMethod(index, item.id);
                                                                     }}>
