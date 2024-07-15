@@ -20,22 +20,6 @@ use Illuminate\Support\Facades\Log;
 use League\CommonMark\Extension\CommonMark\Node\Inline\Code;
 use function PHPUnit\Framework\isEmpty;
 
-class InitialGroupsLdap
-{
-    const SUPER_ADMIN = "Super Admin";
-    const ADMIN = "Administrador de Sistema";
-    const COMISSION_CCP = "Comissão Científico-Pedagógica";
-    const PEDAGOGIC = "Conselho Pedagógico";
-    const COORDINATOR = "Coordenador de Curso";
-    const BOARD = "Direção";
-    const GOP = "GOP";
-    const TEACHER = "Docente";
-    const RESPONSIBLE_PEDAGOGIC = "Responsável Conselho Pedagógico";
-    const RESPONSIBLE = "Responsável Unidade Curricular";
-    const STUDENT = "Estudante";
-}
-
-
 class LoginController extends Controller
 {
 
@@ -65,9 +49,7 @@ class LoginController extends Controller
             $user->refresh();
         }
         else {
-//            if(!$user = User::where('email', 'like', "%$request->email%")->first()){
-                //change academicYearCode to 2023/24 format (change accordingly to the webservice argument)
-
+            //AUTHENTICATION SUCCESSFUL
             $selectedYear = AcademicYear::where('selected', true)->first();
             if($selectedYear){
                 $activeYear = $selectedYear->id;
@@ -75,6 +57,7 @@ class LoginController extends Controller
                 $activeYear = 0;
             }
             $academicYearCode = substr($selectedYear->code,0,4). "/" .substr($selectedYear->code,4,6);
+            //STUDENT LOGIN
             if(preg_match('/[0-9]{7}/', $request->email)){
                 $response = Http::get('https://www.dei.estg.ipleiria.pt/servicos/projetos/get_inscricoes_aluno.php?anoletivo='. $academicYearCode .'&num_aluno='.$request->email.'&formato=json');
                 $student_data = $response->body();
@@ -127,15 +110,24 @@ class LoginController extends Controller
             }
             else {
                 //TODO change to the correct webservice and fix docente exists validation
-                //Necessario teste pelo prof
+                //TEACHER LOGIN
                 $user = User::where('email', 'like', "%$request->email%")->first();
                 if(!$user) {
-                    'https://www.dei.estg.ipleiria.pt/servicos/projetos/get_turnos.php?anoletivo='. $selectedYear->code .'&username='. $request->email . '&formato=json';
-                    $response = Http::get('https://www.dei.estg.ipleiria.pt/servicos/projetos/get_inscricoes_aluno.php?anoletivo=' . $academicYearCode . '&login=' . $request->email . '&formato=json');
+                    $apiEndpoint = 'https://www.dei.estg.ipleiria.pt/servicos/projetos/get_turnos.php?anoletivo='. $selectedYear->code .'&username='. $request->email . '&formato=json';
+                    Log::channel('sync_test')->info("URL ". $apiEndpoint);
+
+                    $response = Http::connectTimeout(5*60)->timeout(5*60)->get($apiEndpoint);
+                    if($response->failed()){
+                        Log::channel('courses_sync')->info('FAILED - "importDocentesFromWebService" sync');
+                        return response()->json("There was a problem login in. Please try again later",Response::HTTP_INTERNAL_SERVER_ERROR);
+                    }
+//                    $response = Http::get('https://www.dei.estg.ipleiria.pt/servicos/projetos/get_inscricoes_aluno.php?anoletivo=' . $academicYearCode . '&login=' . $request->email . '&formato=json');
                     $docente_data = json_decode($response->body());
+                    Log::channel('sync_test')->info("Docente". $response->body());
+
                     $user = User::create([
-                        "email" => $request->email,
-                        "name" => $request->email,
+                        "email" =>$request->email . '@ipleiria.pt',
+                        "name" => preg_replace('/^(\S+)\s.*\s(\S+)$/', '$1 $2', $docente_data[0]->NM_FUNCIONARIO),
                         "enabled" => true,
                         "password" => "",
                     ]);
@@ -155,7 +147,14 @@ class LoginController extends Controller
         }
 
         if (!$user->enabled) {
-            return response()->json("Unauthorized.", Response::HTTP_UNAUTHORIZED);
+            return response()->json("Unauthorized.", Response::HTTP_FORBIDDEN);
+        }
+
+        $selectedYear = AcademicYear::where('selected', true)->first();
+        if($selectedYear){
+            $activeYear = $selectedYear->id;
+        } else {
+            $activeYear = 0;
         }
 
         $currentGroup = [
@@ -165,12 +164,7 @@ class LoginController extends Controller
         ];
         $scopes =  $user->groups()->first()->permissions()->where('group_permissions.enabled', true)->groupBy('permissions.code')->pluck('permissions.code')->values()->toArray();
         $accessToken = $user->createToken('authToken', $scopes)->accessToken;
-        $selectedYear = AcademicYear::where('selected', true)->first();
-        if($selectedYear){
-            $activeYear = $selectedYear->id;
-        } else {
-            $activeYear = 0;
-        }
+
 
         $utils = new Utils();
         return response()->json([

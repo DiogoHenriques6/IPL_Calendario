@@ -22,36 +22,37 @@ const LoginPage = () => {
     const onSubmit = (values) => {
         setLoading(true);
         axios.post('/login', {
-                email: values.email,
-                password: values.password,
-                remember_me: false,
-            }).then(({data}) => {
-                if (data.accessToken) {
-                    localStorage.setItem('userId', data.user.id);
-                    localStorage.setItem('username', data.user.name);
-                    localStorage.setItem('groups', data.user.groups);
-                    localStorage.setItem('authToken', data.accessToken);
-                    localStorage.setItem('academicYear', data.academicYear);
-                    if(data.courseUnits) {
-                        localStorage.setItem('courseUnits', JSON.stringify(data.courseUnits));
-                    }
-                    const {scopes} = jwtDecode(data.accessToken);
-                    // also set in app.js but is rendered in time there
-                    localStorage.setItem('scopes', JSON.stringify(scopes));
-                    if (scopes?.length === 0) {
-                        return (window.location = '/calendario/');
-                    }
-                    window.location = '/';
+            email: values.email,
+            password: values.password,
+            remember_me: false,
+        }).then(({data}) => {
+            const { accessToken, user, academicYear, courseUnits } = data;
+            if (accessToken) {
+                localStorage.setItem('userId', user.id);
+                localStorage.setItem('username', user.name);
+                localStorage.setItem('groups', user.groups);
+                localStorage.setItem('authToken', accessToken);
+                localStorage.setItem('academicYear', academicYear);
+                if (courseUnits) {
+                    localStorage.setItem('courseUnits', JSON.stringify(courseUnits));
                 }
-            }).catch((err) => {
-                setLoading(false);
-                SweetAlertComponent.fire({
-                    title: 'Erro de autenticação!',
-                    text: 'Contactar o suporte DEI',
-                    icon: 'error',
-                    confirmButtonColor: 'red',
-                });
+                const { scopes } = jwtDecode(accessToken);
+                localStorage.setItem('scopes', JSON.stringify(scopes));
+                if (scopes?.length === 0) {
+                    return (window.location = '/calendario/');
+                }
+                window.location = '/';
+            }
+        }).catch((err) => {
+            setLoading(false);
+            SweetAlertComponent.fire({
+                title: 'Erro de autenticação!',
+                text: 'Contactar o suporte DEI',
+                icon: 'error',
+                confirmButtonColor: 'red',
             });
+        });
+
     };
 
     return (
