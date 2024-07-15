@@ -59,6 +59,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
     const [academicYearSelected, setAcademicYearSelected] = useState(-1);
     const [epochToGroup, setEpochToGroup] = useState(-1);
     const [selectedOption, setSelectedOption] = useState(null);
+    const [hasChanged, setHasChanged] = useState(false);
 
     const isManagingMethods = useComponentIfAuthorized(SCOPES.MANAGE_EVALUATION_METHODS);
 
@@ -75,10 +76,10 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
             methodList.forEach((item) => {
                 // check if it has more than 100%
                 let methodWeight = item.methods.reduce((acc, curr) => curr.weight + acc, 0);
-                if (methodWeight > 100) {
+                if (Math.round(methodWeight) > 100) {
                     hasOverValue = true;
                 }
-                if (item.methods.length > 0 && methodWeight < 100) {
+                if (item.methods.length > 0 && Math.round(methodWeight) < 100) {
                     hasUnderWeight = true;
                     isValid = false;
                 }
@@ -174,6 +175,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                 if (res.status === 200) {
                     toast(t('Métodos de avaliação criados com sucesso!'), successConfig);
                     setRemovedMethods([]);
+                    setHasChanged(false);
                 } else {
                     toast(t('Não foi possível criar os métodos de avaliação!'), errorConfig);
                 }
@@ -198,7 +200,13 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
             copy[epochIndex].methods.splice(methodIndex, 1);
             return copy;
         });
+        setHasChanged(true);
     };
+
+    useEffect(() => {
+        console.log(hasChanged)
+
+    }, [hasChanged]);
 
     //Remove method to epoch type record
     const addNewMethod = (index, epoch_id) => {
@@ -207,8 +215,6 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
             if (!copy[index].methods?.length) {
                 copy[index].methods = [];
             }
-
-
 
             copy[index].methods.forEach((method, index) => {
                 method.weight = defaultWeight;
@@ -238,38 +244,28 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
 
             // Recalculate weights
             const methodsLength = copy[index].methods.length;
-            const defaultWeight = Math.floor(100 / methodsLength);
+            const defaultWeight = 100 / methodsLength;
 
             // Distribute default weight
             copy[index].methods.forEach(method => {
                 method.weight = defaultWeight;
             });
 
-            // Calculate remaining weight to make the total exactly 100
-            const totalWeight = copy[index].methods.reduce((a, b) => a + b.weight, 0);
-            const remainingWeight = 100 - totalWeight;
-
-            // Adjust the weight of the last method added to ensure the total is 100
-            if (remainingWeight !== 0 && methodsLength > 0) {
-                copy[index].methods[methodsLength - 1].weight += remainingWeight;
-            }
-
+            setHasChanged(true);
             return copy;
         });
     }
 
     const updateMethodMinimum = (index, methodIndex, value) => {
-            if (value > 20)
-                value = 20
-            else if (value < 0 || !value)
-                value = 0;
-            else
-                value = parseFloat(value)
-            setEpochs((current) => {
-                const copy = [...current];
-                copy[index].methods[methodIndex].minimum = parseFloat(value);
-                return copy;
-            })
+        if (value > 20)
+            value = 20
+        else if (value < 0 || !value)
+            value = 0;
+        setEpochs((current) => {
+            const copy = [...current];
+            copy[index].methods[methodIndex].minimum = parseFloat(value);
+            return copy;
+        })
     }
 
     const updateMethodWeight = (index, methodIndex, value) => {
@@ -277,13 +273,12 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
             value = 100
         else if (value < 0 || !value)
             value = 0;
-        else
-            value = parseInt(value)
         setEpochs((current) => {
             const copy = [...current];
             copy[index].methods[methodIndex].weight = parseFloat(value);
             return copy;
         })
+        setHasChanged(true);
     }
 
     const cloneMethods = () => {
@@ -296,7 +291,6 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
             toast(t('As épocas selecionadas têm de ser diferentes!'), errorConfig);
             return false;
         }
-
 
         let methodsToClone = JSON.parse(JSON.stringify(epochs.find((epoch) => epoch.id === selectedEpochFrom).methods));
         let copyEpochs = JSON.parse(JSON.stringify(epochs));
@@ -318,6 +312,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
         setEpochs(copyEpochs);
 
         // toast(t('Success!'), successConfig);
+        setHasChanged(true);
         isFormValid(epochs);
         closeModal();
     }
@@ -437,6 +432,12 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                         )}
                         {!hasGroup && (
                             <Sticky offset={50} context={contextRef}>
+                                {hasChanged && (
+                                    <Message warning>
+                                        <Message.Header>{t('Atenção!')}</Message.Header>
+                                        <Message.Content> {t("Existem métodos por guardar!")} </Message.Content>
+                                    </Message>
+                                )}
                                 <div className='sticky-methods-header'>
                                     <Button onClick={() => setOpenCopy(true)} icon labelPosition="left"
                                             color="blue" disabled={!hasNoMethods}>
@@ -566,6 +567,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                                                 value={method.description_pt}
                                                                                 onChange={
                                                                                     (ev, {value}) => setEpochs((current) => {
+                                                                                        setHasChanged(true);
                                                                                         const copy = [...current];
                                                                                         copy[index].methods[methodIndex].description_pt = value;
                                                                                         return copy;
@@ -576,6 +578,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                                                 value={method.description_en} className={"margin-top-base"}
                                                                                 onChange={
                                                                                     (ev, {value}) => setEpochs((current) => {
+                                                                                        setHasChanged(true);
                                                                                         const copy = [...current];
                                                                                         copy[index].methods[methodIndex].description_en = value;
                                                                                         return copy;
@@ -614,8 +617,8 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                                                     max: 20,
                                                                                     step: 1,
                                                                                     disabled:{hasGroup},
-                                                                                    onChange: (newValue) =>
-                                                                                        updateMethodMinimum(index, methodIndex, newValue)
+                                                                                    onChange: ((newValue) =>
+                                                                                        updateMethodMinimum(index, methodIndex, newValue))
                                                                                 }}
                                                                                 />
                                                                             </GridColumn>
@@ -623,10 +626,6 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                                     </div>
                                                                 ) : (
                                                                     <Label color="blue">{method.minimum}</Label>
-                                                                    // <Form.Input placeholder={t("Nota Mínima")} fluid
-                                                                    //             value={method.minimum} readOnly
-                                                                    //             className="margin-top-base"
-                                                                    // />
                                                                 )}
                                                             </Table.Cell>
                                                         )}
@@ -646,8 +645,8 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                                                     max: 100,
                                                                                     step: 5,
                                                                                     disabled:{hasGroup},
-                                                                                    onChange: (newValue) =>
-                                                                                        updateMethodWeight(index, methodIndex, newValue)
+                                                                                    onChange: ((newValue) =>
+                                                                                        updateMethodWeight(index, methodIndex, newValue))
                                                                                 }}
                                                                                 />
                                                                             </GridColumn>
@@ -671,7 +670,7 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                     <Table.Row>
                                                         <Table.HeaderCell colSpan='8'>
                                                             {t("Total pesos avaliacao:")} <Label
-                                                            color={(getEpochValue(index) > 100 ? "red" : (getEpochValue(index) === 100 ? "green" : "yellow"))}>{(epochs[index].methods || [])?.reduce((a, b) => a + (b?.weight || 0), 0)}%</Label>
+                                                            color={(Math.round(getEpochValue(index) )> 100 ? "red" : (Math.round(getEpochValue(index))=== 100 ? "green" : "yellow"))}>{Math.round((epochs[index].methods || [])?.reduce((a, b) => a + (b?.weight || 0), 0))}%</Label>
                                                             {!hasGroup && (
                                                                 <div className={"margin-top-base"}>
                                                                     <Button onClick={() => openGroupingMethods(index)} icon labelPosition="left"
