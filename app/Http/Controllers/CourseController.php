@@ -121,6 +121,36 @@ class CourseController extends Controller
             $hasSearch = true;
             $courseList->filter($filters);
         }
+        $currentGroup = Group::where('id', request()->cookie('selectedGroup'))->first();
+        $schoolId = null;
+        $courseId = null;
+        switch ($currentGroup->code) {
+            case str_contains($currentGroup->code, InitialGroups::GOP):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->gopSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code,InitialGroups::BOARD):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->boardSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code,InitialGroups::PEDAGOGIC):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = $currentGroup->pedagogicSchool()->pluck('id');
+                break;
+            case str_contains($currentGroup->code,InitialGroups::COMISSION_CCP):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = Auth::user()->courses->pluck('school_id');
+                break;
+            case str_contains($currentGroup->code,InitialGroups::COORDINATOR):
+//                Log::channel('sync_test')->info($currentGroup->code);
+                $schoolId = Course::where('coordinator_user_id', Auth::user()->id)->pluck('school_id');
+                break;
+        }
+        if($schoolId != null){
+            if(count($schoolId) > 0){
+                $courseList->whereIn('school_id', $schoolId);
+            }
+        }
         if($request->has('include')) {
             $courseList->orWhere('id', $request->get('include'))->orderByRaw('case when id = ' . $request->get('include') . ' then 0 else 1 end, id');
         }
