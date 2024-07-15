@@ -34,8 +34,10 @@ class LoginController extends Controller
     public function login(LoginRequest $request)
     {
         Log::channel('users_login')->info('Login requested: [ Email: ' . $request->email . ' ]');
+        $email = explode('@', $request->email)[0];
+
         $response = Http::asForm()->post('https://www.dei.estg.ipleiria.pt/servicos/projetos/validateLogin.php', [
-            'a' => $request->email,
+            'a' => $email,
             'b' => $request->password
         ]);
         if(!$response->successful()){
@@ -58,7 +60,7 @@ class LoginController extends Controller
             }
             $academicYearCode = substr($selectedYear->code,0,4). "/" .substr($selectedYear->code,4,6);
             //STUDENT LOGIN
-            if(preg_match('/[0-9]{7}/', $request->email)){
+            if(preg_match('/[0-9]{7}/', $email)){
                 $response = Http::get('https://www.dei.estg.ipleiria.pt/servicos/projetos/get_inscricoes_aluno.php?anoletivo='. $academicYearCode .'&num_aluno='.$request->email.'&formato=json');
                 $student_data = $response->body();
                 $student_units = json_decode($student_data);
@@ -66,8 +68,8 @@ class LoginController extends Controller
 
                 if(!empty($student_units)){
                     $user= User::firstOrCreate([
-                        "email" => $request->email . '@my.ipleiria.pt',
-                        "name" => $request->email,
+                        "email" => $email . '@my.ipleiria.pt',
+                        "name" => $email,
                         "enabled" => true,
                         "password" => "",
                     ]);

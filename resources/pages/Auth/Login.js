@@ -52,7 +52,6 @@ const LoginPage = () => {
                 confirmButtonColor: 'red',
             });
         });
-
     };
 
     return (
