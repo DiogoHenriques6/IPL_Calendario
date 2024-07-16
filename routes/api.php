@@ -132,6 +132,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/user-group',                              'store'                   );
         Route::patch('/user-group/{group}',                     'update'                  );
         Route::delete('/user-group/{group}',                    'destroy'                 );
+        Route::post('/user-group/{group}/clone-permissions',    'clonePermissions'        );
         Route::get('/user-group/{group}/permissions',           'groupPermissions'        );
         Route::get('/user-group/{group}/calendar-permissions',  'groupCalendarPermissions');
         Route::get('/user-group/{group}/clone',                 'cloneGroup'              );

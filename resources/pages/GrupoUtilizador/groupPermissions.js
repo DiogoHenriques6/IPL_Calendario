@@ -7,7 +7,7 @@ import {useTranslation} from "react-i18next";
 
 import { errorConfig, successConfig } from '../../utils/toastConfig';
 
-const GroupPermissions = () => {
+const GroupPermissions = ( {countCopy}) => {
     const { t } = useTranslation();
     // get URL params
     let { id } = useParams();
@@ -39,7 +39,7 @@ const GroupPermissions = () => {
                 calendarGroupPermissions: permissionPhases
             }));
         });
-    }, []);
+    }, [paramsId,countCopy]);
 
     const updateGroupPermissions = (isEnabled, permissionId, phaseId) => {
         const request = {

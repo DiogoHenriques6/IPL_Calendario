@@ -681,7 +681,6 @@ const UnitTabMethods = ({ unitId, hasGroup, warningsHandler }) => {
                                                                             color={"green"} size='small' onClick={() => {
                                                                         addNewMethod(index, item.id);
                                                                     }}>
-
                                                                         <Icon name='plus'/> {t("Adicionar novo método")}
                                                                     </Button>
                                                                 </div>

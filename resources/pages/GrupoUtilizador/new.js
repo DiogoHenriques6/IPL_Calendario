@@ -1,5 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {Button, Card, Checkbox, Container, Dimmer, Form, Icon, Loader, Message} from 'semantic-ui-react';
+import {
+    Button,
+    Card,
+    Checkbox,
+    Container,
+    Dimmer,
+    Form,
+    Grid, GridColumn,
+    Header,
+    Icon,
+    Loader,
+    Message,
+    Modal
+} from 'semantic-ui-react';
 import { Field, Form as FinalForm } from 'react-final-form';
 import {useParams, useNavigate} from "react-router-dom";
 import _ from 'lodash';
@@ -11,6 +24,7 @@ import { errorConfig, successConfig } from '../../utils/toastConfig';
 import GroupPermissions from './groupPermissions';
 import SCOPES from '../../utils/scopesConstants';
 import ShowComponentIfAuthorized from "../../components/ShowComponentIfAuthorized";
+import UserGroups from "../../components/Filters/UserGroups";
 
 const New = () => {
     const { t } = useTranslation();
@@ -23,7 +37,11 @@ const New = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [userGroup, setUserGroup] = useState({});
     const [errorMessages, setErrorMessages] = useState([]);
+    const [copyPermissionOpen,setCopyPermissionOpen] = useState(false);
+    const [userGroupsOptions, setUserGroupsOptions] = useState([]);
+    const [selectedGroup, setSelectedGroup] = useState(null);
     const isEditMode = !_.isEmpty(userGroup);
+    const [countCopy, setCountCopy] = useState(0);
 
     useEffect(() => {
         if (paramsId) {
@@ -90,6 +108,46 @@ const New = () => {
         });
     };
 
+    const closeModal = () => {
+        setCopyPermissionOpen(false);
+        setLoading(false);
+    }
+
+    useEffect(() => {
+        if(copyPermissionOpen) {
+        setLoading(true);
+            axios.get('/user-group').then((response) => {
+                if (response.status === 200) {
+                    setUserGroupsOptions(response?.data?.data?.map(({id, description}) => ({
+                        key: id,
+                        value: id,
+                        text: description
+                    })));
+                }
+                setLoading(false);
+            });
+        }
+    }, [copyPermissionOpen]);
+
+    const handleCopy = () => {
+        setIsSaving(true);
+        axios.post(`/user-group/${paramsId}/clone-permissions`, {group_id: selectedGroup}).then( (res) => {
+            setIsSaving(false);
+            if (res.status === 404) {
+                toast(t('Existiu um problema ao gravar as alterações!'), errorConfig);
+            }
+            else {
+                toast(t('Permissões copiadas com sucesso'), successConfig);
+                setCountCopy(countCopy + 1);
+            }
+            closeModal();
+        });
+    }
+
+    const handleDropdownChange = (e, {value}) => {
+        setSelectedGroup(value);
+    }
+
     return (
         <Container>
             <div className="margin-bottom-base">
@@ -145,21 +203,41 @@ const New = () => {
                             </Field>
                         </Card.Content>
                         <Card.Content>
+
                             <Button onClick={handleSubmit} color="green" icon labelPosition="left" floated="right" loading={isSaving} >
                                 <Icon name={isEditMode ? 'save' : 'plus'} /> {isEditMode ? t('Guardar') : t('Criar')}
                             </Button>
                             {isEditMode && (
-                                <Button onClick={handleCloneGroup} color="yellow" icon labelPosition="left" floated="right" loading={isSaving} >
-                                    <Icon name='clone outline'/> { t('Duplicar') }
-                                </Button>
+                                <div>
+                                    <Button onClick={handleCloneGroup} color="yellow" icon labelPosition="left" floated="right" loading={isSaving} >
+                                        <Icon name='clone outline'/> { t('Duplicar') }
+                                    </Button>
+                                    <Button onClick={() => setCopyPermissionOpen(true)} icon color="blue" labelPosition="left" floated="right" loading={isSaving}>
+                                        <Icon name='clone outline'/> { t('Copiar Permissões') }
+                                    </Button>
+                                </div>
                             )}
+
                         </Card.Content>
                     </Card>
                 </Form>
             )} />
             <ShowComponentIfAuthorized permission={[SCOPES.CHANGE_PERMISSIONS]}>
-                { isEditMode && <GroupPermissions /> }
+                { isEditMode && <GroupPermissions countCopy={countCopy}/> }
             </ShowComponentIfAuthorized>
+               <Modal onClose={closeModal} onOpen={() => setCopyPermissionOpen(true)} open={copyPermissionOpen}>
+                   <Modal.Header>{t("Copiar permissões")}</Modal.Header>
+                   <Modal.Content>
+                       <Form>
+                           <Form.Dropdown selectOnBlur={false} fluid options={userGroupsOptions} value={selectedGroup} selection search label={t("Grupo de Utilizador")}
+                                          placeholder={t("Grupo de Utilizador")} loading={loading} onChange={handleDropdownChange}/>
+                       </Form>
+                   </Modal.Content>
+                   <Modal.Actions>
+                       <Button negative onClick={closeModal}>{t("Cancel")}</Button>
+                       <Button positive onClick={handleCopy}>{t("Duplicar")}</Button>
+                   </Modal.Actions>
+               </Modal>
         </Container>
     );
 };

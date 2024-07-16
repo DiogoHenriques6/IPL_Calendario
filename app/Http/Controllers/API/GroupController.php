@@ -86,6 +86,39 @@ class GroupController extends Controller
         return PermissionSectionsResource::collection($sections);
     }
 
+    public function clonePermissions(Group $group, Request $request)
+    {
+        //TODO: Implement clonePermissions method
+        if($request->group_id  != null){
+            $groupToClone = Group::find($request->group_id);
+            //get group permissions
+            $permissions = $groupToClone->associatedPermissions;
+            $permissionsId = $permissions->pluck('permission_id');
+            //get permissions to insert
+            $permissionsToInsert = $permissionsId->diff($group->permissions()->pluck('id'));
+            Log::channel('sync_test')->info('Permissions to insert: '.json_encode($permissionsToInsert));
+
+            //get permissions to remove
+            $permissionsToRemove = $group->permissions()->whereNotIn('id', $permissionsId)->pluck('id');
+            Log::channel('sync_test')->info('Permissions to remove: '.json_encode($permissionsToRemove));
+
+            $group->associatedPermissions()->whereIn('permission_id', $permissionsToRemove)->delete();
+            foreach($groupToClone->associatedPermissions as $permission)
+            {
+
+                if($permissionsToInsert->contains($permission->permission_id)){
+                    $group->associatedPermissions()->create($permission->toArray());
+                }
+            }
+
+//            return $this->getPermissions( 1, $group->id, CalendarPhase::phaseSystem());
+            return response()->json($group, Response::HTTP_OK);
+        }
+        else{
+            return response()->json("Group not found!", Response::HTTP_NOT_FOUND);
+        }
+    }
+
     public function cloneGroup(Group $group)
     {
         $newGroup = $group->cloneGroupWithPermissions();
