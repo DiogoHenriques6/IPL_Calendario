@@ -517,33 +517,35 @@ class CalendarService
 
     public static function phases(Request $request)
     {
-        //$groupsQuery = Group::all();
-
-        /*
-         *
-            SELECT `groups`.`name_pt`,
-                    EXISTS (
-                        Select *
-                        From  `group_permissions`
-                        where
-                            `group_permissions`.`group_id`  = `groups`.`id` and
-                            `group_permissions`.`permission_id` = (select permissions.id from permissions where permissions.code = "view_calendar") and
-                            `group_permissions`.`phase_id` = 9
-                    ) as `has_permission`
-            FROM `groups`;
-         * */
         $permissionId = Permission::permissionViewCalendar();
         $phaseId = $request->get("phase-id", 9);
+        $calendar = Calendar::find($request->get("calendar-id"));
+        $schoolId = $calendar->course->school_id;
 
-        $groupsQuery = Group::withExists([
-            'permissions as has_permission' => function ($query) use($permissionId, $phaseId) {
-                return $query->where('permission_id', $permissionId)->where('phase_id', $phaseId);
+        $groupsQuery = Group::with(['gopSchool', 'boardSchool', 'pedagogicSchool'])
+            ->withExists([
+                'permissions as has_permission' => function ($query) use ($permissionId, $phaseId) {
+                    return $query->where('permission_id', $permissionId)->where('phase_id', $phaseId);
+                }
+            ])->get();
+
+        // Filter out groups not associated with the selected school
+        $filteredGroups = $groupsQuery->filter(function ($group) use ($schoolId) {
+            switch (true) {
+                case str_contains($group->code, InitialGroups::GOP):
+                    return $group->gopSchool != null && $group->gopSchool->id == $schoolId;
+                case str_contains($group->code, InitialGroups::BOARD):
+                    return $group->boardSchool != null && $group->boardSchool->id == $schoolId;
+                case str_contains($group->code, InitialGroups::PEDAGOGIC):
+                    return $group->pedagogicSchool != null && $group->pedagogicSchool->id == $schoolId;
+                default:
+                    return true; // Keep the group if it doesn't match any special case
             }
-        ])->get();
+        });
 
         $response = [
             "phases" => CalendarPhaseResource::collection(CalendarPhase::all()),
-            "groups" => GroupsPhaseResource::collection($groupsQuery)
+            "groups" => GroupsPhaseResource::collection($filteredGroups)
         ];
         return $response;
     }
@@ -552,13 +554,30 @@ class CalendarService
     {
         $permissionId = Permission::permissionViewCalendar();
         $phaseId = $request->get("phase-id", 9);
+        $calendar = Calendar::find($request->get("calendar-id"));
+        $schoolId = $calendar->course->school_id;
 
-        $groupsQuery = Group::withExists([
-            'permissions as has_permission' => function ($query) use($permissionId, $phaseId) {
-                return $query->where('permission_id', $permissionId)->where('phase_id', $phaseId);
+        $groupsQuery = Group::with(['gopSchool', 'boardSchool', 'pedagogicSchool'])
+            ->withExists([
+                'permissions as has_permission' => function ($query) use ($permissionId, $phaseId) {
+                    return $query->where('permission_id', $permissionId)->where('phase_id', $phaseId);
+                }
+            ])->get();
+
+        // Filter out groups not associated with the selected school
+        $filteredGroups = $groupsQuery->filter(function ($group) use ($schoolId) {
+            switch (true) {
+                case str_contains($group->code, InitialGroups::GOP):
+                    return $group->gopSchool != null && $group->gopSchool->id == $schoolId;
+                case str_contains($group->code, InitialGroups::BOARD):
+                    return $group->boardSchool != null && $group->boardSchool->id == $schoolId;
+                case str_contains($group->code, InitialGroups::PEDAGOGIC):
+                    return $group->pedagogicSchool != null && $group->pedagogicSchool->id == $schoolId;
+                default:
+                    return true; // Keep the group if it doesn't match any special case
             }
-        ])->get();
-        return GroupsPhaseResource::collection($groupsQuery);
+        });
+        return GroupsPhaseResource::collection($filteredGroups);
     }
 
     public static function updateCalendarViewers($calendarId, $phaseId = null, $clearOldViewers = false){

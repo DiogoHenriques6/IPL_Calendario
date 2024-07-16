@@ -35,7 +35,7 @@ const PopupSubmit = ( {isOpen, onClose, calendarId, currentPhaseId, updatePhase}
             if (!currentPhaseId) {
                 return false;
             }
-            axios.get('/calendar-phases-full?phase-id=' + currentPhaseId).then((response) => {
+            axios.get('/calendar-phases-full?phase-id=' + currentPhaseId + '&calendar-id='+ calendarId).then((response) => {
                 if (response.status === 200) {
                     setCalendarPhases(
                         response.data?.phases.map(({id, description, name}) => ({
@@ -67,7 +67,7 @@ const PopupSubmit = ( {isOpen, onClose, calendarId, currentPhaseId, updatePhase}
     useEffect(() => {
         if(!isLoading) {
             setGroupViewersLoading(true);
-            axios.get('/calendar-phases-full/groups?phase-id=' + calendarPhase).then((response) => {
+            axios.get('/calendar-phases-full/groups?phase-id=' + calendarPhase + '&calendar-id='+ calendarId).then((response) => {
                 if (response.status === 200) {
                     setCalendarGroups(response.data?.data);
                     setGroupViewersLoading(false);
