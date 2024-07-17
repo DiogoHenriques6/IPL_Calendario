@@ -112,7 +112,7 @@ const Step1 = ({setActiveSemester, activeSemester}) => {
     return (
         <React.Fragment>
             <Card.Content className={"margin-top-s"}>
-                <Header as={"h3"}>{ t("Época do calendário") }</Header>
+                <Header as={"h3"}>{ t("Selecionar semestre/época do(s) calendário(s)") }</Header>
                 <Field name="step1.semester" key={'step1_field_btn'}>
                     {({input: semesterInput}) => (
                         <Button.Group>
@@ -126,7 +126,7 @@ const Step1 = ({setActiveSemester, activeSemester}) => {
                                         }}>
                                         {semester.name}
                                     </Button>
-                                    {index + 1 < semesterList.length && (<Button.Or text={ t("Ou") }/>)}
+                                    {index + 1 < semesterList.length && (<Button.Or style={{fontWeight: 'bold'}} text={t("Ou")}/>)}
                                 </React.Fragment>
                             ))}
                         </Button.Group>
@@ -135,7 +135,7 @@ const Step1 = ({setActiveSemester, activeSemester}) => {
             </Card.Content>
             <Card.Content className={"margin-top-l margin-bottom-base"}>
                 <Header as={"h3"}>{ t("Datas do calendário") }</Header>
-                <Card.Group itemsPerRow={3} >
+                <Card.Group itemsPerRow={3}>
                     {semesterList[activeSemester]?.epochs?.map((epoch, index) => (
                         <Field name={`step1.seasons.${semesterList[activeSemester].code}.${epoch?.code}.start_date`} key={'step1_field_start' + index}>
                             {({input: startDateInput}) => (

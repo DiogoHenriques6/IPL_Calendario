@@ -41,7 +41,7 @@ const NewCalendar = () => {
             number: 1,
             icon: 'calendar alternate outline',
             title: t('Épocas'),
-            description: t('Selecione o semestre do calendário a criar, assim como as datas das épocas.')
+            description: t('Selecione o semestre do calendário a criar, assim como as datas da época.')
         },
         {
             number: 2,
@@ -355,7 +355,7 @@ const NewCalendar = () => {
                 <div>
 
                     <div className='main-content-title'>
-                        <Header as="h2">{ t("Novo Calendário") }</Header>
+                        <Header as="h2">{ t("Novo(s) Calendário(s)") }</Header>
                     </div>
                     <Step.Group widths={stepsData.length}>
                         {stepsData.map((step) => (

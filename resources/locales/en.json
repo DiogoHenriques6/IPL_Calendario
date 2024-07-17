@@ -502,7 +502,8 @@
         "Tem a certeza que deseja remover o calendário do curso": "Are you sure you want to remove the course calendar",
 
         "Épocas": "Epochs",
-        "Selecione o semestre do calendário a criar, assim como as datas das épocas.": "Select the calendar semester to create, as well as the epoch dates.",
+        "Selecionar semestre/época do(s) calendário(s)": "Select semester/epoch of the calendar(s)",
+        "Selecione o semestre do calendário a criar, assim como as datas da época.": "Select the calendar semester to create, as well as the epoch dates.",
         "Interrupções Letivas": "Academic interruptions",
         "Insira todas as informações das Interrupções letivas.": "Enter all of the Academic Breaks information.",
         "Insira os cursos para os quais deseja criar o calendário.": "Enter the courses you want to create the calendar for.",
@@ -520,6 +521,7 @@
         "Ocorreu um erro ao tentar criar os calendários de avaliação": "An error occurred while trying to create the assessment calendars",
         "Ocorreu um erro ao tentar publicar o calendário!": "An error occurred while trying to publish the calendar!",
         "Ocorreu um erro ao tentar atualizar o calendário!": "An error occurred while trying to update the calendar!",
+        "Novo(s) Calendário(s)": "New Calendar(s)",
         "Novo Calendário": "New Calendar",
         "Adicionar interrupção": "Add interrupt",
         "Sem Interrupções": "Without interruptions",

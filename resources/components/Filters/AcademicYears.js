@@ -33,6 +33,7 @@ const FilterOptionAcademicYear = ({widthSize, eventHandler, value, disabled, cla
 
     useEffect(() => {
         setAcademicYear(value);
+        eventHandler(value);
     }, [value]);
 
     const filterByYear = (e, {value}) => {
