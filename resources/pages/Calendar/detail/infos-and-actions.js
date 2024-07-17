@@ -21,12 +21,12 @@ import {
     Input,
     Modal,
     Confirm,
-    ModalContent, ModalActions, ListContent, ListItem, ButtonGroup
+    ModalContent, ModalActions, ListContent, ListItem, ButtonGroup, GridRow
 } from 'semantic-ui-react';
 import { toast} from 'react-toastify';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-
+import GROUPS from "../../../utils/groupConstants";
 
 import ShowComponentIfAuthorized from '../../../components/ShowComponentIfAuthorized';
 import SCOPES from '../../../utils/scopesConstants';
@@ -325,58 +325,60 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                 <div className='main-content-actions'>
                     { !isLoading && (
                         (!isPublished && !isTemporary) ? (
-                                checkPermissionByPhase(SCOPES.CHANGE_CALENDAR_PHASE) && (
-                                    <>
-                                        {localStorage.getItem('selectedGroup')?.includes('board') || localStorage.getItem('selectedGroup')?.includes('pedagogic') ? (
-                                                <div className="button-group-container">
-                                                    <ButtonGroup className={"evaluation-buttons"}>
-                                                        <Button color="red"
-                                                                onClick={rejectCalendarHandler}>{t('Necessário reformulação')}</Button>
-                                                        <Button color="green"
-                                                                onClick={acceptCalendarHandler}>{t('Aprovar')}</Button>
-                                                    </ButtonGroup>
-                                                    <ButtonGroup className={"evaluation-buttons"}>
-                                                        <Button toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)}>
-                                                            {t('Minhas Avaliações')}
-                                                        </Button>
-                                                        <Button toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)}>
-                                                            {t('Todos')}
-                                                        </Button>
-                                                    </ButtonGroup>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                <Button color="teal"
-                                                        onClick={openSubmitModalHandler}>{t('Submeter')}</Button>
-                                                <ButtonGroup>
-                                                    <Button toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)}>
-                                                        {t('Minhas Avaliações')}
-                                                    </Button>
-                                                    <Button toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)}>
-                                                        {t('Todos')}
-                                                    </Button>
-                                                </ButtonGroup>
-                                                </>
-                                            )
-                                        }
-                                    </>
+                            <Grid>
+                            {checkPermissionByPhase(SCOPES.CHANGE_CALENDAR_PHASE) && (
+                                    <GridRow>
+                                        <Button color="teal"
+                                                onClick={openSubmitModalHandler}>{t('Submeter')}</Button>
+                                    </GridRow>
+                                )}
+                            {checkPermissionByPhase(SCOPES.APPROVE_PUBLICATION) && (
+                                localStorage.getItem('selectedGroup')?.includes(GROUPS.BOARD) || localStorage.getItem('selectedGroup')?.includes(GROUPS.GOP) && (
+                                    <GridRow>
+                                    {/*// <div className="button-group-container">*/}
+                                        <ButtonGroup className={"evaluation-buttons"}>
+                                            <Button color="red"
+                                                    onClick={rejectCalendarHandler}>{t('Necessário reformulação')}</Button>
+                                            <Button color="green"
+                                                    onClick={acceptCalendarHandler}>{t('Aprovar')}</Button>
+                                        </ButtonGroup>
+                                    {/*// </div>*/}
+                                    </GridRow>
                                 )
+                                )}
+                                <GridRow>
+                                    <ButtonGroup>
+                                        <Button toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)}>
+                                            {t('Minhas Avaliações')}
+                                        </Button>
+                                        <Button toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)}>
+                                            {t('Todos')}
+                                        </Button>
+                                    </ButtonGroup>
+                                </GridRow>
+                            </Grid>
                         ) : (
-                            <div className="button-group-container">
+                            <Grid >
+
                                 <ShowComponentIfAuthorized permission={[SCOPES.CREATE_COPY]}>
+                                    <GridRow>
                                     <Button color="orange" loading={creatingCopy} onClick={createCopy} className={"copy-button"}
                                             labelPosition={"right"} icon>{t('Criar um cópia desta versão')} <Icon
                                         name={"copy outline"}/></Button>
+                                    </GridRow>
                                 </ShowComponentIfAuthorized>
-                                <ButtonGroup className={"evaluation-buttons"}>
-                                    <Button toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)}>
-                                        {t('Minhas Avaliações')}
-                                    </Button>
-                                    <Button toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)}>
-                                        {t('Todos')}
-                                    </Button>
-                                </ButtonGroup>
-                            </div>
+
+                                <GridRow>
+                                    <ButtonGroup className={"evaluation-buttons"}>
+                                        <Button toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)}>
+                                            {t('Minhas Avaliações')}
+                                        </Button>
+                                        <Button toggle active={!myUCsOnly} onClick={() => setMyUCsOnly(false)}>
+                                            {t('Todos')}
+                                        </Button>
+                                    </ButtonGroup>
+                                </GridRow>
+                            </Grid>
                         )
                     )}
                 </div>

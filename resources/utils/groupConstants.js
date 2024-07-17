@@ -11,3 +11,5 @@ const GROUPS = {
     RESPONSIBLE : "responsible_course_unit",
     STUDENT : "student",
 }
+
+export default GROUPS;

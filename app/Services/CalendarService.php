@@ -155,27 +155,39 @@ class CalendarService
     {
         // TODO add message field to DB, update this code and add to FrontEnd
         // $request->input("message")
-        if(Auth::user()->groups()->board()->exists()){
-            if($request->input("accepted")) {
-                // if the board accepts the calendar, will be published
-                self::publish($calendar);
-                return "Success";
-                // TODO send email see CalendarPublished.php
-            } else {
-                // if the board rejects the calendar, it goes back to the GOP
-                $calendar->calendar_phase_id = CalendarPhase::phaseEditCC();
+        $selectedGroup = Group::find($request->cookie('selectedGroup'));
+        switch($selectedGroup->code){
+            case str_contains($selectedGroup->code,InitialGroups::BOARD):
+                if($request->input("accepted")) {
+                    // if the board accepts the calendar, will be published
+                    self::publish($calendar);
+                    return "Success";
+                    // TODO send email see CalendarPublished.php
+                } else {
+                    // if the board rejects the calendar, it goes back to the GOP
+                    $calendar->calendar_phase_id = CalendarPhase::phaseEditCC();
+                    $calendar->save();
+                    CalendarChanged::dispatch($calendar);
+                }
+                break;
+            case str_contains($selectedGroup->code,InitialGroups::PEDAGOGIC):
+                if($request->input("accepted")) {
+                    $calendar->calendar_phase_id = CalendarPhase::phaseEditGop();
+                } else {
+                    $calendar->calendar_phase_id = CalendarPhase::phaseEditCC();
+                }
                 $calendar->save();
                 CalendarChanged::dispatch($calendar);
-            }
-        }
-        if(Auth::user()->groups()->pedagogic()->exists()){
-            if($request->input("accepted")) {
-                $calendar->calendar_phase_id = CalendarPhase::phaseEditGop();
-            } else {
-                $calendar->calendar_phase_id = CalendarPhase::phaseEditCC();
-            }
-            $calendar->save();
-            CalendarChanged::dispatch($calendar);
+                break;
+            case str_contains($selectedGroup->code,InitialGroups::GOP):
+                if($request->input("accepted")) {
+                    $calendar->calendar_phase_id = CalendarPhase::phaseEvaluationPedagogic();
+                } else {
+                    $calendar->calendar_phase_id = CalendarPhase::phaseEditCC();
+                }
+                $calendar->save();
+                CalendarChanged::dispatch($calendar);
+                break;
         }
 
         self::updateCalendarViewers($calendar->id, $calendar->calendar_phase_id, true);
@@ -192,6 +204,8 @@ class CalendarService
         if (!$calendar->is_published) {
             $calendar->calendar_phase_id = CalendarPhase::phasePublished();
             switch ($currentGroup->code) {
+                case str_contains($currentGroup->code,InitialGroups::SUPER_ADMIN):
+                case str_contains($currentGroup->code,InitialGroups::ADMIN):
                 case str_contains($currentGroup->code, InitialGroups::GOP):
                 case str_contains($currentGroup->code, InitialGroups::BOARD):
                     $calendar->is_temporary = false;
