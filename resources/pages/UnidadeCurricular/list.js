@@ -54,6 +54,7 @@ const CourseUnitsList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
     const [initialLoad, setInitialLoad] = useState(true);
+    const [isChangedPage, setIsChangedPage] = useState(false);
 
     useEffect(() => {
         if(searchCourse){
@@ -61,19 +62,22 @@ const CourseUnitsList = () => {
         }
     }, [searchCourse]);
 
+    const loadFiltersFromSession = () => {
+        const course = parseInt(sessionStorage.getItem('course')) || -1;
+        const semester = parseInt(sessionStorage.getItem('semester')) || -1;
+        const curricularYear = parseInt(sessionStorage.getItem('curricularYear')) || -1;
+        const currentPage = parseInt(sessionStorage.getItem('currentPage')) || 1;
+        if(currentPage !== 1)
+            setIsChangedPage(true);
+
+        setCourseFilter(course);
+        setSemesterFilter(semester);
+        setCurricularYearFilter(curricularYear);
+        setCurrentPage(currentPage);
+
+    };
+
     useEffect(() => {
-        const loadFiltersFromSession = () => {
-            const course = parseInt(sessionStorage.getItem('course')) || -1;
-            const semester = parseInt(sessionStorage.getItem('semester')) || -1;
-            const curricularYear = parseInt(sessionStorage.getItem('curricularYear')) || -1;
-            const currentPage = parseInt(sessionStorage.getItem('currentPage')) || 1;
-
-            setCourseFilter(course);
-            setSemesterFilter(semester);
-            setCurricularYearFilter(curricularYear);
-            setCurrentPage(currentPage);
-        };
-
         loadFiltersFromSession();
         setInitialLoad(false);
     }, []);
@@ -100,9 +104,16 @@ const CourseUnitsList = () => {
 
     useEffect(() => {
         if (!initialLoad) {
-            fetchCourseUnits();
+            if(currentPage === 1 || isChangedPage) {
+                fetchCourseUnits();
+                setIsChangedPage(false);
+            }
+            else{
+                setCurrentPage(1);
+                sessionStorage.setItem('currentPage', 1);
+            }
         }
-    }, [courseFilter, semesterFilter, curricularYearFilter, groupUnitFilter, searchFilter, currentPage]);
+    }, [courseFilter, semesterFilter, curricularYearFilter, groupUnitFilter, searchFilter, perPage]);
     // useEffect(() => {
     //     if(currentPage === 1){
     //         fetchCourseUnits();
@@ -221,15 +232,6 @@ const CourseUnitsList = () => {
                                 <GroupUnits widthSize={3} eventHandler={filterByGroupUnit} />
                                 <Semesters widthSize={3} eventHandler={filterBySemester} withSpecial={false} />
                                 <CurricularYears widthSize={2} eventHandler={filterByCurricularYear}/>
-                                {/*<ShowComponentIfAuthorized permission={SCOPES.CREATE_COURSES}>*/}
-                                {/*    <Form.Field width={4}>*/}
-                                {/*        <label>{t("UCs visíveis")}</label>*/}
-                                {/*        <Button.Group fluid>*/}
-                                {/*            <Button positive={!courseUnitAllFilter} onClick={(e) => filterByAllCourseUnits(false)}>{ t("Apenas as minhas") }</Button>*/}
-                                {/*            <Button positive={courseUnitAllFilter} onClick={(e) => filterByAllCourseUnits(true)}>{ t("Todas") }</Button>*/}
-                                {/*        </Button.Group>*/}
-                                {/*    </Form.Field>*/}
-                                {/*</ShowComponentIfAuthorized>*/}
                             </Form.Group>
                         )}
                     </Form>
@@ -327,9 +329,9 @@ const CourseUnitsList = () => {
                                                             </Link>
                                                         </ShowComponentIfAuthorized>
                                                     </ShowComponentIfAuthorized>
-                                                    <ShowComponentIfAuthorized permission={[SCOPES.DELETE_COURSE_UNITS]}>
-                                                        <Button color="red" icon="trash" onClick={() => remove({id, course: course_description, unit: name})} />
-                                                    </ShowComponentIfAuthorized>
+                                                    {/*<ShowComponentIfAuthorized permission={[SCOPES.DELETE_COURSE_UNITS]}>*/}
+                                                    {/*    <Button color="red" icon="trash" onClick={() => remove({id, course: course_description, unit: name})} />*/}
+                                                    {/*</ShowComponentIfAuthorized>*/}
                                                 </Table.Cell>
                                             </ShowComponentIfAuthorized>
                                         </Table.Row>
