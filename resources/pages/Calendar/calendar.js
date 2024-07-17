@@ -67,7 +67,7 @@ const Calendar = () => {
     const [showingEpochs, setShowingEpochs] = useState([]);
 
     const componentRef = useRef();
-    const [myUCsOnly, setMyUCsOnly] = useState(false);
+    const [myUCsOnly, setMyUCsOnly] = useState(undefined);
 
     const myCourseUnit = localStorage.getItem('courseUnits') ? JSON.parse(localStorage.getItem('courseUnits')) : null;
 
@@ -104,6 +104,9 @@ const Calendar = () => {
         const currentGroup = localStorage.getItem('selectedGroup');
         if(currentGroup.includes(GROUPS.STUDENT) || currentGroup.includes(GROUPS.TEACHER)){
             setMyUCsOnly(true);
+        }
+        else{
+            setMyUCsOnly(false);
         }
     }, []);
 
@@ -421,8 +424,10 @@ const Calendar = () => {
     }, [epochsList, interruptionsList, isCalendarInfoLoading, showingEpochs, examList]);
 
     useEffect(() => {
-        loadCalendar(calendarId);
-        getWarnings();
+        if(myUCsOnly !== undefined){
+            loadCalendar(calendarId);
+            getWarnings();
+        }
     }, [calendarId, myUCsOnly]);
 
     const getWarnings = () => {
