@@ -27,8 +27,8 @@ const AnoLetivo = () => {
         {name: t('Descrição') },
         {name: t('Ativo'),          textAlign: 'center', popup: <Popup trigger={<Icon name="info circle" />} content={t('Anos letivos disponivies para os utilizadores selecionarem.')} position='top center'/>},
         {name: t('Selecionado'),    textAlign: 'center', popup: <Popup trigger={<Icon name="info circle" />} content={t('É o ano que irá estar selecionado automáticamente para o utilizador! Apenas um pode estar selecionado de cada vez.')} position='top center'/>},
-        {name: 'S1 Sync',           popup: <Popup trigger={<Icon name="info circle" />} content={t('Quando os 2 semestres estao sincronizados, o ano letivo poderá ser ativado.')} position='top center'/>},
-        {name: 'S2 Sync',           popup: <Popup trigger={<Icon name="info circle" />} content={t('Quando os 2 semestres estao sincronizados, o ano letivo poderá ser ativado.')} position='top center'/>},
+        {name: 'S1 Sync',           popup: <Popup trigger={<Icon name="info circle" />} content={t('Quando um semestre está sincronizado, o ano letivo poderá ser ativado.')} position='top center'/>},
+        {name: 'S2 Sync',           popup: <Popup trigger={<Icon name="info circle" />} content={t('Quando um semestre está sincronizado, o ano letivo poderá ser ativado.')} position='top center'/>},
         {name: t('Ações'),          style: {width: '15%'}}
     ];
 
@@ -261,7 +261,7 @@ const AnoLetivo = () => {
                                         <Table.Cell textAlign="center">
                                             <ShowComponentIfAuthorized permission={[SCOPES.EDIT_ACADEMIC_YEARS]} renderIfNotAllowed={<Checkbox toggle disabled defaultChecked={active}/>}>
                                                 { isActiveLoading && (<Icon loading name='spinner'/>)}
-                                                <Checkbox toggle checked={active} disabled={!(s1_sync && s2_sync)} onChange={() => handleYearActive(id, index)} />
+                                                <Checkbox toggle checked={active} disabled={!(s1_sync || s2_sync)} onChange={() => handleYearActive(id, index)} />
                                             </ShowComponentIfAuthorized>
                                         </Table.Cell>
                                         <Table.Cell textAlign="center">
@@ -319,7 +319,7 @@ const AnoLetivo = () => {
 
                 <Message.Header>{t('ano_letivo.Outras informações')}</Message.Header>
                 <p>{t('ano_letivo.Apenas 1 sincronização pode acontecer de cada vez, para prevenir duplicações ou bloqueio do servidor.')}</p>
-                <p>{t('Quando a sincronização acabar a página irá ser atualizada automáticamente.')}</p>
+                <p>{t('ano_letivo.Quando a sincronização acabar a página irá ser atualizada automáticamente.')}</p>
             </Message>
             <Modal dimmer="blurring" open={modalOpen} onClose={handleModalClose}>
                 <Modal.Header>{t('ano_letivo.Remover Ano letivo')}</Modal.Header>

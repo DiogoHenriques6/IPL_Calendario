@@ -79,6 +79,7 @@
         "ano_letivo.O que vai sincronizar?":  "O que vai sincronizar?",
         "ano_letivo.Ao iniciar o processo de sincronização, todas as UCs já preenchidas serão atualizadas, e novas UCs serão adicionadas.": "Ao iniciar o processo de sincronização, todas as UCs já preenchidas serão atualizadas, e novas UCs serão adicionadas.",
         "ano_letivo.Para ver a lista de UCs sincronizadas pode clicar neste": "Para ver a lista de UCs sincronizadas pode clicar neste",
+        "ano_letivo.Quando a sincronização acabar a página irá ser atualizada automáticamente.": "Quando a sincronização acabar a página irá ser atualizada automáticamente.",
         "O ano letivo já está selecionado!": "O ano letivo já está selecionado!",
         "ano_letivo.Irá sincronizar as escolas que já tenham os dados preenchidos. Para ver a lista das escolas que irão ser sincronizadas.": "Irá sincronizar as escolas que já tenham os dados preenchidos, recebendo os cursos, as cadeiras e professores da mesma. ",
         "Para mais informações, pode ver através deste": "Para ver a lista das escolas que irão ser sincronizadas consulte o seguinte ",

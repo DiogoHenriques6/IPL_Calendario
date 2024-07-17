@@ -326,26 +326,23 @@ const InfosAndActions = ( {isLoading, epochs, calendarInfo, course, phase, updat
                     { !isLoading && (
                         (!isPublished && !isTemporary) ? (
                             <Grid>
-                            {checkPermissionByPhase(SCOPES.CHANGE_CALENDAR_PHASE) && (
-                                    <GridRow>
-                                        <Button color="teal"
-                                                onClick={openSubmitModalHandler}>{t('Submeter')}</Button>
-                                    </GridRow>
-                                )}
-                            {checkPermissionByPhase(SCOPES.APPROVE_PUBLICATION) && (
-                                localStorage.getItem('selectedGroup')?.includes(GROUPS.BOARD) || localStorage.getItem('selectedGroup')?.includes(GROUPS.GOP) && (
-                                    <GridRow>
-                                    {/*// <div className="button-group-container">*/}
-                                        <ButtonGroup className={"evaluation-buttons"}>
-                                            <Button color="red"
-                                                    onClick={rejectCalendarHandler}>{t('Necessário reformulação')}</Button>
-                                            <Button color="green"
-                                                    onClick={acceptCalendarHandler}>{t('Aprovar')}</Button>
-                                        </ButtonGroup>
-                                    {/*// </div>*/}
-                                    </GridRow>
-                                )
-                                )}
+                                {checkPermissionByPhase(SCOPES.CHANGE_CALENDAR_PHASE) && (
+                                        <GridRow>
+                                            <Button color="teal"
+                                                    onClick={openSubmitModalHandler}>{t('Submeter')}</Button>
+                                        </GridRow>
+                                    )}
+                                {checkPermissionByPhase(SCOPES.APPROVE_PUBLICATION) &&
+                                    (localStorage.getItem('selectedGroup')?.includes(GROUPS.BOARD) || localStorage.getItem('selectedGroup')?.includes(GROUPS.GOP)) && (
+                                        <GridRow>
+                                            <ButtonGroup>
+                                                <Button color="red"
+                                                        onClick={rejectCalendarHandler}>{t('Necessário reformulação')}</Button>
+                                                <Button color="green"
+                                                        onClick={acceptCalendarHandler}>{t('Aprovar')}</Button>
+                                            </ButtonGroup>
+                                        </GridRow>
+                                    )}
                                 <GridRow>
                                     <ButtonGroup>
                                         <Button toggle active={myUCsOnly} onClick={() => setMyUCsOnly(true)}>
