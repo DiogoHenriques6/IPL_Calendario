@@ -336,7 +336,7 @@ const Calendar = () => {
                             if (!acc.filter(({week}) => week === start_date.isoWeek()).length) {
                                 acc.push({
                                     week: start_date.isoWeek(),
-                                    year: start_date.year(),
+                                    year: start_date.isoWeekYear(),
                                     days: [],
                                     epochsOverlap: false,
                                 });
@@ -372,6 +372,7 @@ const Calendar = () => {
                             };
 
                             const week = acc.find(({week}) => week === start_date.isoWeek());
+
                             if (!week.days.find((day) => day.weekDay === start_date.day())) {
                                 week.days.push({
                                     weekDay: start_date.day(),

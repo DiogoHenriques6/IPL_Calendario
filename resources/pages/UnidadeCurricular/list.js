@@ -114,14 +114,6 @@ const CourseUnitsList = () => {
             }
         }
     }, [courseFilter, semesterFilter, curricularYearFilter, groupUnitFilter, searchFilter, perPage]);
-    // useEffect(() => {
-    //     if(currentPage === 1){
-    //         fetchCourseUnits();
-    //     } else {
-    //         setCurrentPage(1);
-    //         sessionStorage.setItem('currentPage', 1);
-    //     }
-    // }, [semesterFilter, courseFilter, curricularYearFilter, groupUnitFilter, searchFilter, courseUnitAllFilter]);
 
     useEffect(() => {
         fetchCourseUnits();
@@ -130,6 +122,7 @@ const CourseUnitsList = () => {
     const filterByAllCourseUnits = (showAll) => {
         setCourseUnitAllFilter(showAll);
     }
+
     const filterByCourse = (course) => {
         setCourseFilter(course);
     };
